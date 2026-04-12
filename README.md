@@ -3,9 +3,8 @@
 
 ## Overview
 
-This repository contains code for preparing survey and geospatial 
-covariates data as well as modelling access to basic sanitation and open defecation 
-at subnational level in low- and middle-income coutries. The project builds on methods 
+This repository contains code for modelling access to basic sanitation and open defecation 
+at subnational level in low- and middle-income coutries using survey and geospatial data. The project builds on methods 
 developed in earlier work on subnational mapping of safely managed drinking water
 services in low- and middle-income countries (Greenwood et al. 2024). 
 
