@@ -1,0 +1,280 @@
+---
+title: "1_matching_region_names"
+format: html
+editor: visual
+---
+
+## Match household survey region names to GADM administrative names
+
+This section prepares survey region names and GADM administrative names for comparison. It then identifies exact matches, proposes fuzzy matches for unmatched regions, and summarises which survey regions can be matched to GADM levels 1 to 4.
+
+```{r}
+library(data.table)
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(stringi)
+library(fuzzyjoin)
+```
+
+### 1. Standardise names
+
+This function creates a simplified matching key by removing accents, punctuation, extra spaces, and differences in case.
+
+```{r}
+#| echo: false
+
+
+clean_key <- function(x) {
+  x %>%
+    str_trim() %>%
+    str_to_lower() %>%
+    stringi::stri_trans_general("Latin-ASCII") %>%
+    str_replace_all("&", " and ") %>%
+    str_replace_all("[^[:alnum:] ]", " ") %>%
+    str_squish()
+}
+```
+
+### 2. Prepare survey data
+
+This chunk reads the survey file, keeps the region and country variables needed for matching, standardises names, and creates cleaned matching keys.
+
+```{r}
+survey_raw <- fread('switchdrive/Eawag/WorldBankProject/HH_surveys/HH_survey_data/df_SMDW_MICS_water_quality_new.csv', encoding = "UTF-8") %>%
+  transmute(
+    region_survey  = HH7_region,
+    country_survey = country
+  ) %>%
+  filter(!is.na(region_survey), !is.na(country_survey)) %>%
+  mutate(
+    country_survey = recode(
+      country_survey,
+      "DR Congo" = "Democratic Republic of the Congo",
+      "Lao PDR" = "Laos",
+      "Pakistan Balochistan" = "Pakistan",
+      "Pakistan Khyber Pakhtunkhwa" = "Pakistan"
+    ),
+    region_key  = clean_key(region_survey),
+    country_key = clean_key(country_survey)
+  )
+
+
+```
+
+### 3. Checks within countries
+
+Check cases where different original survey spellings collapse to the same cleaned key within the same country. These cases are useful to review before matching.
+
+```{r}
+survey_name_variants <- survey_raw %>%
+  distinct(country_survey, region_survey, region_key) %>%
+  group_by(country_survey, region_key) %>%
+  summarise(
+    n_original_spellings = n_distinct(region_survey),
+    original_spellings = paste(sort(unique(region_survey)), collapse = " | "),
+    .groups = "drop"
+  ) %>%
+  filter(n_original_spellings > 1)
+
+survey_name_variants
+```
+
+### 4. Unique survey region-country combinations
+
+This step creates a distinct list of survey region-country combinations to be matched.
+
+```{r}
+survey <- survey_raw %>%
+  distinct(country_survey, region_survey, country_key, region_key)
+```
+
+### 5. Read and reshape the GADM data
+
+Reshapes administrative names from levels 1 to 4 into long format so they can be matched consistently.
+
+```{r}
+GADM_regions <- read.csv("Documents/GitHub/mapping-safe-drinking-water-use-LMICs/2_Data_cleaning/2_EO_matching_names_and_combining_files/all_regions_GADM.csv", encoding = "UTF-8")
+
+gadm_long <- GADM_regions %>%
+  select(NAME_0, NAME_1, NAME_2, NAME_3, NAME_4) %>%
+  pivot_longer(
+    cols = c(NAME_1, NAME_2, NAME_3, NAME_4),
+    names_to = "gadm_level",
+    values_to = "region_gadm"
+  ) %>%
+  filter(!is.na(region_gadm), region_gadm != "") %>%
+  mutate(
+    gadm_level   = as.integer(str_remove(gadm_level, "NAME_")),
+    country_gadm = NAME_0,
+    region_key   = clean_key(region_gadm),
+    country_key  = clean_key(country_gadm)
+  ) %>%
+  distinct(country_key, gadm_level, region_key, region_gadm, .keep_all = TRUE) %>%
+  select(country_gadm, country_key, gadm_level, region_gadm, region_key)
+```
+
+### 6. Identify exact matches
+
+```{r}
+exact_matches <- survey %>%
+  inner_join(gadm_long, by = c("country_key", "region_key")) %>%
+  select(country_survey, region_survey, gadm_level, country_gadm, region_gadm) %>%
+  distinct()
+
+exact_matches
+```
+
+### 7. Retain the best exact match 
+
+Some survey regions may match more than one GADM level. This chunk keeps the deepest matching level and flags cases where more than one exact candidate remains.
+
+```{r}
+exact_best <- exact_matches %>%
+  group_by(country_survey, region_survey) %>%
+  filter(gadm_level == max(gadm_level)) %>%
+  mutate(
+    n_exact_candidates = n(),
+    exact_status = if_else(n_exact_candidates == 1, "exact_unique", "exact_ambiguous")
+  ) %>%
+  ungroup()
+
+exact_best
+```
+
+### 8. Identify unmatched regions
+
+```{r}
+unmatched_after_exact <- survey %>%
+  anti_join(
+    exact_matches %>% distinct(country_survey, region_survey),
+    by = c("country_survey", "region_survey")
+  )
+
+unmatched_after_exact
+```
+
+### 9. Fuzzy match candidates within countries and GADM levels
+
+For survey regions that do not match exactly, this chunk searches for the closest GADM names within the same country and at each GADM level.
+
+```{r}
+fuzzy_all <- bind_rows(lapply(sort(unique(unmatched_after_exact$country_survey)), function(cty) {
+  
+  survey_cty <- unmatched_after_exact %>% filter(country_survey == cty)
+  gadm_cty   <- gadm_long %>% filter(country_gadm == cty)
+  
+  bind_rows(lapply(1:4, function(lvl) {
+    
+    gadm_lvl <- gadm_cty %>% filter(gadm_level == lvl)
+    if (nrow(gadm_lvl) == 0) return(NULL)
+    
+    stringdist_left_join(
+      survey_cty,
+      gadm_lvl,
+      by = c("region_key" = "region_key"),
+      method = "jw",
+      max_dist = 1,
+      distance_col = "dist"
+    ) %>%
+      group_by(country_survey, region_survey, gadm_level) %>%
+      slice_min(dist, n = 1, with_ties = TRUE) %>%
+      ungroup() %>%
+      select(country_survey, region_survey, gadm_level, country_gadm, region_gadm, dist)
+  }))
+}))
+```
+
+### 10. Retain the best fuzzy candidate 
+
+Here we keep the closest fuzzy match for each unmatched survey region and assigns a simple review flag based on the distance score.
+
+```{r}
+fuzzy_best <- fuzzy_all %>%
+  group_by(country_survey, region_survey) %>%
+  slice_min(dist, n = 1, with_ties = TRUE) %>%
+  ungroup() %>%
+  mutate(
+    fuzzy_flag = case_when(
+      dist <= 0.10 ~ "strong_fuzzy_candidate",
+      dist <= 0.20 ~ "review_needed",
+      TRUE         ~ "weak_fuzzy_candidate"
+    )
+  )
+
+fuzzy_best
+```
+
+### 11. Combine exact and fuzzy results into one final table
+
+This chunk combines the exact and fuzzy matching outputs and classifies each survey region as an exact match, fuzzy match for review, or unmatched.
+
+```{r}
+final_match_status <- survey %>%
+  select(country_survey, region_survey) %>%
+  left_join(
+    exact_best %>%
+      select(country_survey, region_survey, gadm_level, region_gadm, exact_status),
+    by = c("country_survey", "region_survey")
+  ) %>%
+  left_join(
+    fuzzy_best %>%
+      select(
+        country_survey, region_survey,
+        fuzzy_gadm_level = gadm_level,
+        fuzzy_region_gadm = region_gadm,
+        dist, fuzzy_flag
+      ),
+    by = c("country_survey", "region_survey")
+  ) %>%
+  mutate(
+    final_status = case_when(
+      !is.na(exact_status) ~ exact_status,
+      !is.na(fuzzy_flag) & dist <= 0.20 ~ "fuzzy_review",
+      TRUE ~ "unmatched"
+    ),
+    matched_level = case_when(
+      !is.na(gadm_level) ~ gadm_level,
+      final_status == "fuzzy_review" ~ fuzzy_gadm_level,
+      TRUE ~ NA_real_
+    ),
+    matched_name = case_when(
+      !is.na(region_gadm) ~ region_gadm,
+      final_status == "fuzzy_review" ~ fuzzy_region_gadm,
+      TRUE ~ NA_character_
+    )
+  )
+
+final_match_status
+```
+
+### 12. Summarise matching results by status and level
+
+This chunk provides an overview of the number of survey regions matched exactly, matched fuzzily, and remaining unmatched, by administrative level.
+
+```{r}
+summary_by_level <- final_match_status %>%
+  count(final_status, matched_level, sort = TRUE)
+
+summary_by_level
+```
+
+### 13. Extract survey regions that remain unmatched
+
+```{r}
+unmatched_regions <- final_match_status %>%
+  filter(final_status == "unmatched")
+
+unmatched_regions
+```
+
+### 14. Optional export of outputs
+
+If needed, the outputs can be written to file for later review.
+
+```{r}
+# write.csv(final_match_status, "final_match_status.csv", row.names = FALSE, fileEncoding = "UTF-8")
+# write.csv(unmatched_regions, "unmatched_regions.csv", row.names = FALSE, fileEncoding = "UTF-8")
+# write.csv(fuzzy_best, "fuzzy_best.csv", row.names = FALSE, fileEncoding = "UTF-8")
+# write.csv(survey_name_variants, "survey_name_variants.csv", row.names = FALSE, fileEncoding = "UTF-8")
+```
