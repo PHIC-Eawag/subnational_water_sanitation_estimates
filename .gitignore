@@ -1,8 +1,12 @@
+# =========================
+# R / RStudio
+# =========================
+
 # History files
 .Rhistory
 .Rapp.history
 
-# Session Data files
+# Session data files
 .RData
 .RDataTmp
 
@@ -18,32 +22,106 @@
 # Output files from R CMD check
 /*.Rcheck/
 
-# RStudio files
+# RStudio / Positron project user files
 .Rproj.user/
 
-# produced vignettes
+# Produced vignettes
 vignettes/*.html
 vignettes/*.pdf
 
-# OAuth2 token, see https://github.com/hadley/httr/releases/tag/v0.3
+# OAuth2 token
 .httr-oauth
 
-# knitr and R markdown default cache directories
+# knitr and R Markdown cache directories
 *_cache/
 /cache/
 
-# Temporary files created by R markdown
+# Temporary files created by R Markdown
 *.utf8.md
 *.knit.md
 
-# R Environment Variables
+# R environment variables
 .Renviron
-
-# pkgdown site
-docs/
-
-# translation temp files
-po/*~
 
 # RStudio Connect folder
 rsconnect/
+
+# =========================
+# Quarto
+# =========================
+.quarto/
+.quarto-cache/
+
+# =========================
+# renv
+# =========================
+renv/library/
+renv/python/
+renv/staging/
+
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.python-version
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# =========================
+# Jupyter notebooks
+# =========================
+.ipynb_checkpoints/
+
+# =========================
+# Editor files
+# =========================
+.vscode/
+*.code-workspace
+
+# =========================
+# OS files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Secrets / local config
+# =========================
+.env
+.env.*
+*.pem
+*.key
+
+# Local machine-specific config files
+config/local_paths.yml
+config/local_*.yml
+
+# =========================
+# Project data
+# Raw and processed data stay local
+# =========================
+data/processed/*
+
+# Keep placeholder files
+!data/processed/.gitkeep
+
+# =========================
+# Outputs
+# =========================
+outputs/*
+!outputs/.gitkeep
+
+# =========================
+# Logs / temporary files
+# =========================
+*.log
+*.tmp
+*.temp
+*~
