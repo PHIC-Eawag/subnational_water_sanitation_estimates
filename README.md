@@ -40,11 +40,10 @@ project/
 │
 ├── scripts/
 │   └── 01_data_cleaning/
-│       ├── 01_compile_training_surveys.R
-│       ├── 02_compile_test_surveys.R
-│       ├── 03_create_service_indicators.R
-│       ├── 04_describe_training_and_test_sets.R
-│       ├── 05_match_survey_regions_to_boundaries.R
+│       ├── 01_compile_survey_data.R
+│       ├── 02_create_service_indicators.R
+│       ├── 03_describe_training_and_test_sets.R
+│       ├── 04_match_survey_regions_to_boundaries.R
 │       ├── 06_combine_environmental_samples.R
 │       ├── 07_sample_environmental_features_training.js
 │       ├── 08_sample_environmental_features_prediction.js
@@ -58,7 +57,7 @@ project/
 ├── functions/
 │   ├── R/
 │   │   ├── extract_mics_variables.R
-│   │   ├── label_mics_household_data.R
+│   │   ├── label_mics_variables.R
 │   │   ├── join_and_structure_dataframes.R
 │   │   └── create_service_indicators.R
 │   └── python/
