@@ -44,10 +44,7 @@ project/
 │       ├── 02_create_service_indicators.R
 │       ├── 03_describe_training_and_test_sets.R
 │       ├── 04_match_survey_regions_to_boundaries.R
-│       ├── 06_combine_environmental_samples.R
-│       ├── 07_sample_environmental_features_training.js
-│       ├── 08_sample_environmental_features_prediction.js
-│       └── 09_aggregate_sampled_environmental_features.py
+│       └── 05_sampling_geospatial_data.ipynb
 │
 │   ├── 02_feature_selection/
 │   ├── 03_model_training/
