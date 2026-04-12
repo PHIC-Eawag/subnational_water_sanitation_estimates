@@ -62,3 +62,10 @@ project/
 │
 └── outputs/
     └── data_cleaning/
+
+## Getting started
+
+Create virtual environment
+Then run:
+
+pip install -r requirements.txt
