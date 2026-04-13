@@ -1,216 +1,242 @@
-"country_survey","region_survey","gadm_level","region_gadm","exact_status","fuzzy_gadm_level","fuzzy_region_gadm","dist","fuzzy_flag","final_status","matched_level","matched_name"
-"Azerbaijan","BAKU",NA,NA,NA,2,"Bakƒ±",0.166666666666667,"review_needed","fuzzy_review",2,"Bakƒ±"
-"Azerbaijan","NAKHCHIVAN AR",NA,NA,NA,1,"Nakhchivan",0.076923076923077,"strong_fuzzy_candidate","fuzzy_review",1,"Nakhchivan"
-"Azerbaijan","ABSHERON-KHIZI",NA,NA,NA,1,"Absheron",0.142857142857143,"review_needed","fuzzy_review",1,"Absheron"
-"Azerbaijan","DAGHLIG SHIRVAN",NA,NA,NA,1,"Daglig-Shirvan",0.0936507936507937,"strong_fuzzy_candidate","fuzzy_review",1,"Daglig-Shirvan"
-"Azerbaijan","GANJA-DASHKASAN",NA,NA,NA,1,"Ganja-Qazakh",0.2,"weak_fuzzy_candidate","unmatched",NA,NA
-"Azerbaijan","KARABAKH",NA,NA,NA,1,"Kalbajar-Lachin",0.290873015873016,"weak_fuzzy_candidate","unmatched",NA,NA
-"Azerbaijan","GAZAKH-TOVUZ",NA,NA,NA,2,"Qazax",0.383333333333333,"weak_fuzzy_candidate","unmatched",NA,NA
-"Azerbaijan","GUBA-KHACHMAZ",NA,NA,NA,1,"Quba-Khachmaz",0.0512820512820513,"strong_fuzzy_candidate","fuzzy_review",1,"Quba-Khachmaz"
-"Azerbaijan","LANKARAN-ASTARA",NA,NA,NA,1,"Lankaran",0.155555555555556,"review_needed","fuzzy_review",1,"Lankaran"
-"Azerbaijan","CENTRAL ARAN",NA,NA,NA,2,"Neft√ßala",0.251984126984127,"weak_fuzzy_candidate","unmatched",NA,NA
-"Azerbaijan","MIL-MUGHAN",NA,NA,NA,1,"Daglig-Shirvan",0.338095238095238,"weak_fuzzy_candidate","unmatched",NA,NA
-"Azerbaijan","SHAKI-ZAGATALA",NA,NA,NA,1,"Shaki-Zaqatala",0.0476190476190477,"strong_fuzzy_candidate","fuzzy_review",1,"Shaki-Zaqatala"
-"Azerbaijan","SHIRVAN-SALYAN",NA,NA,NA,2,"Naftalan",0.329365079365079,"weak_fuzzy_candidate","unmatched",NA,NA
-"Benin","ALIBORI",1,"Alibori","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Alibori"
-"Benin","ATACORA",NA,NA,NA,1,"Atakora",0.0952380952380952,"strong_fuzzy_candidate","fuzzy_review",1,"Atakora"
-"Benin","ATLANTIQUE",1,"Atlantique","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Atlantique"
-"Benin","BORGOU",1,"Borgou","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Borgou"
-"Benin","COLLINES",1,"Collines","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Collines"
-"Benin","COUFFO",NA,NA,NA,1,"Kouffo",0.111111111111111,"review_needed","fuzzy_review",1,"Kouffo"
-"Benin","DONGA",1,"Donga","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Donga"
-"Benin","LITTORAL",1,"Littoral","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Littoral"
-"Benin","MONO",1,"Mono","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Mono"
-"Benin","OUEME",1,"Ou√©m√©","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Ou√©m√©"
-"Benin","PLATEAU",1,"Plateau","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Plateau"
-"Benin","ZOU",1,"Zou","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Zou"
-"Democratic Republic of the Congo","Kinshasa",2,"Kinshasa","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Kinshasa"
-"Democratic Republic of the Congo","Kongo Central",1,"Kongo-Central","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Kongo-Central"
-"Democratic Republic of the Congo","Maindombe",NA,NA,NA,1,"Ma√Ø-Ndombe",0.0333333333333334,"strong_fuzzy_candidate","fuzzy_review",1,"Ma√Ø-Ndombe"
-"Democratic Republic of the Congo","Kwilu",1,"Kwilu","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Kwilu"
-"Democratic Republic of the Congo","Kwango",1,"Kwango","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Kwango"
-"Democratic Republic of the Congo","Equateur",1,"√âquateur","exact_unique",NA,NA,NA,NA,"exact_unique",1,"√âquateur"
-"Democratic Republic of the Congo","Sud Ubangi",1,"Sud-Ubangi","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Sud-Ubangi"
-"Democratic Republic of the Congo","Nord Ubangi",1,"Nord-Ubangi","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Nord-Ubangi"
-"Democratic Republic of the Congo","Mongala",1,"Mongala","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Mongala"
-"Democratic Republic of the Congo","Tshuapa",1,"Tshuapa","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Tshuapa"
-"Democratic Republic of the Congo","Tshopo",1,"Tshopo","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Tshopo"
-"Democratic Republic of the Congo","Bas Uele",1,"Bas-U√©l√©","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Bas-U√©l√©"
-"Democratic Republic of the Congo","Haut Uele",1,"Haut-U√©l√©","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Haut-U√©l√©"
-"Democratic Republic of the Congo","Ituri",1,"Ituri","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Ituri"
-"Democratic Republic of the Congo","Nord Kivu",1,"Nord-Kivu","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Nord-Kivu"
-"Democratic Republic of the Congo","Sud Kivu",1,"Sud-Kivu","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Sud-Kivu"
-"Democratic Republic of the Congo","Maniema",1,"Maniema","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Maniema"
-"Democratic Republic of the Congo","Lualaba",1,"Lualaba","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Lualaba"
-"Democratic Republic of the Congo","Haut Lomami",1,"Haut-Lomami","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Haut-Lomami"
-"Democratic Republic of the Congo","Tanganyika",1,"Tanganyika","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Tanganyika"
-"Democratic Republic of the Congo","Haut Katanga",1,"Haut-Katanga","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Haut-Katanga"
-"Democratic Republic of the Congo","Kasai Oriental",1,"Kasa√Ø-Oriental","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Kasa√Ø-Oriental"
-"Democratic Republic of the Congo","Sankuru",1,"Sankuru","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Sankuru"
-"Democratic Republic of the Congo","Lomami",1,"Lomami","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Lomami"
-"Democratic Republic of the Congo","Kasai",1,"Kasa√Ø","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Kasa√Ø"
-"Democratic Republic of the Congo","Kasai Central",1,"Kasa√Ø-Central","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Kasa√Ø-Central"
-"Dominican Republic","OZAMA",NA,NA,NA,2,"Los Alm√°cigos",0.297435897435897,"weak_fuzzy_candidate","unmatched",NA,NA
-"Dominican Republic","VALDESIA",NA,NA,NA,2,"La Descubierta",0.255952380952381,"weak_fuzzy_candidate","unmatched",NA,NA
-"Dominican Republic","ENRIQUILLO",2,"Enriquillo","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Enriquillo"
-"Dominican Republic","CIBAO NOROESTE",NA,NA,NA,2,"Santo Domingo Este",0.261664261664262,"weak_fuzzy_candidate","unmatched",NA,NA
-"Dominican Republic","CIBAO NORDESTE",NA,NA,NA,2,"Santo Domingo Este",0.261664261664262,"weak_fuzzy_candidate","unmatched",NA,NA
-"Dominican Republic","EL VALLE",2,"El Valle","exact_unique",NA,NA,NA,NA,"exact_unique",2,"El Valle"
-"Dominican Republic","YUMA",NA,NA,NA,1,"Azua",0.333333333333333,"weak_fuzzy_candidate","unmatched",NA,NA
-"Dominican Republic","YUMA",NA,NA,NA,2,"Guaymate",0.333333333333333,"weak_fuzzy_candidate","unmatched",NA,NA
-"Dominican Republic","CIBAO NORTE",NA,NA,NA,2,"Jamao al Norte",0.233766233766234,"weak_fuzzy_candidate","unmatched",NA,NA
-"Dominican Republic","CIBAO SUR",NA,NA,NA,2,"Cevicos",0.328042328042328,"weak_fuzzy_candidate","unmatched",NA,NA
-"Dominican Republic","HIGUAMO",NA,NA,NA,2,"Nigua",0.20952380952381,"weak_fuzzy_candidate","unmatched",NA,NA
-"Eswatini","HHOHHO",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
-"Eswatini","MANZINI",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
-"Eswatini","SHISELWENI",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
-"Eswatini","LUBOMBO",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
-"Fiji","CENTRAL",1,"Central","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Central"
-"Fiji","EASTERN",1,"Eastern","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Eastern"
-"Fiji","NORTHERN",1,"Northern","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Northern"
-"Fiji","WESTERN",1,"Western","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Western"
-"Honduras","ATLANTIDA",1,"Atl√°ntida","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Atl√°ntida"
-"Honduras","LA PAZ",2,"La Paz","exact_unique",NA,NA,NA,NA,"exact_unique",2,"La Paz"
-"Honduras","INTIBUCA",2,"Intibuc√°","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Intibuc√°"
-"Honduras","LEMPIRA",1,"Lempira","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Lempira"
-"Honduras","OCOTEPEQUE",2,"Ocotepeque","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Ocotepeque"
-"Honduras","GRACIAS A DIOS",1,"Gracias a Dios","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Gracias a Dios"
-"Honduras","COLON",1,"Col√≥n","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Col√≥n"
-"Honduras","ISLAS DE LA BAHIA",1,"Islas de la Bah√≠a","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Islas de la Bah√≠a"
-"Honduras","COPAN",1,"Cop√°n","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Cop√°n"
-"Honduras","VALLE",1,"Valle","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Valle"
-"Honduras","CHOLUTECA",2,"Choluteca","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Choluteca"
-"Honduras","EL PARAISO",2,"El Para√≠so","exact_unique",NA,NA,NA,NA,"exact_unique",2,"El Para√≠so"
-"Honduras","SANTA BARBARA",2,"Santa B√°rbara","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Santa B√°rbara"
-"Honduras","COMAYAGUA",2,"Comayagua","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Comayagua"
-"Honduras","OLANCHO",1,"Olancho","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Olancho"
-"Honduras","YORO",2,"Yoro","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Yoro"
-"Honduras","DISTRITO CENTRAL",2,"Distrito Central","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Distrito Central"
-"Honduras","FRANCISCO MORAZAN",1,"Francisco Moraz√°n","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Francisco Moraz√°n"
-"Honduras","SAN PEDRO SULA",2,"San Pedro Sula","exact_unique",NA,NA,NA,NA,"exact_unique",2,"San Pedro Sula"
-"Honduras","CORTES",1,"Cort√©s","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Cort√©s"
-"Laos","VIENTIANE CAPITAL",NA,NA,NA,1,"Vientiane",0.156862745098039,"review_needed","fuzzy_review",1,"Vientiane"
-"Laos","PHONGSALY",2,"Phongsaly","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Phongsaly"
-"Laos","LUANGNAMTHA",NA,NA,NA,1,"Louang Namtha",0.0512820512820513,"strong_fuzzy_candidate","fuzzy_review",1,"Louang Namtha"
-"Laos","OUDOMXAY",NA,NA,NA,1,"Oud√¥mxai",0.0833333333333334,"strong_fuzzy_candidate","fuzzy_review",1,"Oud√¥mxai"
-"Laos","BOKEO",1,"Bokeo","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Bokeo"
-"Laos","LUANGPRABANG",NA,NA,NA,1,"Louangphrabang",0.0476190476190477,"strong_fuzzy_candidate","fuzzy_review",1,"Louangphrabang"
-"Laos","LUANGPRABANG",NA,NA,NA,2,"Louangphrabang",0.0476190476190477,"strong_fuzzy_candidate","fuzzy_review",2,"Louangphrabang"
-"Laos","HUAPHANH",NA,NA,NA,1,"Houaphan",0.0833333333333334,"strong_fuzzy_candidate","fuzzy_review",1,"Houaphan"
-"Laos","XAYABURY",2,"Xayabury","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Xayabury"
-"Laos","XIENGKHUANG",NA,NA,NA,1,"Xiangkhoang",0.121212121212121,"review_needed","fuzzy_review",1,"Xiangkhoang"
-"Laos","VIENTIANE",1,"Vientiane","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Vientiane"
-"Laos","BORIKHAMXAY",NA,NA,NA,1,"Bolikhamxai",0.121212121212121,"review_needed","fuzzy_review",1,"Bolikhamxai"
-"Laos","KHAMMUAN",NA,NA,NA,1,"Khammouan",0.0370370370370371,"strong_fuzzy_candidate","fuzzy_review",1,"Khammouan"
-"Laos","SAVANNAKHET",1,"Savannakh√©t","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Savannakh√©t"
-"Laos","SARAVANE",2,"Saravane","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Saravane"
-"Laos","SEKONG",NA,NA,NA,1,"X√©kong",0.111111111111111,"review_needed","fuzzy_review",1,"X√©kong"
-"Laos","CHAMPASACK",NA,NA,NA,2,"Champassack",0.0303030303030303,"strong_fuzzy_candidate","fuzzy_review",2,"Champassack"
-"Laos","ATTAPEU",NA,NA,NA,1,"Attapu",0.0476190476190477,"strong_fuzzy_candidate","fuzzy_review",1,"Attapu"
-"Laos","XAYSOMBOUN",2,"Xaysomboun","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Xaysomboun"
-"Malawi","North",NA,NA,NA,1,"Ntcheu",0.3,"weak_fuzzy_candidate","unmatched",NA,NA
-"Malawi","Central",NA,NA,NA,1,"Chiradzulu",0.342857142857143,"weak_fuzzy_candidate","unmatched",NA,NA
-"Malawi","South",NA,NA,NA,2,"SC Nthondo",0.366666666666667,"weak_fuzzy_candidate","unmatched",NA,NA
-"Nepal","Koshi",2,"Koshi","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Koshi"
-"Nepal","Madhesh",NA,NA,NA,4,"Madhesa",0.0952380952380952,"strong_fuzzy_candidate","fuzzy_review",4,"Madhesa"
-"Nepal","Bagmati",2,"Bagmati","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Bagmati"
-"Nepal","Gandaki",2,"Gandaki","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Gandaki"
-"Nepal","Lumbini",4,"Lumbini","exact_unique",NA,NA,NA,NA,"exact_unique",4,"Lumbini"
-"Nepal","Karnali",2,"Karnali","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Karnali"
-"Nepal","Sudurpashchim",NA,NA,NA,4,"Suda",0.230769230769231,"weak_fuzzy_candidate","unmatched",NA,NA
-"Pakistan","Abbotabad",NA,NA,NA,3,"Abbottabad",0.0333333333333334,"strong_fuzzy_candidate","fuzzy_review",3,"Abbottabad"
-"Pakistan","Bannu",3,"Bannu","exact_unique",NA,NA,NA,NA,"exact_unique",3,"Bannu"
-"Pakistan","Batagram",NA,NA,NA,3,"Battagram",0.0370370370370371,"strong_fuzzy_candidate","fuzzy_review",3,"Battagram"
-"Pakistan","Buner",3,"Buner","exact_unique",NA,NA,NA,NA,"exact_unique",3,"Buner"
-"Pakistan","Charsadda",3,"Charsadda","exact_unique",NA,NA,NA,NA,"exact_unique",3,"Charsadda"
-"Pakistan","Chitral",3,"Chitral","exact_unique",NA,NA,NA,NA,"exact_unique",3,"Chitral"
-"Pakistan","Dera Ismail Khan",3,"Dera Ismail Khan","exact_unique",NA,NA,NA,NA,"exact_unique",3,"Dera Ismail Khan"
-"Pakistan","Hangu",3,"Hangu","exact_unique",NA,NA,NA,NA,"exact_unique",3,"Hangu"
-"Pakistan","Hari Pur",NA,NA,NA,3,"Haripur",0.0416666666666667,"strong_fuzzy_candidate","fuzzy_review",3,"Haripur"
-"Pakistan","Karak",3,"Karak","exact_unique",NA,NA,NA,NA,"exact_unique",3,"Karak"
-"Pakistan","Kohat",3,"Kohat","exact_unique",NA,NA,NA,NA,"exact_unique",3,"Kohat"
-"Pakistan","Kohistan",3,"Kohistan","exact_unique",NA,NA,NA,NA,"exact_unique",3,"Kohistan"
-"Pakistan","Laki Marwat",NA,NA,NA,3,"Lakki Marwat",0.0277777777777779,"strong_fuzzy_candidate","fuzzy_review",3,"Lakki Marwat"
-"Pakistan","Lower Dir",NA,NA,NA,3,"Loralai",0.328042328042328,"weak_fuzzy_candidate","unmatched",NA,NA
-"Pakistan","Malakand",2,"Malakand","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Malakand"
-"Pakistan","Mansehra",3,"Mansehra","exact_unique",NA,NA,NA,NA,"exact_unique",3,"Mansehra"
-"Pakistan","Mardan",3,"Mardan","exact_unique",NA,NA,NA,NA,"exact_unique",3,"Mardan"
-"Pakistan","Nowshehra",NA,NA,NA,3,"Nowshera",0.0370370370370371,"strong_fuzzy_candidate","fuzzy_review",3,"Nowshera"
-"Pakistan","Peshawar",3,"Peshawar","exact_unique",NA,NA,NA,NA,"exact_unique",3,"Peshawar"
-"Pakistan","Shangla",3,"Shangla","exact_unique",NA,NA,NA,NA,"exact_unique",3,"Shangla"
-"Pakistan","Swabi",3,"Swabi","exact_unique",NA,NA,NA,NA,"exact_unique",3,"Swabi"
-"Pakistan","Swat",3,"Swat","exact_unique",NA,NA,NA,NA,"exact_unique",3,"Swat"
-"Pakistan","Tank",3,"Tank","exact_unique",NA,NA,NA,NA,"exact_unique",3,"Tank"
-"Pakistan","Torghar",NA,NA,NA,3,"Sanghar",0.285714285714286,"weak_fuzzy_candidate","unmatched",NA,NA
-"Pakistan","Upper Dir",NA,NA,NA,3,"Buner",0.355555555555556,"weak_fuzzy_candidate","unmatched",NA,NA
-"Pakistan","Bajor",NA,NA,NA,3,"Bajaur",0.177777777777778,"review_needed","fuzzy_review",3,"Bajaur"
-"Pakistan","Khyber",3,"Khyber","exact_unique",NA,NA,NA,NA,"exact_unique",3,"Khyber"
-"Pakistan","Kuram",NA,NA,NA,3,"Kurram",0.0555555555555556,"strong_fuzzy_candidate","fuzzy_review",3,"Kurram"
-"Pakistan","Mohmind",NA,NA,NA,3,"Mohmand",0.0952380952380952,"strong_fuzzy_candidate","fuzzy_review",3,"Mohmand"
-"Pakistan","North Waziristan",NA,NA,NA,3,"N. Waziristan",0.194444444444445,"review_needed","fuzzy_review",3,"N. Waziristan"
-"Pakistan","Orakzai",3,"Orakzai","exact_unique",NA,NA,NA,NA,"exact_unique",3,"Orakzai"
-"Pakistan","South Waziristan",NA,NA,NA,3,"S. Waziristan",0.208333333333333,"weak_fuzzy_candidate","unmatched",NA,NA
-"Pakistan","Awaran",3,"Awaran","exact_unique",NA,NA,NA,NA,"exact_unique",3,"Awaran"
-"Pakistan","Barkhan",3,"Barkhan","exact_unique",NA,NA,NA,NA,"exact_unique",3,"Barkhan"
-"Pakistan","Chaghi",NA,NA,NA,3,"Chagai",0.111111111111111,"review_needed","fuzzy_review",3,"Chagai"
-"Pakistan","Dera Bugti",3,"Dera Bugti","exact_unique",NA,NA,NA,NA,"exact_unique",3,"Dera Bugti"
-"Pakistan","Gwadar",3,"Gwadar","exact_unique",NA,NA,NA,NA,"exact_unique",3,"Gwadar"
-"Pakistan","Harnai",NA,NA,NA,3,"Kharan",0.177777777777778,"review_needed","fuzzy_review",3,"Kharan"
-"Pakistan","Jaffarabad",NA,NA,NA,3,"Jafarabad",0.0333333333333334,"strong_fuzzy_candidate","fuzzy_review",3,"Jafarabad"
-"Pakistan","Jhal Magsi",3,"Jhal Magsi","exact_unique",NA,NA,NA,NA,"exact_unique",3,"Jhal Magsi"
-"Pakistan","Kachhi (Bolan)",NA,NA,NA,3,"Karachi Central",0.253703703703704,"weak_fuzzy_candidate","unmatched",NA,NA
-"Pakistan","Kalat",3,"Kalat","exact_unique",NA,NA,NA,NA,"exact_unique",3,"Kalat"
-"Pakistan","Kech (Turbat)",NA,NA,NA,3,"Kech",0.212121212121212,"weak_fuzzy_candidate","unmatched",NA,NA
-"Pakistan","Kharan",3,"Kharan","exact_unique",NA,NA,NA,NA,"exact_unique",3,"Kharan"
-"Pakistan","Khuzdar",3,"Khuzdar","exact_unique",NA,NA,NA,NA,"exact_unique",3,"Khuzdar"
-"Pakistan","Killa Abdullah",NA,NA,NA,3,"Qilla Abdullah",0.0476190476190477,"strong_fuzzy_candidate","fuzzy_review",3,"Qilla Abdullah"
-"Pakistan","Killa Saifullah",NA,NA,NA,3,"Qilla Saifullah",0.0444444444444445,"strong_fuzzy_candidate","fuzzy_review",3,"Qilla Saifullah"
-"Pakistan","Kohlu",NA,NA,NA,3,"Kholu",0.0666666666666668,"strong_fuzzy_candidate","fuzzy_review",3,"Kholu"
-"Pakistan","Lasbela",3,"Lasbela","exact_unique",NA,NA,NA,NA,"exact_unique",3,"Lasbela"
-"Pakistan","Lehri",NA,NA,NA,3,"Vehari",0.177777777777778,"review_needed","fuzzy_review",3,"Vehari"
-"Pakistan","Loralai",3,"Loralai","exact_unique",NA,NA,NA,NA,"exact_unique",3,"Loralai"
-"Pakistan","Mastung",3,"Mastung","exact_unique",NA,NA,NA,NA,"exact_unique",3,"Mastung"
-"Pakistan","Musakhel",3,"Musakhel","exact_unique",NA,NA,NA,NA,"exact_unique",3,"Musakhel"
-"Pakistan","Nasirabad",3,"Nasirabad","exact_unique",NA,NA,NA,NA,"exact_unique",3,"Nasirabad"
-"Pakistan","Nushki",NA,NA,NA,3,"Naushahro Firoz",0.277777777777778,"weak_fuzzy_candidate","unmatched",NA,NA
-"Pakistan","Panjgur",3,"Panjgur","exact_unique",NA,NA,NA,NA,"exact_unique",3,"Panjgur"
-"Pakistan","Pishin",3,"Pishin","exact_unique",NA,NA,NA,NA,"exact_unique",3,"Pishin"
-"Pakistan","Quetta",3,"Quetta","exact_unique",NA,NA,NA,NA,"exact_unique",3,"Quetta"
-"Pakistan","Sheerani",NA,NA,NA,3,"Nowshera",0.25,"weak_fuzzy_candidate","unmatched",NA,NA
-"Pakistan","Sibbi",NA,NA,NA,2,"Sibi",0.0666666666666668,"strong_fuzzy_candidate","fuzzy_review",2,"Sibi"
-"Pakistan","Sibbi",NA,NA,NA,3,"Sibi",0.0666666666666668,"strong_fuzzy_candidate","fuzzy_review",3,"Sibi"
-"Pakistan","SohbatPur",NA,NA,NA,3,"Haripur",0.243386243386243,"weak_fuzzy_candidate","unmatched",NA,NA
-"Pakistan","Washuk",NA,NA,NA,3,"Kasur",0.3,"weak_fuzzy_candidate","unmatched",NA,NA
-"Pakistan","Zhob",3,"Zhob","exact_unique",NA,NA,NA,NA,"exact_unique",3,"Zhob"
-"Pakistan","Ziarat",3,"Ziarat","exact_unique",NA,NA,NA,NA,"exact_unique",3,"Ziarat"
-"Samoa","Apia Urban Area",NA,NA,NA,2,"Lefaga & Faleseela",0.316666666666667,"weak_fuzzy_candidate","unmatched",NA,NA
-"Samoa","North West Upolu",NA,NA,NA,2,"Anoamaa West",0.326388888888889,"weak_fuzzy_candidate","unmatched",NA,NA
-"Samoa","Rest of Upolu",NA,NA,NA,2,"Aleipata Itupa i Luga",0.397054334554335,"weak_fuzzy_candidate","unmatched",NA,NA
-"Samoa","Savaii",NA,NA,NA,1,"Vaisigano",0.222222222222222,"weak_fuzzy_candidate","unmatched",NA,NA
-"Tunisia","DISTRICT TUNIS",NA,NA,NA,2,"Sidi Hassine",0.337301587301587,"weak_fuzzy_candidate","unmatched",NA,NA
-"Tunisia","NORD EST",NA,NA,NA,2,"Rad√®s",0.233333333333333,"weak_fuzzy_candidate","unmatched",NA,NA
-"Tunisia","NORD OUEST",NA,NA,NA,2,"Rad√®s",0.266666666666667,"weak_fuzzy_candidate","unmatched",NA,NA
-"Tunisia","CENTRE EST",NA,NA,NA,2,"Es Sers",0.328571428571429,"weak_fuzzy_candidate","unmatched",NA,NA
-"Tunisia","CENTRE OUEST",NA,NA,NA,2,"Ben Arous",0.260582010582011,"weak_fuzzy_candidate","unmatched",NA,NA
-"Tunisia","SUD EST",NA,NA,NA,2,"Sfax Ouest",0.261904761904762,"weak_fuzzy_candidate","unmatched",NA,NA
-"Tunisia","SUD OUEST",NA,NA,NA,2,"Sfax Ouest",0.174074074074074,"review_needed","fuzzy_review",2,"Sfax Ouest"
-"Tuvalu","Nanumea",1,"Nanumea","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Nanumea"
-"Tuvalu","Nanumaga",NA,NA,NA,1,"Nanumanga",0.0370370370370371,"strong_fuzzy_candidate","fuzzy_review",1,"Nanumanga"
-"Tuvalu","Niutao",1,"Niutao","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Niutao"
-"Tuvalu","Nui",1,"Nui","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Nui"
-"Tuvalu","Vaitupu",1,"Vaitupu","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Vaitupu"
-"Tuvalu","Nukufetau",1,"Nukufetau","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Nukufetau"
-"Tuvalu","Funafuti",1,"Funafuti","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Funafuti"
-"Vanuatu","TORBA",1,"Torba","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Torba"
-"Vanuatu","SANMA",1,"Sanma","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Sanma"
-"Vanuatu","PENAMA",1,"Penama","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Penama"
-"Vanuatu","MALAMPA",1,"Malampa","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Malampa"
-"Vanuatu","SHEFA",1,"Shefa","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Shefa"
-"Vanuatu","TAFEA",1,"Tafea","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Tafea"
-"Vietnam","RED RIVER DELTA",NA,NA,NA,3,"IV",0.288888888888889,"weak_fuzzy_candidate","unmatched",NA,NA
-"Vietnam","NORTHERN MIDLANDS AND MOUNTAIN",NA,NA,NA,3,"Nh∆°n An",0.303174603174603,"weak_fuzzy_candidate","unmatched",NA,NA
-"Vietnam","NORTH CENTRAL AND CENTRAL COASTAL",NA,NA,NA,3,"N√† Nh·∫°n",0.31024531024531,"weak_fuzzy_candidate","unmatched",NA,NA
-"Vietnam","NORTH CENTRAL AND CENTRAL COASTAL",NA,NA,NA,3,"Nh√¢n La",0.31024531024531,"weak_fuzzy_candidate","unmatched",NA,NA
-"Vietnam","CENTRAL HIGHLANDS",NA,NA,NA,3,"Canh Hi·ªÉn",0.212418300653595,"weak_fuzzy_candidate","unmatched",NA,NA
-"Vietnam","SOUTH EAST",NA,NA,NA,2,"Tuy Ho√†",0.264285714285714,"weak_fuzzy_candidate","unmatched",NA,NA
-"Vietnam","MEKONG RIVER DELTA",NA,NA,NA,3,"Long Tr·ªã A",0.251851851851852,"weak_fuzzy_candidate","unmatched",NA,NA
+country_survey;region_survey;gadm_level;region_gadm;exact_status;fuzzy_gadm_level;fuzzy_region_gadm;dist;fuzzy_flag;final_status;matched_level;matched_name;Region Case;Country Case;Further Information;;;
+Azerbaijan;BAKU;NA;NA;NA;2;Bak?;0.166666666666667;review_needed;fuzzy_review;2;Bak?;;1;"Survey is by ""economic region"", not by official districts. Missing economic region ""East Zangezur"" not in Survey, which was probably annexed in 2020 Second Nagorno-Karabakh War, links:
+https://en.wikipedia.org/wiki/Second_Nagorno-Karabakh_War
+https://en.wikipedia.org/wiki/East_Zangezur_Economic_Region";;;
+Azerbaijan;NAKHCHIVAN AR;NA;NA;NA;1;Nakhchivan;0.076923076923077;strong_fuzzy_candidate;fuzzy_review;1;Nakhchivan;;1;"Survey is by ""economic region"", not by official districts. Missing economic region ""East Zangezur"" not in Survey, which was probably annexed in 2020 Second Nagorno-Karabakh War, links:
+https://en.wikipedia.org/wiki/Second_Nagorno-Karabakh_War
+https://en.wikipedia.org/wiki/East_Zangezur_Economic_Region";;;
+Azerbaijan;ABSHERON-KHIZI;NA;NA;NA;1;Absheron;0.142857142857143;review_needed;fuzzy_review;1;Absheron;;1;"Survey is by ""economic region"", not by official districts. Missing economic region ""East Zangezur"" not in Survey, which was probably annexed in 2020 Second Nagorno-Karabakh War, links:
+https://en.wikipedia.org/wiki/Second_Nagorno-Karabakh_War
+https://en.wikipedia.org/wiki/East_Zangezur_Economic_Region";;;
+Azerbaijan;DAGHLIG SHIRVAN;NA;NA;NA;1;Daglig-Shirvan;0.0936507936507937;strong_fuzzy_candidate;fuzzy_review;1;Daglig-Shirvan;;1;"Survey is by ""economic region"", not by official districts. Missing economic region ""East Zangezur"" not in Survey, which was probably annexed in 2020 Second Nagorno-Karabakh War, links:
+https://en.wikipedia.org/wiki/Second_Nagorno-Karabakh_War
+https://en.wikipedia.org/wiki/East_Zangezur_Economic_Region";;;
+Azerbaijan;GANJA-DASHKASAN;NA;NA;NA;1;Ganja-Qazakh;0.2;weak_fuzzy_candidate;unmatched;NA;NA;;1;"Survey is by ""economic region"", not by official districts. Missing economic region ""East Zangezur"" not in Survey, which was probably annexed in 2020 Second Nagorno-Karabakh War, links:
+https://en.wikipedia.org/wiki/Second_Nagorno-Karabakh_War
+https://en.wikipedia.org/wiki/East_Zangezur_Economic_Region";;;
+Azerbaijan;KARABAKH;NA;NA;NA;1;Kalbajar-Lachin;0.290873015873016;weak_fuzzy_candidate;unmatched;NA;NA;;1;"Survey is by ""economic region"", not by official districts. Missing economic region ""East Zangezur"" not in Survey, which was probably annexed in 2020 Second Nagorno-Karabakh War, links:
+https://en.wikipedia.org/wiki/Second_Nagorno-Karabakh_War
+https://en.wikipedia.org/wiki/East_Zangezur_Economic_Region";;;
+Azerbaijan;GAZAKH-TOVUZ;NA;NA;NA;2;Qazax;0.383333333333333;weak_fuzzy_candidate;unmatched;NA;NA;;1;"Survey is by ""economic region"", not by official districts. Missing economic region ""East Zangezur"" not in Survey, which was probably annexed in 2020 Second Nagorno-Karabakh War, links:
+https://en.wikipedia.org/wiki/Second_Nagorno-Karabakh_War
+https://en.wikipedia.org/wiki/East_Zangezur_Economic_Region";;;
+Azerbaijan;GUBA-KHACHMAZ;NA;NA;NA;1;Quba-Khachmaz;0.0512820512820513;strong_fuzzy_candidate;fuzzy_review;1;Quba-Khachmaz;;1;"Survey is by ""economic region"", not by official districts. Missing economic region ""East Zangezur"" not in Survey, which was probably annexed in 2020 Second Nagorno-Karabakh War, links:
+https://en.wikipedia.org/wiki/Second_Nagorno-Karabakh_War
+https://en.wikipedia.org/wiki/East_Zangezur_Economic_Region";;;
+Azerbaijan;LANKARAN-ASTARA;NA;NA;NA;1;Lankaran;0.155555555555556;review_needed;fuzzy_review;1;Lankaran;;1;"Survey is by ""economic region"", not by official districts. Missing economic region ""East Zangezur"" not in Survey, which was probably annexed in 2020 Second Nagorno-Karabakh War, links:
+https://en.wikipedia.org/wiki/Second_Nagorno-Karabakh_War
+https://en.wikipedia.org/wiki/East_Zangezur_Economic_Region";;;
+Azerbaijan;CENTRAL ARAN;NA;NA;NA;2;NeftÁala;0.251984126984127;weak_fuzzy_candidate;unmatched;NA;NA;;1;"Survey is by ""economic region"", not by official districts. Missing economic region ""East Zangezur"" not in Survey, which was probably annexed in 2020 Second Nagorno-Karabakh War, links:
+https://en.wikipedia.org/wiki/Second_Nagorno-Karabakh_War
+https://en.wikipedia.org/wiki/East_Zangezur_Economic_Region";;;
+Azerbaijan;MIL-MUGHAN;NA;NA;NA;1;Daglig-Shirvan;0.338095238095238;weak_fuzzy_candidate;unmatched;NA;NA;;1;"Survey is by ""economic region"", not by official districts. Missing economic region ""East Zangezur"" not in Survey, which was probably annexed in 2020 Second Nagorno-Karabakh War, links:
+https://en.wikipedia.org/wiki/Second_Nagorno-Karabakh_War
+https://en.wikipedia.org/wiki/East_Zangezur_Economic_Region";;;
+Azerbaijan;SHAKI-ZAGATALA;NA;NA;NA;1;Shaki-Zaqatala;0.0476190476190477;strong_fuzzy_candidate;fuzzy_review;1;Shaki-Zaqatala;;1;"Survey is by ""economic region"", not by official districts. Missing economic region ""East Zangezur"" not in Survey, which was probably annexed in 2020 Second Nagorno-Karabakh War, links:
+https://en.wikipedia.org/wiki/Second_Nagorno-Karabakh_War
+https://en.wikipedia.org/wiki/East_Zangezur_Economic_Region";;;
+Azerbaijan;SHIRVAN-SALYAN;NA;NA;NA;2;Naftalan;0.329365079365079;weak_fuzzy_candidate;unmatched;NA;NA;;1;"Survey is by ""economic region"", not by official districts. Missing economic region ""East Zangezur"" not in Survey, which was probably annexed in 2020 Second Nagorno-Karabakh War, links:
+https://en.wikipedia.org/wiki/Second_Nagorno-Karabakh_War
+https://en.wikipedia.org/wiki/East_Zangezur_Economic_Region";;;
+Benin;ALIBORI;1;Alibori;exact_unique;NA;NA;NA;NA;exact_unique;1;Alibori;;;;;;
+Benin;ATACORA;NA;NA;NA;1;Atakora;0.0952380952380952;strong_fuzzy_candidate;fuzzy_review;1;Atakora;;;;;;
+Benin;ATLANTIQUE;1;Atlantique;exact_unique;NA;NA;NA;NA;exact_unique;1;Atlantique;;;;;;country case
+Benin;BORGOU;1;Borgou;exact_unique;NA;NA;NA;NA;exact_unique;1;Borgou;;;;;1;Different set of subdivisions in survey than official administrative units
+Benin;COLLINES;1;Collines;exact_unique;NA;NA;NA;NA;exact_unique;1;Collines;;;;;2;country name was changed
+Benin;COUFFO;NA;NA;NA;1;Kouffo;0.111111111111111;review_needed;fuzzy_review;1;Kouffo;;;;;;
+Benin;DONGA;1;Donga;exact_unique;NA;NA;NA;NA;exact_unique;1;Donga;;;;;;
+Benin;LITTORAL;1;Littoral;exact_unique;NA;NA;NA;NA;exact_unique;1;Littoral;;;;;;Region case 
+Benin;MONO;1;Mono;exact_unique;NA;NA;NA;NA;exact_unique;1;Mono;;;;;1;Error coming from capital region and wider region having the same name (e.g. vientiane)
+Benin;OUEME;1;OuÈmÈ;exact_unique;NA;NA;NA;NA;exact_unique;1;OuÈmÈ;;;;;;
+Benin;PLATEAU;1;Plateau;exact_unique;NA;NA;NA;NA;exact_unique;1;Plateau;;;;;;
+Benin;ZOU;1;Zou;exact_unique;NA;NA;NA;NA;exact_unique;1;Zou;;;;;;
+Democratic Republic of the Congo;Kinshasa;2;Kinshasa;exact_unique;NA;NA;NA;NA;exact_unique;2;Kinshasa;;;;;;
+Democratic Republic of the Congo;Kongo Central;1;Kongo-Central;exact_unique;NA;NA;NA;NA;exact_unique;1;Kongo-Central;;;;;;
+Democratic Republic of the Congo;Maindombe;NA;NA;NA;1;MaÔ-Ndombe;0.0333333333333334;strong_fuzzy_candidate;fuzzy_review;1;MaÔ-Ndombe;;;;;;
+Democratic Republic of the Congo;Kwilu;1;Kwilu;exact_unique;NA;NA;NA;NA;exact_unique;1;Kwilu;;;;;;
+Democratic Republic of the Congo;Kwango;1;Kwango;exact_unique;NA;NA;NA;NA;exact_unique;1;Kwango;;;;;;
+Democratic Republic of the Congo;Equateur;1;…quateur;exact_unique;NA;NA;NA;NA;exact_unique;1;…quateur;;;;;;
+Democratic Republic of the Congo;Sud Ubangi;1;Sud-Ubangi;exact_unique;NA;NA;NA;NA;exact_unique;1;Sud-Ubangi;;;;;;
+Democratic Republic of the Congo;Nord Ubangi;1;Nord-Ubangi;exact_unique;NA;NA;NA;NA;exact_unique;1;Nord-Ubangi;;;;;;
+Democratic Republic of the Congo;Mongala;1;Mongala;exact_unique;NA;NA;NA;NA;exact_unique;1;Mongala;;;;;;
+Democratic Republic of the Congo;Tshuapa;1;Tshuapa;exact_unique;NA;NA;NA;NA;exact_unique;1;Tshuapa;;;;;;
+Democratic Republic of the Congo;Tshopo;1;Tshopo;exact_unique;NA;NA;NA;NA;exact_unique;1;Tshopo;;;;;;
+Democratic Republic of the Congo;Bas Uele;1;Bas-UÈlÈ;exact_unique;NA;NA;NA;NA;exact_unique;1;Bas-UÈlÈ;;;;;;
+Democratic Republic of the Congo;Haut Uele;1;Haut-UÈlÈ;exact_unique;NA;NA;NA;NA;exact_unique;1;Haut-UÈlÈ;;;;;;
+Democratic Republic of the Congo;Ituri;1;Ituri;exact_unique;NA;NA;NA;NA;exact_unique;1;Ituri;;;;;;
+Democratic Republic of the Congo;Nord Kivu;1;Nord-Kivu;exact_unique;NA;NA;NA;NA;exact_unique;1;Nord-Kivu;;;;;;
+Democratic Republic of the Congo;Sud Kivu;1;Sud-Kivu;exact_unique;NA;NA;NA;NA;exact_unique;1;Sud-Kivu;;;;;;
+Democratic Republic of the Congo;Maniema;1;Maniema;exact_unique;NA;NA;NA;NA;exact_unique;1;Maniema;;;;;;
+Democratic Republic of the Congo;Lualaba;1;Lualaba;exact_unique;NA;NA;NA;NA;exact_unique;1;Lualaba;;;;;;
+Democratic Republic of the Congo;Haut Lomami;1;Haut-Lomami;exact_unique;NA;NA;NA;NA;exact_unique;1;Haut-Lomami;;;;  ;;
+Democratic Republic of the Congo;Tanganyika;1;Tanganyika;exact_unique;NA;NA;NA;NA;exact_unique;1;Tanganyika;;;;;;
+Democratic Republic of the Congo;Haut Katanga;1;Haut-Katanga;exact_unique;NA;NA;NA;NA;exact_unique;1;Haut-Katanga;;;;;;
+Democratic Republic of the Congo;Kasai Oriental;1;KasaÔ-Oriental;exact_unique;NA;NA;NA;NA;exact_unique;1;KasaÔ-Oriental;;;;;;
+Democratic Republic of the Congo;Sankuru;1;Sankuru;exact_unique;NA;NA;NA;NA;exact_unique;1;Sankuru;;;;;;
+Democratic Republic of the Congo;Lomami;1;Lomami;exact_unique;NA;NA;NA;NA;exact_unique;1;Lomami;;;;;;
+Democratic Republic of the Congo;Kasai;1;KasaÔ;exact_unique;NA;NA;NA;NA;exact_unique;1;KasaÔ;;;;;;
+Democratic Republic of the Congo;Kasai Central;1;KasaÔ-Central;exact_unique;NA;NA;NA;NA;exact_unique;1;KasaÔ-Central;;;;;;
+Dominican Republic;OZAMA;NA;NA;NA;2;Los Alm·cigos;0.297435897435897;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
+Dominican Republic;VALDESIA;NA;NA;NA;2;La Descubierta;0.255952380952381;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
+Dominican Republic;ENRIQUILLO;2;Enriquillo;exact_unique;NA;NA;NA;NA;exact_unique;2;Enriquillo;;;;;;
+Dominican Republic;CIBAO NOROESTE;NA;NA;NA;2;Santo Domingo Este;0.261664261664262;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
+Dominican Republic;CIBAO NORDESTE;NA;NA;NA;2;Santo Domingo Este;0.261664261664262;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
+Dominican Republic;EL VALLE;2;El Valle;exact_unique;NA;NA;NA;NA;exact_unique;2;El Valle;;;;;;
+Dominican Republic;YUMA;NA;NA;NA;1;Azua;0.333333333333333;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
+Dominican Republic;YUMA;NA;NA;NA;2;Guaymate;0.333333333333333;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
+Dominican Republic;CIBAO NORTE;NA;NA;NA;2;Jamao al Norte;0.233766233766234;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
+Dominican Republic;CIBAO SUR;NA;NA;NA;2;Cevicos;0.328042328042328;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
+Dominican Republic;HIGUAMO;NA;NA;NA;2;Nigua;0.20952380952381;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
+Eswatini;HHOHHO;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;;2;Eswatini formerly known as Swasiland. In GADM database, Swasiland regions level 1 are perfectly matched with those in survey;;;
+Eswatini;MANZINI;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;;2;Eswatini formerly known as Swasiland. In GADM database, Swasiland regions level 1 are perfectly matched with those in survey;;;
+Eswatini;SHISELWENI;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;;2;Eswatini formerly known as Swasiland. In GADM database, Swasiland regions level 1 are perfectly matched with those in survey;;;
+Eswatini;LUBOMBO;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;;2;Eswatini formerly known as Swasiland. In GADM database, Swasiland regions level 1 are perfectly matched with those in survey;;;
+Fiji;CENTRAL;1;Central;exact_unique;NA;NA;NA;NA;exact_unique;1;Central;;;;;;
+Fiji;EASTERN;1;Eastern;exact_unique;NA;NA;NA;NA;exact_unique;1;Eastern;;;;;;
+Fiji;NORTHERN;1;Northern;exact_unique;NA;NA;NA;NA;exact_unique;1;Northern;;;;;;
+Fiji;WESTERN;1;Western;exact_unique;NA;NA;NA;NA;exact_unique;1;Western;;;;;;
+Honduras;ATLANTIDA;1;Atl·ntida;exact_unique;NA;NA;NA;NA;exact_unique;1;Atl·ntida;;;;;;
+Honduras;LA PAZ;2;La Paz;exact_unique;NA;NA;NA;NA;exact_unique;2;La Paz;;;;;;
+Honduras;INTIBUCA;2;Intibuc·;exact_unique;NA;NA;NA;NA;exact_unique;2;Intibuc·;;;;;;
+Honduras;LEMPIRA;1;Lempira;exact_unique;NA;NA;NA;NA;exact_unique;1;Lempira;;;;;;
+Honduras;OCOTEPEQUE;2;Ocotepeque;exact_unique;NA;NA;NA;NA;exact_unique;2;Ocotepeque;;;;;;
+Honduras;GRACIAS A DIOS;1;Gracias a Dios;exact_unique;NA;NA;NA;NA;exact_unique;1;Gracias a Dios;;;;;;
+Honduras;COLON;1;ColÛn;exact_unique;NA;NA;NA;NA;exact_unique;1;ColÛn;;;;;;
+Honduras;ISLAS DE LA BAHIA;1;Islas de la BahÌa;exact_unique;NA;NA;NA;NA;exact_unique;1;Islas de la BahÌa;;;;;;
+Honduras;COPAN;1;Cop·n;exact_unique;NA;NA;NA;NA;exact_unique;1;Cop·n;;;;;;
+Honduras;VALLE;1;Valle;exact_unique;NA;NA;NA;NA;exact_unique;1;Valle;;;;;;
+Honduras;CHOLUTECA;2;Choluteca;exact_unique;NA;NA;NA;NA;exact_unique;2;Choluteca;;;;;;
+Honduras;EL PARAISO;2;El ParaÌso;exact_unique;NA;NA;NA;NA;exact_unique;2;El ParaÌso;;;;;;
+Honduras;SANTA BARBARA;2;Santa B·rbara;exact_unique;NA;NA;NA;NA;exact_unique;2;Santa B·rbara;;;;;;
+Honduras;COMAYAGUA;2;Comayagua;exact_unique;NA;NA;NA;NA;exact_unique;2;Comayagua;;;;;;
+Honduras;OLANCHO;1;Olancho;exact_unique;NA;NA;NA;NA;exact_unique;1;Olancho;;;;;;
+Honduras;YORO;2;Yoro;exact_unique;NA;NA;NA;NA;exact_unique;2;Yoro;;;;;;
+Honduras;DISTRITO CENTRAL;2;Distrito Central;exact_unique;NA;NA;NA;NA;exact_unique;2;Distrito Central;;;;;;
+Honduras;FRANCISCO MORAZAN;1;Francisco Moraz·n;exact_unique;NA;NA;NA;NA;exact_unique;1;Francisco Moraz·n;;;;;;
+Honduras;SAN PEDRO SULA;2;San Pedro Sula;exact_unique;NA;NA;NA;NA;exact_unique;2;San Pedro Sula;;;;;;
+Honduras;CORTES;1;CortÈs;exact_unique;NA;NA;NA;NA;exact_unique;1;CortÈs;;;;;;
+Laos;VIENTIANE CAPITAL;NA;NA;NA;1;Vientiane;0.156862745098039;review_needed;fuzzy_review;1;Vientiane;1;;"Correct match in GADM ""Vientiane [prefecture]""";;;
+Laos;PHONGSALY;2;Phongsaly;exact_unique;NA;NA;NA;NA;exact_unique;2;Phongsaly;;;;;;
+Laos;LUANGNAMTHA;NA;NA;NA;1;Louang Namtha;0.0512820512820513;strong_fuzzy_candidate;fuzzy_review;1;Louang Namtha;;;;;;
+Laos;OUDOMXAY;NA;NA;NA;1;OudÙmxai;0.0833333333333334;strong_fuzzy_candidate;fuzzy_review;1;OudÙmxai;;;;;;
+Laos;BOKEO;1;Bokeo;exact_unique;NA;NA;NA;NA;exact_unique;1;Bokeo;;;;;;
+Laos;LUANGPRABANG;NA;NA;NA;1;Louangphrabang;0.0476190476190477;strong_fuzzy_candidate;fuzzy_review;1;Louangphrabang;;;;;;
+Laos;LUANGPRABANG;NA;NA;NA;2;Louangphrabang;0.0476190476190477;strong_fuzzy_candidate;fuzzy_review;2;Louangphrabang;;;;;;
+Laos;HUAPHANH;NA;NA;NA;1;Houaphan;0.0833333333333334;strong_fuzzy_candidate;fuzzy_review;1;Houaphan;;;;;;
+Laos;XAYABURY;2;Xayabury;exact_unique;NA;NA;NA;NA;exact_unique;2;Xayabury;;;;;;
+Laos;XIENGKHUANG;NA;NA;NA;1;Xiangkhoang;0.121212121212121;review_needed;fuzzy_review;1;Xiangkhoang;;;;;;
+Laos;VIENTIANE;1;Vientiane;exact_unique;NA;NA;NA;NA;exact_unique;1;Vientiane;;;;;;
+Laos;BORIKHAMXAY;NA;NA;NA;1;Bolikhamxai;0.121212121212121;review_needed;fuzzy_review;1;Bolikhamxai;;;;;;
+Laos;KHAMMUAN;NA;NA;NA;1;Khammouan;0.0370370370370371;strong_fuzzy_candidate;fuzzy_review;1;Khammouan;;;;;;
+Laos;SAVANNAKHET;1;SavannakhÈt;exact_unique;NA;NA;NA;NA;exact_unique;1;SavannakhÈt;;;;;;
+Laos;SARAVANE;2;Saravane;exact_unique;NA;NA;NA;NA;exact_unique;2;Saravane;;;;;;
+Laos;SEKONG;NA;NA;NA;1;XÈkong;0.111111111111111;review_needed;fuzzy_review;1;XÈkong;;;;;;
+Laos;CHAMPASACK;NA;NA;NA;2;Champassack;0.0303030303030303;strong_fuzzy_candidate;fuzzy_review;2;Champassack;;;;;;
+Laos;ATTAPEU;NA;NA;NA;1;Attapu;0.0476190476190477;strong_fuzzy_candidate;fuzzy_review;1;Attapu;;;;;;
+Laos;XAYSOMBOUN;2;Xaysomboun;exact_unique;NA;NA;NA;NA;exact_unique;2;Xaysomboun;;;;;;
+Malawi;North;NA;NA;NA;1;Ntcheu;0.3;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
+Malawi;Central;NA;NA;NA;1;Chiradzulu;0.342857142857143;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
+Malawi;South;NA;NA;NA;2;SC Nthondo;0.366666666666667;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
+Nepal;Koshi;2;Koshi;exact_unique;NA;NA;NA;NA;exact_unique;2;Koshi;;;;;;
+Nepal;Madhesh;NA;NA;NA;4;Madhesa;0.0952380952380952;strong_fuzzy_candidate;fuzzy_review;4;Madhesa;;;;;;
+Nepal;Bagmati;2;Bagmati;exact_unique;NA;NA;NA;NA;exact_unique;2;Bagmati;;;;;;
+Nepal;Gandaki;2;Gandaki;exact_unique;NA;NA;NA;NA;exact_unique;2;Gandaki;;;;;;
+Nepal;Lumbini;4;Lumbini;exact_unique;NA;NA;NA;NA;exact_unique;4;Lumbini;;;;;;
+Nepal;Karnali;2;Karnali;exact_unique;NA;NA;NA;NA;exact_unique;2;Karnali;;;;;;
+Nepal;Sudurpashchim;NA;NA;NA;4;Suda;0.230769230769231;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
+Pakistan;Abbotabad;NA;NA;NA;3;Abbottabad;0.0333333333333334;strong_fuzzy_candidate;fuzzy_review;3;Abbottabad;;;;;;
+Pakistan;Bannu;3;Bannu;exact_unique;NA;NA;NA;NA;exact_unique;3;Bannu;;;;;;
+Pakistan;Batagram;NA;NA;NA;3;Battagram;0.0370370370370371;strong_fuzzy_candidate;fuzzy_review;3;Battagram;;;;;;
+Pakistan;Buner;3;Buner;exact_unique;NA;NA;NA;NA;exact_unique;3;Buner;;;;;;
+Pakistan;Charsadda;3;Charsadda;exact_unique;NA;NA;NA;NA;exact_unique;3;Charsadda;;;;;;
+Pakistan;Chitral;3;Chitral;exact_unique;NA;NA;NA;NA;exact_unique;3;Chitral;;;;;;
+Pakistan;Dera Ismail Khan;3;Dera Ismail Khan;exact_unique;NA;NA;NA;NA;exact_unique;3;Dera Ismail Khan;;;;;;
+Pakistan;Hangu;3;Hangu;exact_unique;NA;NA;NA;NA;exact_unique;3;Hangu;;;;;;
+Pakistan;Hari Pur;NA;NA;NA;3;Haripur;0.0416666666666667;strong_fuzzy_candidate;fuzzy_review;3;Haripur;;;;;;
+Pakistan;Karak;3;Karak;exact_unique;NA;NA;NA;NA;exact_unique;3;Karak;;;;;;
+Pakistan;Kohat;3;Kohat;exact_unique;NA;NA;NA;NA;exact_unique;3;Kohat;;;;;;
+Pakistan;Kohistan;3;Kohistan;exact_unique;NA;NA;NA;NA;exact_unique;3;Kohistan;;;;;;
+Pakistan;Laki Marwat;NA;NA;NA;3;Lakki Marwat;0.0277777777777779;strong_fuzzy_candidate;fuzzy_review;3;Lakki Marwat;;;;;;
+Pakistan;Lower Dir;NA;NA;NA;3;Loralai;0.328042328042328;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
+Pakistan;Malakand;2;Malakand;exact_unique;NA;NA;NA;NA;exact_unique;2;Malakand;;;;;;
+Pakistan;Mansehra;3;Mansehra;exact_unique;NA;NA;NA;NA;exact_unique;3;Mansehra;;;;;;
+Pakistan;Mardan;3;Mardan;exact_unique;NA;NA;NA;NA;exact_unique;3;Mardan;;;;;;
+Pakistan;Nowshehra;NA;NA;NA;3;Nowshera;0.0370370370370371;strong_fuzzy_candidate;fuzzy_review;3;Nowshera;;;;;;
+Pakistan;Peshawar;3;Peshawar;exact_unique;NA;NA;NA;NA;exact_unique;3;Peshawar;;;;;;
+Pakistan;Shangla;3;Shangla;exact_unique;NA;NA;NA;NA;exact_unique;3;Shangla;;;;;;
+Pakistan;Swabi;3;Swabi;exact_unique;NA;NA;NA;NA;exact_unique;3;Swabi;;;;;;
+Pakistan;Swat;3;Swat;exact_unique;NA;NA;NA;NA;exact_unique;3;Swat;;;;;;
+Pakistan;Tank;3;Tank;exact_unique;NA;NA;NA;NA;exact_unique;3;Tank;;;;;;
+Pakistan;Torghar;NA;NA;NA;3;Sanghar;0.285714285714286;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
+Pakistan;Upper Dir;NA;NA;NA;3;Buner;0.355555555555556;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
+Pakistan;Bajor;NA;NA;NA;3;Bajaur;0.177777777777778;review_needed;fuzzy_review;3;Bajaur;;;;;;
+Pakistan;Khyber;3;Khyber;exact_unique;NA;NA;NA;NA;exact_unique;3;Khyber;;;;;;
+Pakistan;Kuram;NA;NA;NA;3;Kurram;0.0555555555555556;strong_fuzzy_candidate;fuzzy_review;3;Kurram;;;;;;
+Pakistan;Mohmind;NA;NA;NA;3;Mohmand;0.0952380952380952;strong_fuzzy_candidate;fuzzy_review;3;Mohmand;;;;;;
+Pakistan;North Waziristan;NA;NA;NA;3;N. Waziristan;0.194444444444445;review_needed;fuzzy_review;3;N. Waziristan;;;;;;
+Pakistan;Orakzai;3;Orakzai;exact_unique;NA;NA;NA;NA;exact_unique;3;Orakzai;;;;;;
+Pakistan;South Waziristan;NA;NA;NA;3;S. Waziristan;0.208333333333333;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
+Pakistan;Awaran;3;Awaran;exact_unique;NA;NA;NA;NA;exact_unique;3;Awaran;;;;;;
+Pakistan;Barkhan;3;Barkhan;exact_unique;NA;NA;NA;NA;exact_unique;3;Barkhan;;;;;;
+Pakistan;Chaghi;NA;NA;NA;3;Chagai;0.111111111111111;review_needed;fuzzy_review;3;Chagai;;;;;;
+Pakistan;Dera Bugti;3;Dera Bugti;exact_unique;NA;NA;NA;NA;exact_unique;3;Dera Bugti;;;;;;
+Pakistan;Gwadar;3;Gwadar;exact_unique;NA;NA;NA;NA;exact_unique;3;Gwadar;;;;;;
+Pakistan;Harnai;NA;NA;NA;3;Kharan;0.177777777777778;review_needed;fuzzy_review;3;Kharan;;;;;;
+Pakistan;Jaffarabad;NA;NA;NA;3;Jafarabad;0.0333333333333334;strong_fuzzy_candidate;fuzzy_review;3;Jafarabad;;;;;;
+Pakistan;Jhal Magsi;3;Jhal Magsi;exact_unique;NA;NA;NA;NA;exact_unique;3;Jhal Magsi;;;;;;
+Pakistan;Kachhi (Bolan);NA;NA;NA;3;Karachi Central;0.253703703703704;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
+Pakistan;Kalat;3;Kalat;exact_unique;NA;NA;NA;NA;exact_unique;3;Kalat;;;;;;
+Pakistan;Kech (Turbat);NA;NA;NA;3;Kech;0.212121212121212;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
+Pakistan;Kharan;3;Kharan;exact_unique;NA;NA;NA;NA;exact_unique;3;Kharan;;;;;;
+Pakistan;Khuzdar;3;Khuzdar;exact_unique;NA;NA;NA;NA;exact_unique;3;Khuzdar;;;;;;
+Pakistan;Killa Abdullah;NA;NA;NA;3;Qilla Abdullah;0.0476190476190477;strong_fuzzy_candidate;fuzzy_review;3;Qilla Abdullah;;;;;;
+Pakistan;Killa Saifullah;NA;NA;NA;3;Qilla Saifullah;0.0444444444444445;strong_fuzzy_candidate;fuzzy_review;3;Qilla Saifullah;;;;;;
+Pakistan;Kohlu;NA;NA;NA;3;Kholu;0.0666666666666668;strong_fuzzy_candidate;fuzzy_review;3;Kholu;;;;;;
+Pakistan;Lasbela;3;Lasbela;exact_unique;NA;NA;NA;NA;exact_unique;3;Lasbela;;;;;;
+Pakistan;Lehri;NA;NA;NA;3;Vehari;0.177777777777778;review_needed;fuzzy_review;3;Vehari;;;;;;
+Pakistan;Loralai;3;Loralai;exact_unique;NA;NA;NA;NA;exact_unique;3;Loralai;;;;;;
+Pakistan;Mastung;3;Mastung;exact_unique;NA;NA;NA;NA;exact_unique;3;Mastung;;;;;;
+Pakistan;Musakhel;3;Musakhel;exact_unique;NA;NA;NA;NA;exact_unique;3;Musakhel;;;;;;
+Pakistan;Nasirabad;3;Nasirabad;exact_unique;NA;NA;NA;NA;exact_unique;3;Nasirabad;;;;;;
+Pakistan;Nushki;NA;NA;NA;3;Naushahro Firoz;0.277777777777778;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
+Pakistan;Panjgur;3;Panjgur;exact_unique;NA;NA;NA;NA;exact_unique;3;Panjgur;;;;;;
+Pakistan;Pishin;3;Pishin;exact_unique;NA;NA;NA;NA;exact_unique;3;Pishin;;;;;;
+Pakistan;Quetta;3;Quetta;exact_unique;NA;NA;NA;NA;exact_unique;3;Quetta;;;;;;
+Pakistan;Sheerani;NA;NA;NA;3;Nowshera;0.25;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
+Pakistan;Sibbi;NA;NA;NA;2;Sibi;0.0666666666666668;strong_fuzzy_candidate;fuzzy_review;2;Sibi;;;;;;
+Pakistan;Sibbi;NA;NA;NA;3;Sibi;0.0666666666666668;strong_fuzzy_candidate;fuzzy_review;3;Sibi;;;;;;
+Pakistan;SohbatPur;NA;NA;NA;3;Haripur;0.243386243386243;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
+Pakistan;Washuk;NA;NA;NA;3;Kasur;0.3;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
+Pakistan;Zhob;3;Zhob;exact_unique;NA;NA;NA;NA;exact_unique;3;Zhob;;;;;;
+Pakistan;Ziarat;3;Ziarat;exact_unique;NA;NA;NA;NA;exact_unique;3;Ziarat;;;;;;
+Samoa;Apia Urban Area;NA;NA;NA;2;Lefaga & Faleseela;0.316666666666667;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
+Samoa;North West Upolu;NA;NA;NA;2;Anoamaa West;0.326388888888889;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
+Samoa;Rest of Upolu;NA;NA;NA;2;Aleipata Itupa i Luga;0.397054334554335;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
+Samoa;Savaii;NA;NA;NA;1;Vaisigano;0.222222222222222;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
+Tunisia;DISTRICT TUNIS;NA;NA;NA;2;Sidi Hassine;0.337301587301587;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
+Tunisia;NORD EST;NA;NA;NA;2;RadËs;0.233333333333333;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
+Tunisia;NORD OUEST;NA;NA;NA;2;RadËs;0.266666666666667;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
+Tunisia;CENTRE EST;NA;NA;NA;2;Es Sers;0.328571428571429;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
+Tunisia;CENTRE OUEST;NA;NA;NA;2;Ben Arous;0.260582010582011;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
+Tunisia;SUD EST;NA;NA;NA;2;Sfax Ouest;0.261904761904762;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
+Tunisia;SUD OUEST;NA;NA;NA;2;Sfax Ouest;0.174074074074074;review_needed;fuzzy_review;2;Sfax Ouest;;;;;;
+Tuvalu;Nanumea;1;Nanumea;exact_unique;NA;NA;NA;NA;exact_unique;1;Nanumea;;;;;;
+Tuvalu;Nanumaga;NA;NA;NA;1;Nanumanga;0.0370370370370371;strong_fuzzy_candidate;fuzzy_review;1;Nanumanga;;;;;;
+Tuvalu;Niutao;1;Niutao;exact_unique;NA;NA;NA;NA;exact_unique;1;Niutao;;;;;;
+Tuvalu;Nui;1;Nui;exact_unique;NA;NA;NA;NA;exact_unique;1;Nui;;;;;;
+Tuvalu;Vaitupu;1;Vaitupu;exact_unique;NA;NA;NA;NA;exact_unique;1;Vaitupu;;;;;;
+Tuvalu;Nukufetau;1;Nukufetau;exact_unique;NA;NA;NA;NA;exact_unique;1;Nukufetau;;;;;;
+Tuvalu;Funafuti;1;Funafuti;exact_unique;NA;NA;NA;NA;exact_unique;1;Funafuti;;;;;;
+Vanuatu;TORBA;1;Torba;exact_unique;NA;NA;NA;NA;exact_unique;1;Torba;;;;;;
+Vanuatu;SANMA;1;Sanma;exact_unique;NA;NA;NA;NA;exact_unique;1;Sanma;;;;;;
+Vanuatu;PENAMA;1;Penama;exact_unique;NA;NA;NA;NA;exact_unique;1;Penama;;;;;;
+Vanuatu;MALAMPA;1;Malampa;exact_unique;NA;NA;NA;NA;exact_unique;1;Malampa;;;;;;
+Vanuatu;SHEFA;1;Shefa;exact_unique;NA;NA;NA;NA;exact_unique;1;Shefa;;;;;;
+Vanuatu;TAFEA;1;Tafea;exact_unique;NA;NA;NA;NA;exact_unique;1;Tafea;;;;;;
+Vietnam;RED RIVER DELTA;NA;NA;NA;3;IV;0.288888888888889;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
+Vietnam;NORTHERN MIDLANDS AND MOUNTAIN;NA;NA;NA;3;Nh?n An;0.303174603174603;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
+Vietnam;NORTH CENTRAL AND CENTRAL COASTAL;NA;NA;NA;3;N‡ Nh?n;0.31024531024531;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
+Vietnam;NORTH CENTRAL AND CENTRAL COASTAL;NA;NA;NA;3;Nh‚n La;0.31024531024531;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
+Vietnam;CENTRAL HIGHLANDS;NA;NA;NA;3;Canh Hi?n;0.212418300653595;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
+Vietnam;SOUTH EAST;NA;NA;NA;2;Tuy Ho‡;0.264285714285714;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
+Vietnam;MEKONG RIVER DELTA;NA;NA;NA;3;Long Tr? A;0.251851851851852;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
