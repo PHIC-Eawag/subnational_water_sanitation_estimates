@@ -10,23 +10,22 @@ library(surveytoolbox)
 library(survey)
 
 
-source("FunctionsForLabelingHHMICS.R")
-source("FunctionsForExtractingVariablesFromMICS.R")
+source("~/Documents/GitHub/mapping_sanitation_access_LMICs/functions/label_mics_variables.R")
+source("~/Documents/GitHub/mapping_sanitation_access_LMICs/functions/extract_mics_variables.R")
 
-PATH_TO_SURVEYS_old <- "~/switchdrive/Eawag/WorldBankProject/MICS_SurveysDrinkingWater/HH_surveys/HH_MICS_old"
-PATH_TO_SURVEYS_new <- "~/switchdrive/Eawag/WorldBankProject/MICS_SurveysDrinkingWater/HH_surveys/HH_MICS_new"
+PATH_TO_SURVEYS_old_SMDW <- "~/switchdrive/Eawag/WorldBankProject/HH_surveys/HH_survey_data/HH_MICS_old_SMDW"
+PATH_TO_SURVEYS_new_SMDW <- "~/switchdrive/Eawag/WorldBankProject/HH_surveys/HH_survey_data/HH_MICS_new_SMDW/"
+PATH_TO_SURVEYS_new_other <- "~/switchdrive/Eawag/WorldBankProject/HH_surveys/HH_survey_data/HH_MICS_new_other/"
 
-loadSurveys(PATH_TO_SURVEYS_old)
-loadSurveys(PATH_TO_SURVEYS_new)
+loadSurveys(PATH_TO_SURVEYS_old_SMDW)
+loadSurveys(PATH_TO_SURVEYS_new_SMDW)
+loadSurveys(PATH_TO_SURVEYS_new_other)
 
-#Creating Variable with country name (surveys used in Greenwood et al. 2024)
+#Creating Variable with country name (previously matched for Greenwood et al. 2024)
 hh_Algeria$country <- "Algeria"
 hh_Bangladesh$country <- "Bangladesh"
-hh_Benin$country <- "Benin"
 hh_CentralAfricanRepublic$country <- "Central African Republic"
 hh_Chad$country <- "Chad"
-hh_DominicanRepublic$country <- "Dominican Republic"
-hh_Fiji$country <- "Fiji"
 hh_Gambia$country <- "Gambia"
 hh_Georgia$country <- "Georgia"
 hh_Ghana$country <- "Ghana"
@@ -37,33 +36,36 @@ hh_Kiribati$country <- "Kiribati"
 hh_Kosovo$country <- "Kosovo"
 hh_Lesotho$country <- "Lesotho"
 hh_Madagascar$country <- "Madagascar"
-hh_Malawi$country <- "Malawi"
 hh_Mongolia$country <- "Mongolia"
-hh_Nepal$country <- "Nepal"
 hh_Nigeria$country <- "Nigeria"
 hh_PakistanPunjab$country <- "Pakistan Punjab"
 hh_Paraguay$country <- "Paraguay"
-hh_Samoa$country <- "Samoa" 
 hh_SaoTome$country <- "Sao Tome and Principe"
 hh_SierraLeone$country <- "Sierra Leone"
 hh_Suriname$country <- "Suriname"
 hh_Togo$country <- "Togo"
 hh_Tonga$country <- "Tonga"
-hh_VietNam$country <- "Vietnam"
 hh_Palestine$country <- "West Bank and Gaza"
 hh_Zimbabwe$country <- "Zimbabwe"
 
 #Creating Variable with country name (surveys not used in Greenwood et al. 2024)
 hh_Azerbaijan$country <- "Azerbaijan" 
+hh_Benin$country <- "Benin"
 hh_DRCongo$country <- "DR Congo"
+hh_DominicanRepublic$country <- "Dominican Republic"
+hh_Fiji$country <- "Fiji"
 hh_Eswatini$country <- "Eswatini"
 hh_Honduras$country <- "Honduras"
 hh_LaoPDR_2023$country <-"Lao PDR"
+hh_Malawi$country <- "Malawi"
+hh_Nepal$country <- "Nepal"
 hh_PakistanBalochistan$country <- "Pakistan Balochistan" 
 hh_PakistanKhyberPakhtunkhwa$country <- "Pakistan Khyber Pakhtunkhwa" 
+hh_Samoa$country <- "Samoa" 
 hh_Tunisia$country <- "Tunisia"
 hh_Tuvalu$country <- "Tuvalu" 
 hh_Vanuatu$country <- "Vanuatu"
+hh_VietNam$country <- "Vietnam"
 
 # extracting standard survey variables
 hh_Algeria_SMDW <- extractStandardSurveyVariables(hh_Algeria)
