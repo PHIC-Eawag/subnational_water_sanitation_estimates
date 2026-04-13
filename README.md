@@ -64,8 +64,22 @@ project/
     └── data_cleaning/
 
 ## Getting started
+## Setting up the project environment
 
-Create virtual environment
-Then run:
+This repository uses **`renv`** to manage R packages and **`venv`** to manage Python packages. 
+Using both helps keep the computational environment reproducible across users and systems.
 
-pip install -r requirements.txt
+After cloning the repository, open the project from the repository root in **Positron** or **RStudio**. 
+Restore the R environment with:
+
+renv::restore()
+
+
+Then create a Python virtual environment in the project directory:
+python -m venv .venv
+
+Activate the environment and install the required Python packages from the dependency file used in 
+this repository by running pip install -r requirements.txt.
+
+In Positron or RStudio, make sure the interpreter is set 
+to the project-specific Python environment and that R uses the restored renv library.
