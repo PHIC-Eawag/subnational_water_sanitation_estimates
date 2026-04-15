@@ -379,13 +379,22 @@ Pakistan;SohbatPur;NA;NA;NA;3;Haripur;0.243386243;weak_fuzzy_candidate;unmatched
 Pakistan;Washuk;NA;NA;NA;3;Kasur;0.3;weak_fuzzy_candidate;unmatched;NA;NA;;9;;;;
 Pakistan;Zhob;3;Zhob;exact_unique;NA;NA;NA;NA;exact_unique;3;Zhob;;9;;;;
 Pakistan;Ziarat;3;Ziarat;exact_unique;NA;NA;NA;NA;exact_unique;3;Ziarat;;9;;;;
-Samoa;Apia Urban Area;NA;NA;NA;2;Lefaga & Faleseela;0.316666667;weak_fuzzy_candidate;unmatched;NA;NA;checked;7;;;;
-Samoa;North West Upolu;NA;NA;NA;2;Anoamaa West;0.326388889;weak_fuzzy_candidate;unmatched;NA;NA;checked;7;"Apia Urban Area:
+Samoa; Upolu;NA;NA;NA;2;Aleipata Itupa i Luga;0.397054335;weak_fuzzy_candidate;unmatched;NA;NA;checked;7;"Apia Urban Area:
 North West Upolu: 
 Rest of Upolu: 
-Savaii: Gaga'emauga. Gagaifomauga. Vaisigano. Satupa'itea. Fa'asaleleaga. Palauli. ";;;
-Samoa;Rest of Upolu;NA;NA;NA;2;Aleipata Itupa i Luga;0.397054335;weak_fuzzy_candidate;unmatched;NA;NA;checked;7;;;;
-Samoa;Savaii;NA;NA;NA;1;Vaisigano;0.222222222;weak_fuzzy_candidate;unmatched;NA;NA;checked;7;;;;
+Upolu (Right main Island): Possibly merge as entire Region (Hence the three region_surveys ""North West Upolu"", ""Apia Urban Area"" and ""Rest of Upolu"" are all replaced by one survey region called ""Upolu). 
+In GADM Upolu is attainable by merging the following level 1 Provinces: 	Aiga-i-le-Tai, A'ana, 	Tuamasaga,  Va'a-o-Fonoti, Atua. 
+Note: Aiga-i-le-Tai includes the two small Islands to the west of Upolu, they have to be technically removed so only the main Island Upolu is covered in the shapefile. 
+
+Savaii Region (Western main island) in GADM attainable by merging level 1 provinces : Gaga'emauga. Gagaifomauga. Vaisigano. Satupa'itea. Fa'asaleleaga. Palauli. ";;;
+Samoa;Savaii;NA;NA;NA;1;Vaisigano;0.222222222;weak_fuzzy_candidate;unmatched;NA;NA;checked;7;"Apia Urban Area:
+North West Upolu: 
+Rest of Upolu: 
+Upolu (Right main Island): Possibly merge as entire Region (Hence the three region_surveys ""North West Upolu"", ""Apia Urban Area"" and ""Rest of Upolu"" are all replaced by one survey region called ""Upolu). 
+In GADM Upolu is attainable by merging the following level 1 Provinces: 	Aiga-i-le-Tai, A'ana, 	Tuamasaga,  Va'a-o-Fonoti, Atua. 
+Note: Aiga-i-le-Tai includes the two small Islands to the west of Upolu, they have to be technically removed so only the main Island Upolu is covered in the shapefile. 
+
+Savaii Region (Western main island) in GADM attainable by merging level 1 provinces : Gaga'emauga. Gagaifomauga. Vaisigano. Satupa'itea. Fa'asaleleaga. Palauli. ";;;
 Tunisia;DISTRICT TUNIS;NA;NA;NA;2;Sidi Hassine;0.337301587;weak_fuzzy_candidate;unmatched;NA;NA;checked;3;"Categorization is by WASH Regions and not first administrative unit. There are also official state classfiied regions, however they dont make the distinction between Tunis and the rest of the northern part of the country
 DISTRICT TUNIS: Tunis. Ariana. Ben Arous. Manouba
 NORD EST: Nabeul. Zaghouan. Bizerte
