@@ -1,41 +1,41 @@
 country_survey;region_survey;gadm_level;region_gadm;exact_status;fuzzy_gadm_level;fuzzy_region_gadm;dist;fuzzy_flag;final_status;matched_level;matched_name;Status;Case;Further Information;;;
-Azerbaijan;BAKU;NA;NA;NA;2;Bak?;0.166666667;review_needed;fuzzy_review;2;Bak?;checked;4;"Survey is by ""economic region"" not by official districts. Missing economic region ""East Zangezur"" not in Survey which was probably annexed in Second Nagorno-Karabakh War. links:
+Azerbaijan;BAKU;NA;NA;NA;2;Bak?;0.166666667;review_needed;fuzzy_review;2;Bak?;checked;7;"Survey is by ""economic region"" not by official districts. Missing economic region ""East Zangezur"" not in Survey which was probably annexed in Second Nagorno-Karabakh War. links:
 https://en.wikipedia.org/wiki/Second_Nagorno-Karabakh_War
 https://en.wikipedia.org/wiki/East_Zangezur_Economic_Region";;;
-Azerbaijan;NAKHCHIVAN AR;NA;NA;NA;1;Nakhchivan;0.076923077;strong_fuzzy_candidate;fuzzy_review;1;Nakhchivan;checked;4;"Survey is by ""economic region"" not by official districts. Missing economic region ""East Zangezur"" not in Survey which was probably annexed in Second Nagorno-Karabakh War. links:
+Azerbaijan;NAKHCHIVAN AR;NA;NA;NA;1;Nakhchivan;0.076923077;strong_fuzzy_candidate;fuzzy_review;1;Nakhchivan;checked;1;"Survey is by ""economic region"" not by official districts. Missing economic region ""East Zangezur"" not in Survey which was probably annexed in Second Nagorno-Karabakh War. links:
 https://en.wikipedia.org/wiki/Second_Nagorno-Karabakh_War
 https://en.wikipedia.org/wiki/East_Zangezur_Economic_Region";;;
-Azerbaijan;ABSHERON-KHIZI;NA;NA;NA;1;Absheron;0.142857143;review_needed;fuzzy_review;1;Absheron;checked;4;"Survey is by ""economic region"" not by official districts. Missing economic region ""East Zangezur"" not in Survey which was probably annexed in Second Nagorno-Karabakh War. links:
+Azerbaijan;ABSHERON-KHIZI;NA;NA;NA;1;Absheron;0.142857143;review_needed;fuzzy_review;1;Absheron;checked;7;"Survey is by ""economic region"" not by official districts. Missing economic region ""East Zangezur"" not in Survey which was probably annexed in Second Nagorno-Karabakh War. links:
 https://en.wikipedia.org/wiki/Second_Nagorno-Karabakh_War
 https://en.wikipedia.org/wiki/East_Zangezur_Economic_Region";;;
-Azerbaijan;DAGHLIG SHIRVAN;NA;NA;NA;1;Daglig-Shirvan;0.093650794;strong_fuzzy_candidate;fuzzy_review;1;Daglig-Shirvan;checked;4;"Survey is by ""economic region"" not by official districts. Missing economic region ""East Zangezur"" not in Survey which was probably annexed in Second Nagorno-Karabakh War. links:
+Azerbaijan;DAGHLIG SHIRVAN;NA;NA;NA;1;Daglig-Shirvan;0.093650794;strong_fuzzy_candidate;fuzzy_review;1;Daglig-Shirvan;checked;1;"Survey is by ""economic region"" not by official districts. Missing economic region ""East Zangezur"" not in Survey which was probably annexed in Second Nagorno-Karabakh War. links:
 https://en.wikipedia.org/wiki/Second_Nagorno-Karabakh_War
 https://en.wikipedia.org/wiki/East_Zangezur_Economic_Region";;;
-Azerbaijan;GANJA-DASHKASAN;NA;NA;NA;1;Ganja-Qazakh;0.2;weak_fuzzy_candidate;unmatched;NA;NA;checked;4;"Survey is by ""economic region"" not by official districts. Missing economic region ""East Zangezur"" not in Survey which was probably annexed in Second Nagorno-Karabakh War. links:
+Azerbaijan;GANJA-DASHKASAN;NA;NA;NA;1;Ganja-Qazakh;0.2;weak_fuzzy_candidate;unmatched;NA;NA;checked;7;"Survey is by ""economic region"" not by official districts. Missing economic region ""East Zangezur"" not in Survey which was probably annexed in Second Nagorno-Karabakh War. links:
 https://en.wikipedia.org/wiki/Second_Nagorno-Karabakh_War
 https://en.wikipedia.org/wiki/East_Zangezur_Economic_Region";;;
-Azerbaijan;KARABAKH;NA;NA;NA;1;Kalbajar-Lachin;0.290873016;weak_fuzzy_candidate;unmatched;NA;NA;checked;4;"Survey is by ""economic region"" not by official districts. Missing economic region ""East Zangezur"" not in Survey which was probably annexed in Second Nagorno-Karabakh War. links:
+Azerbaijan;KARABAKH;NA;NA;NA;1;Kalbajar-Lachin;0.290873016;weak_fuzzy_candidate;unmatched;NA;NA;checked;7;"Survey is by ""economic region"" not by official districts. Missing economic region ""East Zangezur"" not in Survey which was probably annexed in Second Nagorno-Karabakh War. links:
 https://en.wikipedia.org/wiki/Second_Nagorno-Karabakh_War
 https://en.wikipedia.org/wiki/East_Zangezur_Economic_Region";;;
-Azerbaijan;GAZAKH-TOVUZ;NA;NA;NA;2;Qazax;0.383333333;weak_fuzzy_candidate;unmatched;NA;NA;checked;4;"Survey is by ""economic region"" not by official districts. Missing economic region ""East Zangezur"" not in Survey which was probably annexed in Second Nagorno-Karabakh War. links:
+Azerbaijan;GAZAKH-TOVUZ;NA;NA;NA;2;Qazax;0.383333333;weak_fuzzy_candidate;unmatched;NA;NA;checked;7;"Survey is by ""economic region"" not by official districts. Missing economic region ""East Zangezur"" not in Survey which was probably annexed in Second Nagorno-Karabakh War. links:
 https://en.wikipedia.org/wiki/Second_Nagorno-Karabakh_War
 https://en.wikipedia.org/wiki/East_Zangezur_Economic_Region";;;
-Azerbaijan;GUBA-KHACHMAZ;NA;NA;NA;1;Quba-Khachmaz;0.051282051;strong_fuzzy_candidate;fuzzy_review;1;Quba-Khachmaz;checked;4;"Survey is by ""economic region"" not by official districts. Missing economic region ""East Zangezur"" not in Survey which was probably annexed in Second Nagorno-Karabakh War. links:
+Azerbaijan;GUBA-KHACHMAZ;NA;NA;NA;1;Quba-Khachmaz;0.051282051;strong_fuzzy_candidate;fuzzy_review;1;Quba-Khachmaz;checked;1;"Survey is by ""economic region"" not by official districts. Missing economic region ""East Zangezur"" not in Survey which was probably annexed in Second Nagorno-Karabakh War. links:
 https://en.wikipedia.org/wiki/Second_Nagorno-Karabakh_War
 https://en.wikipedia.org/wiki/East_Zangezur_Economic_Region";;;Note: In the case of exact matches regions might be missing and we wouldn^t notice it. Example Fiji
-Azerbaijan;LANKARAN-ASTARA;NA;NA;NA;1;Lankaran;0.155555556;review_needed;fuzzy_review;1;Lankaran;checked;4;"Survey is by ""economic region"" not by official districts. Missing economic region ""East Zangezur"" not in Survey which was probably annexed in Second Nagorno-Karabakh War. links:
+Azerbaijan;LANKARAN-ASTARA;NA;NA;NA;1;Lankaran;0.155555556;review_needed;fuzzy_review;1;Lankaran;checked;1;"Survey is by ""economic region"" not by official districts. Missing economic region ""East Zangezur"" not in Survey which was probably annexed in Second Nagorno-Karabakh War. links:
 https://en.wikipedia.org/wiki/Second_Nagorno-Karabakh_War
 https://en.wikipedia.org/wiki/East_Zangezur_Economic_Region";;;Note: Asarabaidjan would technically be first case 4 and secondary case 0 (depending on international law)
-Azerbaijan;CENTRAL ARAN;NA;NA;NA;2;Neftçala;0.251984127;weak_fuzzy_candidate;unmatched;NA;NA;checked;4;"Survey is by ""economic region"" not by official districts. Missing economic region ""East Zangezur"" not in Survey which was probably annexed in Second Nagorno-Karabakh War. links:
+Azerbaijan;CENTRAL ARAN;NA;NA;NA;2;Neftçala;0.251984127;weak_fuzzy_candidate;unmatched;NA;NA;checked;7;"Survey is by ""economic region"" not by official districts. Missing economic region ""East Zangezur"" not in Survey which was probably annexed in Second Nagorno-Karabakh War. links:
 https://en.wikipedia.org/wiki/Second_Nagorno-Karabakh_War
 https://en.wikipedia.org/wiki/East_Zangezur_Economic_Region";;;
-Azerbaijan;MIL-MUGHAN;NA;NA;NA;1;Daglig-Shirvan;0.338095238;weak_fuzzy_candidate;unmatched;NA;NA;checked;4;"Survey is by ""economic region"" not by official districts. Missing economic region ""East Zangezur"" not in Survey which was probably annexed in Second Nagorno-Karabakh War. links:
+Azerbaijan;MIL-MUGHAN;NA;NA;NA;1;Daglig-Shirvan;0.338095238;weak_fuzzy_candidate;unmatched;NA;NA;checked;7;"Survey is by ""economic region"" not by official districts. Missing economic region ""East Zangezur"" not in Survey which was probably annexed in Second Nagorno-Karabakh War. links:
 https://en.wikipedia.org/wiki/Second_Nagorno-Karabakh_War
 https://en.wikipedia.org/wiki/East_Zangezur_Economic_Region";;;
-Azerbaijan;SHAKI-ZAGATALA;NA;NA;NA;1;Shaki-Zaqatala;0.047619048;strong_fuzzy_candidate;fuzzy_review;1;Shaki-Zaqatala;checked;4;"Survey is by ""economic region"" not by official districts. Missing economic region ""East Zangezur"" not in Survey which was probably annexed in Second Nagorno-Karabakh War. links:
+Azerbaijan;SHAKI-ZAGATALA;NA;NA;NA;1;Shaki-Zaqatala;0.047619048;strong_fuzzy_candidate;fuzzy_review;1;Shaki-Zaqatala;checked;1;"Survey is by ""economic region"" not by official districts. Missing economic region ""East Zangezur"" not in Survey which was probably annexed in Second Nagorno-Karabakh War. links:
 https://en.wikipedia.org/wiki/Second_Nagorno-Karabakh_War
 https://en.wikipedia.org/wiki/East_Zangezur_Economic_Region";;;
-Azerbaijan;SHIRVAN-SALYAN;NA;NA;NA;2;Naftalan;0.329365079;weak_fuzzy_candidate;unmatched;NA;NA;checked;4;"Survey is by ""economic region"" not by official districts. Missing economic region ""East Zangezur"" not in Survey which was probably annexed in Second Nagorno-Karabakh War. links:
+Azerbaijan;SHIRVAN-SALYAN;NA;NA;NA;2;Naftalan;0.329365079;weak_fuzzy_candidate;unmatched;NA;NA;checked;7;"Survey is by ""economic region"" not by official districts. Missing economic region ""East Zangezur"" not in Survey which was probably annexed in Second Nagorno-Karabakh War. links:
 https://en.wikipedia.org/wiki/Second_Nagorno-Karabakh_War
 https://en.wikipedia.org/wiki/East_Zangezur_Economic_Region";;;Cases
 Benin;ALIBORI;1;Alibori;exact_unique;NA;NA;NA;NA;exact_unique;1;Alibori;checked;1;NA;;0;Correct classification but not all official areas of the country are considered in survey
@@ -46,8 +46,8 @@ Benin;COLLINES;1;Collines;exact_unique;NA;NA;NA;NA;exact_unique;1;Collines;check
 Benin;COUFFO;NA;NA;NA;1;Kouffo;0.111111111;review_needed;fuzzy_review;1;Kouffo;checked;1;NA;;5;Error coming from capital region and wider region having the same name (e.g. vientiane)
 Benin;DONGA;1;Donga;exact_unique;NA;NA;NA;NA;exact_unique;1;Donga;checked;1;NA;;6;matches other names associated to the country on a village, or city level
 Benin;LITTORAL;1;Littoral;exact_unique;NA;NA;NA;NA;exact_unique;1;Littoral;checked;1;NA;;7;Different set of subdivisions in survey than official administrative units (defined by a number of administrative level 2 units)
-Benin;MONO;1;Mono;exact_unique;NA;NA;NA;NA;exact_unique;1;Mono;checked;1;NA;;;
-Benin;OUEME;1;Ouémé;exact_unique;NA;NA;NA;NA;exact_unique;1;Ouémé;checked;1;NA;;;
+Benin;MONO;1;Mono;exact_unique;NA;NA;NA;NA;exact_unique;1;Mono;checked;1;NA;;8;Shapefile for Survey area not available in GADM 
+Benin;OUEME;1;Ouémé;exact_unique;NA;NA;NA;NA;exact_unique;1;Ouémé;checked;1;NA;;9;Shapefile for Survey Area partially available in GADM
 Benin;PLATEAU;1;Plateau;exact_unique;NA;NA;NA;NA;exact_unique;1;Plateau;checked;1;NA;;;
 Benin;ZOU;1;Zou;exact_unique;NA;NA;NA;NA;exact_unique;1;Zou;checked;1;NA;;;
 Democratic Republic of the Congo;Kinshasa;2;Kinshasa;exact_unique;NA;NA;NA;NA;exact_unique;2;Kinshasa;checked;1;NA;;;
@@ -308,7 +308,7 @@ Pakistan;Peshawar;3;Peshawar;exact_unique;NA;NA;NA;NA;exact_unique;3;Peshawar;;1
 Pakistan;Shangla;3;Shangla;exact_unique;NA;NA;NA;NA;exact_unique;3;Shangla;;1;;;;
 Pakistan;Swabi;3;Swabi;exact_unique;NA;NA;NA;NA;exact_unique;3;Swabi;;1;;;;
 Pakistan;Swat;3;Swat;exact_unique;NA;NA;NA;NA;exact_unique;3;Swat;;1;;;;
-Pakistan;Tank;3;Tank;exact_unique;NA;NA;NA;NA;exact_unique;3;Tank;;1;;;;
+Pakistan;Tank;3;Tank;exact_unique;NA;NA;NA;NA;s;3;Tank;;1;;;;
 Pakistan;Torghar;NA;NA;NA;3;Sanghar;0.285714286;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
 Pakistan;Upper Dir;NA;NA;NA;3;Buner;0.355555556;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
 Pakistan;Bajor;NA;NA;NA;3;Bajaur;0.177777778;review_needed;fuzzy_review;3;Bajaur;;;;;;
@@ -348,7 +348,7 @@ Pakistan;Sheerani;NA;NA;NA;3;Nowshera;0.25;weak_fuzzy_candidate;unmatched;NA;NA;
 Pakistan;Sibbi;NA;NA;NA;2;Sibi;0.066666667;strong_fuzzy_candidate;fuzzy_review;2;Sibi;;;;;;
 Pakistan;Sibbi;NA;NA;NA;3;Sibi;0.066666667;strong_fuzzy_candidate;fuzzy_review;3;Sibi;;;;;;
 Pakistan;SohbatPur;NA;NA;NA;3;Haripur;0.243386243;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
-Pakistan;Washuk;NA;NA;NA;3;Kasur;0.3;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
+Pakistan;Washuk;NA;NA;NA;3;Kasur;0.3;weak_fuzzy_candidate;unmatched;NA;NA;;9;;;;
 Pakistan;Zhob;3;Zhob;exact_unique;NA;NA;NA;NA;exact_unique;3;Zhob;;1;;;;
 Pakistan;Ziarat;3;Ziarat;exact_unique;NA;NA;NA;NA;exact_unique;3;Ziarat;;1;;;;
 Samoa;Apia Urban Area;NA;NA;NA;2;Lefaga & Faleseela;0.316666667;weak_fuzzy_candidate;unmatched;NA;NA;checked;7;;;;
