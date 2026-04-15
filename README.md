@@ -41,10 +41,9 @@ project/
 ├── scripts/
 │   └── 01_data_cleaning/
 │       ├── 01_compile_survey_data.R
-│       ├── 02_create_service_indicators.R
-│       ├── 03_describe_training_and_test_sets.R
-│       ├── 04_match_survey_regions_to_boundaries.R
-│       └── 05_sampling_geospatial_data.ipynb
+│       ├── 02_matching_survey_gadm_names.R
+│       ├── 03_sampling_geospatial_data.ipynb
+│       └── 04_create_service_indicators.R
 │
 │   ├── 02_feature_selection/
 │   ├── 03_model_training/
@@ -73,7 +72,6 @@ After cloning the repository, open the project from the repository root in **Pos
 Restore the R environment with:
 
 renv::restore()
-
 
 Then create a Python virtual environment in the project directory:
 python -m venv .venv
