@@ -107,16 +107,23 @@ config/local_*.yml
 # Project data
 # Raw and processed data stay local
 # =========================
+data/DHS_boundaries/*
+data/MICS_boundaries/*
+data/PakistanWFP2024Boundaries/*
 data/processed/*
 
 # Keep placeholder files
 !data/processed/.gitkeep
+!data/DHS_boundaries/.gitkeep
+!data/MICS_boundaries/.gitkeep
+!data/PakistanWFP2024Boundaries/.gitkeep
+
 
 # =========================
 # Outputs
 # =========================
-outputs/*
-!outputs/.gitkeep
+#outputs/*
+#!outputs/.gitkeep
 
 # =========================
 # Logs / temporary files
