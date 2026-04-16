@@ -12,7 +12,7 @@ Azerbaijan;NAKHCHIVAN AR;NA;NA;NA;1;Nakhchivan;0.076923077;strong_fuzzy_candidat
 https://en.wikipedia.org/wiki/Second_Nagorno-Karabakh_War
 https://en.wikipedia.org/wiki/East_Zangezur_Economic_Region";;;
 Azerbaijan;ABSHERON-KHIZI;NA;NA;NA;1;Absheron;0.142857143;review_needed;fuzzy_review;1;Absheron;checked;7;"Survey is by ""economic region"" not by official districts. Missing economic region ""East Zangezur"" not in Survey which was probably annexed in Second Nagorno-Karabakh War.
-In GADM Absheron-Khizi is a second layer district of ""Absheron""
+In GADM ""Absheron-Khiiz""  can be attained by merging the second layer districts ""Xiz?"",  ""Sumqay?t"" and ""Ab?eron"" of the first level province ""Absheron""
 
 https://en.wikipedia.org/wiki/Second_Nagorno-Karabakh_War
 https://en.wikipedia.org/wiki/East_Zangezur_Economic_Region";;;
@@ -20,7 +20,7 @@ Azerbaijan;DAGHLIG SHIRVAN;NA;NA;NA;1;Daglig-Shirvan;0.093650794;strong_fuzzy_ca
 https://en.wikipedia.org/wiki/Second_Nagorno-Karabakh_War
 https://en.wikipedia.org/wiki/East_Zangezur_Economic_Region";;;
 Azerbaijan;GANJA-DASHKASAN;NA;NA;NA;1;Ganja-Qazakh;0.2;weak_fuzzy_candidate;unmatched;NA;NA;checked;7;"Survey is by ""economic region"" not by official districts. Missing economic region ""East Zangezur"" not in Survey which was probably annexed in Second Nagorno-Karabakh War. links:
-In GADM GANJA-DASHKASAN, needs to be attained by merging ""SAMUX"", ""Ganca"", ""Goranboy"", ""Xanlar"", ""Daskesen"" and ""Naftalan"" which are second layer districts of ""Ganja Qazakh""
+In GADM GANJA-DASHKASAN, needs to be attained by merging ""Samux"", ""G?nc?"", ""Goranboy"", ""Xanlar"", ""Da?k?s?n"" and ""Naftalan"" which are second layer districts of first level province ""Ganja-Qazakh""
 
 https://en.wikipedia.org/wiki/Second_Nagorno-Karabakh_War
 https://en.wikipedia.org/wiki/East_Zangezur_Economic_Region";;;
@@ -28,14 +28,14 @@ Azerbaijan;KARABAKH;NA;NA;NA;1;Kalbajar-Lachin;0.290873016;weak_fuzzy_candidate;
 https://en.wikipedia.org/wiki/Second_Nagorno-Karabakh_War
 https://en.wikipedia.org/wiki/East_Zangezur_Economic_Region
 
-In GADM Karabakh can be attained by merging ""Yukhari-Karabakh"" (province level 1) with ""Berde"" and ""Agcebedi"" which are level 2 districts of the province ""Aran"". 
+In GADM ""Karabakh"" can be attained by merging ""Yukhari-Karabakh"" (province level 1) with ""B?rd?"" and ""A?cab?di"" which are level 2 districts of the level 1 province ""Aran"". 
 
 ";;;
 Azerbaijan;GAZAKH-TOVUZ;NA;NA;NA;2;Qazax;0.383333333;weak_fuzzy_candidate;unmatched;NA;NA;checked;7;"Survey is by ""economic region"" not by official districts. Missing economic region ""East Zangezur"" not in Survey which was probably annexed in Second Nagorno-Karabakh War. links:
 https://en.wikipedia.org/wiki/Second_Nagorno-Karabakh_War
 https://en.wikipedia.org/wiki/East_Zangezur_Economic_Region
 
-In GADM GAZAKH-TOVUZ, needs to be attained by merging ""Agstafa"", ""Qazax"", ""Tovuz"", ""Samkir"", ""Gedeboy"" which are second layer districts of ""Ganja Qazakh""";;;
+In GADM ""GAZAKH-TOVUZ""  needs to be attained by merging ""A?stafa"", ""Qazax"", ""Tovuz"", ""??mkir"", ""G?d?b?y"" which are second layer districts of ""Ganja Qazakh""";;;
 Azerbaijan;GUBA-KHACHMAZ;NA;NA;NA;1;Quba-Khachmaz;0.051282051;strong_fuzzy_candidate;fuzzy_review;1;Quba-Khachmaz;checked;1;"Survey is by ""economic region"" not by official districts. Missing economic region ""East Zangezur"" not in Survey which was probably annexed in Second Nagorno-Karabakh War. links:
 https://en.wikipedia.org/wiki/Second_Nagorno-Karabakh_War
 https://en.wikipedia.org/wiki/East_Zangezur_Economic_Region";;;Note: In the case of exact matches regions might be missing and we wouldn^t notice it. Example Fiji
@@ -44,13 +44,13 @@ https://en.wikipedia.org/wiki/Second_Nagorno-Karabakh_War
 https://en.wikipedia.org/wiki/East_Zangezur_Economic_Region";;;Note: Asarabaidjan would technically be first case 4 and secondary case 0 (depending on international law)
 Azerbaijan;CENTRAL ARAN;NA;NA;NA;2;Neftçala;0.251984127;weak_fuzzy_candidate;unmatched;NA;NA;checked;7;"Survey is by ""economic region"" not by official districts. Missing economic region ""East Zangezur"" not in Survey which was probably annexed in Second Nagorno-Karabakh War. 
 
-In GADM ""Central-Aran"" can be attained by merrging ""Mingecevir"", ""Yevlax"", ""Yevlax City"", ""Agdas"", ""Göycay"", ""Ucar"", ""Kürdemir"", ""Zerdab"". which are  second layer districts of Aran. 
+In GADM ""Central-Aran"" can be attained by merrging ""Ming?çevir"", ""Yevlax"", ""Yevlax City"", ""A?da?"", ""Göyçay"", ""Ucar"", ""Kürd?mir"", ""Z?rdab"". which are  second layer districts of first level province  ""Aran"". 
 
 https://en.wikipedia.org/wiki/Second_Nagorno-Karabakh_War
 https://en.wikipedia.org/wiki/East_Zangezur_Economic_Region";;;
 Azerbaijan;MIL-MUGHAN;NA;NA;NA;1;Daglig-Shirvan;0.338095238;weak_fuzzy_candidate;unmatched;NA;NA;checked;7;"Survey is by ""economic region"" not by official districts. Missing economic region ""East Zangezur"" not in Survey which was probably annexed in Second Nagorno-Karabakh War. 
 
-In GADM ""MIL-MUGHAN"" can be attained by merrging ""Sabirabad"", ""Eli Bayramli"", ""Imisli"", ""Saatli"", ""Beyleqan"", which are  second layer districts of Aran. 
+In GADM ""MIL-MUGHAN"" can be attained by merrging ""Sabirabad"", ""Saatl?"", ""?mi?li"", ""Saatli"", ""Beyl?qan"", which are  second layer districts of Aran. 
 
 https://en.wikipedia.org/wiki/Second_Nagorno-Karabakh_War
 https://en.wikipedia.org/wiki/East_Zangezur_Economic_Region";;;
@@ -62,7 +62,7 @@ https://en.wikipedia.org/wiki/Second_Nagorno-Karabakh_War
 https://en.wikipedia.org/wiki/East_Zangezur_Economic_Region";;;
 Azerbaijan;SHIRVAN-SALYAN;NA;NA;NA;2;Naftalan;0.329365079;weak_fuzzy_candidate;unmatched;NA;NA;checked;7;"Survey is by ""economic region"" not by official districts. Missing economic region ""East Zangezur"" not in Survey which was probably annexed in Second Nagorno-Karabakh War.
 
-In GADM ""SHIRVAN-SALYAN"" can be attained by merrging ""Haciqabul"", ""Eli Bayramli"", ""Salyan"", ""Bilesuvar"", ""Neftcala"", which are  second layer districts of Aran. 
+In GADM ""SHIRVAN-SALYAN"" can be attained by merrging ""Hac?qabul"", ""?li Bayraml?"", ""Salyan"", ""Bil?suvar"", ""Neftçala"", which are  second layer districts of Aran. 
 
 https://en.wikipedia.org/wiki/Second_Nagorno-Karabakh_War
 https://en.wikipedia.org/wiki/East_Zangezur_Economic_Region";;;Cases
@@ -379,13 +379,22 @@ Pakistan;SohbatPur;NA;NA;NA;3;Haripur;0.243386243;weak_fuzzy_candidate;unmatched
 Pakistan;Washuk;NA;NA;NA;3;Kasur;0.3;weak_fuzzy_candidate;unmatched;NA;NA;;9;;;;
 Pakistan;Zhob;3;Zhob;exact_unique;NA;NA;NA;NA;exact_unique;3;Zhob;;9;;;;
 Pakistan;Ziarat;3;Ziarat;exact_unique;NA;NA;NA;NA;exact_unique;3;Ziarat;;9;;;;
-Samoa;Apia Urban Area;NA;NA;NA;2;Lefaga & Faleseela;0.316666667;weak_fuzzy_candidate;unmatched;NA;NA;checked;7;;;;
-Samoa;North West Upolu;NA;NA;NA;2;Anoamaa West;0.326388889;weak_fuzzy_candidate;unmatched;NA;NA;checked;7;"Apia Urban Area:
+Samoa; Upolu;NA;NA;NA;2;Aleipata Itupa i Luga;0.397054335;weak_fuzzy_candidate;unmatched;NA;NA;checked;7;"Apia Urban Area:
 North West Upolu: 
 Rest of Upolu: 
-Savaii: Gaga'emauga. Gagaifomauga. Vaisigano. Satupa'itea. Fa'asaleleaga. Palauli. ";;;
-Samoa;Rest of Upolu;NA;NA;NA;2;Aleipata Itupa i Luga;0.397054335;weak_fuzzy_candidate;unmatched;NA;NA;checked;7;;;;
-Samoa;Savaii;NA;NA;NA;1;Vaisigano;0.222222222;weak_fuzzy_candidate;unmatched;NA;NA;checked;7;;;;
+Upolu (Right main Island): Possibly merge as entire Region (Hence the three region_surveys ""North West Upolu"", ""Apia Urban Area"" and ""Rest of Upolu"" are all replaced by one survey region called ""Upolu). 
+In GADM Upolu is attainable by merging the following level 1 Provinces: 	Aiga-i-le-Tai, A'ana, 	Tuamasaga,  Va'a-o-Fonoti, Atua. 
+Note: Aiga-i-le-Tai includes the two small Islands to the west of Upolu, they have to be technically removed so only the main Island Upolu is covered in the shapefile. 
+
+Savaii Region (Western main island) in GADM attainable by merging level 1 provinces : Gaga'emauga. Gagaifomauga. Vaisigano. Satupa'itea. Fa'asaleleaga. Palauli. ";;;
+Samoa;Savaii;NA;NA;NA;1;Vaisigano;0.222222222;weak_fuzzy_candidate;unmatched;NA;NA;checked;7;"Apia Urban Area:
+North West Upolu: 
+Rest of Upolu: 
+Upolu (Right main Island): Possibly merge as entire Region (Hence the three region_surveys ""North West Upolu"", ""Apia Urban Area"" and ""Rest of Upolu"" are all replaced by one survey region called ""Upolu). 
+In GADM Upolu is attainable by merging the following level 1 Provinces: 	Aiga-i-le-Tai, A'ana, 	Tuamasaga,  Va'a-o-Fonoti, Atua. 
+Note: Aiga-i-le-Tai includes the two small Islands to the west of Upolu, they have to be technically removed so only the main Island Upolu is covered in the shapefile. 
+
+Savaii Region (Western main island) in GADM attainable by merging level 1 provinces : Gaga'emauga. Gagaifomauga. Vaisigano. Satupa'itea. Fa'asaleleaga. Palauli. ";;;
 Tunisia;DISTRICT TUNIS;NA;NA;NA;2;Sidi Hassine;0.337301587;weak_fuzzy_candidate;unmatched;NA;NA;checked;3;"Categorization is by WASH Regions and not first administrative unit. There are also official state classfiied regions, however they dont make the distinction between Tunis and the rest of the northern part of the country
 DISTRICT TUNIS: Tunis. Ariana. Ben Arous. Manouba
 NORD EST: Nabeul. Zaghouan. Bizerte
