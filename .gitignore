@@ -116,7 +116,7 @@ data/processed/*
 !data/processed/.gitkeep
 !data/DHS_boundaries/.gitkeep
 !data/MICS_boundaries/.gitkeep
-!data/PakistanWFP2024Boundaries/.gitkeep
+!data/PakistanWFP2024Boundaries_2/.gitkeep
 
 
 # =========================
