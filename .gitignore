@@ -109,7 +109,7 @@ config/local_*.yml
 # =========================
 data/DHS_boundaries/*
 data/MICS_boundaries/*
-data/PakistanWFP2024Boundaries/*
+data/PakistanWFP2024Boundaries_2/*
 data/processed/*
 
 # Keep placeholder files
