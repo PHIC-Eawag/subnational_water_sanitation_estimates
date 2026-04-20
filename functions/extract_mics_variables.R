@@ -17,9 +17,66 @@ extractStandardSurveyVariables <- function(hh_Survey){
   return(hh_Survey)
 }
 
+
+extractOtherStandardSurveyVariables <- function(hh_Survey){
+  hh_Survey <- hh_Survey %>% 
+    select("HH1","HH2","WS7", "WS3","HH7","HH6","WS1","HH48","WS4","WS2","hhweight", "WS8", "country", "HH5D", "HH5M", "HH5Y", "PSU", "stratum") 
+  return(hh_Survey)
+}
+
+extractOtherStandardSurveyVariables_withoutHH6 <- function(hh_Survey){
+  hh_Survey <- hh_Survey %>% 
+    select("HH1","HH2","WS7", "WS3","HH7","WS1","HH48","WS4","WS2","hhweight", "WS8", "country", "HH5D", "HH5M", "HH5Y", "PSU", "stratum") 
+  hh_Survey$HH6 <- NA
+  return(hh_Survey)
+}
+
+extractOtherStandardSurveyVariables_withoutWS7WS8WS3 <- function(hh_Survey){
+  hh_Survey <- hh_Survey %>% 
+    select("HH1","HH2","HH6","HH7","WS1","HH48","WS4","WS2","hhweight", "country", "HH5D", "HH5M", "HH5Y", "PSU", "stratum") 
+  hh_Survey$WS7 <- NA
+  hh_Survey$WS8 <- NA
+  hh_Survey$WS3 <- NA
+  return(hh_Survey)
+}
+
+
+extractOtherStandardSurveyVariables_withoutWS8 <- function(hh_Survey){
+  hh_Survey <- hh_Survey %>% 
+    select("HH1","HH2","WS7", "WS3","HH6","HH7","WS1","HH48","WS4","WS2","hhweight", "country", "HH5D", "HH5M", "HH5Y", "PSU", "stratum") 
+  hh_Survey$WS8 <- NA
+  return(hh_Survey)
+}
+
+extractOtherStandardSurveyVariables_withoutWS8_psu <- function(hh_Survey){
+  hh_Survey <- hh_Survey %>% 
+    select("HH1","HH2","WS7", "WS3","HH6","HH7","WS1","HH48","WS4","WS2","hhweight", "country", "HH5D", "HH5M", "HH5Y", "psu", "stratum") 
+  hh_Survey$WS8 <- NA
+  return(hh_Survey)
+}
+
+extractOtherStandardSurveyVariables_withoutHH6_psu <- function(hh_Survey){
+  hh_Survey <- hh_Survey %>% 
+    select("HH1","HH2","WS7", "WS3","HH7","WS1","HH48","WS4","WS2","hhweight", "WS8", "country", "HH5D", "HH5M", "HH5Y", "psu", "stratum") 
+  hh_Survey$HH6 <- NA
+  return(hh_Survey)
+}
+
+extractOtherStandardSurveyVariables_psu <- function(hh_Survey){
+  hh_Survey <- hh_Survey %>% 
+    select("HH1","HH2","WS7", "WS3","HH7","HH6","WS1","HH48","WS4","WS2","hhweight", "WS8", "country", "HH5D", "HH5M", "HH5Y", "psu", "stratum") 
+  return(hh_Survey)
+}
+
+extractOtherStandardSurveyVariables_Stratum <- function(hh_Survey){
+  hh_Survey <- hh_Survey %>% 
+    select("HH1","HH2","WS7", "WS3","HH7","HH6","WS1","HH48","WS4","WS2","hhweight", "WS8", "country", "HH5D", "HH5M", "HH5Y", "PSU", "Stratum") 
+  return(hh_Survey)
+}
+
 extractStandardSurveyVariables_psu_lowercaps <- function(hh_Survey){
   hh_Survey <- hh_Survey %>% 
-    select("HH1","HH2","WQ27", "WS7", "WS3","HH7","HH6","WS1","HH48","WS4","wqsweight","WS2","hhweight", "WS8", "country", "HH5D", "HH5M", "HH5Y", "psu", "stratum") 
+    select("HH1","HH2","WQ27", "WS7", "WS3","HH6","HH7","WS1","HH48","WS4","wqsweight","WS2","hhweight", "WS8", "country", "HH5D", "HH5M", "HH5Y", "psu", "stratum") 
   names(hh_Survey)[names(hh_Survey) == 'psu'] <- 'PSU'
   return(hh_Survey)
 }
@@ -45,6 +102,7 @@ extractVariablesFromBangladesh <- function(hh_Bangladesh){
   names(hh_Bangladesh_SMDW)[names(hh_Bangladesh_SMDW) == 'wqeweight'] <- 'wqsweight'
   return(hh_Bangladesh_SMDW)
 }
+
 
 extractVariablesFromCongo <- function(hh_Congo){
   hh_Congo_SMDW <- hh_Congo %>%  
