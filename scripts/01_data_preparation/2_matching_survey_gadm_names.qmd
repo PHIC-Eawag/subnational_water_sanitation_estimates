@@ -41,7 +41,7 @@ clean_key <- function(x) {
 This chunk reads the survey file, keeps the region and country variables needed for matching, standardises names, and creates cleaned matching keys.
 
 ```{r}
-survey_raw <- fread('switchdrive/Eawag/WorldBankProject/HH_surveys/HH_survey_data/df_SMDW_MICS_water_quality_new.csv', encoding = "UTF-8") %>%
+survey_raw <- fread('/Users/esthergreenwood/switchdrive/Eawag/WorldBankProject/HH_surveys/HH_survey_data/df_other_MICS.csv', encoding = "UTF-8") %>%
   transmute(
     region_survey  = HH7_region,
     country_survey = country
@@ -94,7 +94,7 @@ survey <- survey_raw %>%
 Reshapes administrative names from levels 1 to 4 into long format so they can be matched consistently.
 
 ```{r}
-GADM_regions <- read.csv("Documents/GitHub/mapping-safe-drinking-water-use-LMICs/2_Data_cleaning/2_EO_matching_names_and_combining_files/all_regions_GADM.csv", encoding = "UTF-8")
+GADM_regions <- read.csv("/Users/esthergreenwood/switchdrive/Eawag/WorldBankProject/regions/all_regions_GADM.csv", encoding = "UTF-8")
 
 gadm_long <- GADM_regions %>%
   select(NAME_0, NAME_1, NAME_2, NAME_3, NAME_4) %>%
@@ -125,7 +125,7 @@ exact_matches <- survey %>%
 exact_matches
 ```
 
-### 7. Retain the best exact match 
+### 7. Retain the best exact match
 
 Some survey regions may match more than one GADM level. This chunk keeps the deepest matching level and flags cases where more than one exact candidate remains.
 
@@ -185,7 +185,7 @@ fuzzy_all <- bind_rows(lapply(sort(unique(unmatched_after_exact$country_survey))
 }))
 ```
 
-### 10. Retain the best fuzzy candidate 
+### 10. Retain the best fuzzy candidate
 
 Here we keep the closest fuzzy match for each unmatched survey region and assigns a simple review flag based on the distance score.
 
@@ -268,13 +268,13 @@ unmatched_regions <- final_match_status %>%
 unmatched_regions
 ```
 
-### 14. Optional export of outputs
+### 14. Export of outputs
 
-If needed, the outputs can be written to file for later review.
+The outputs can be written to file for later review.
 
 ```{r}
-# write.csv(final_match_status, "final_match_status.csv", row.names = FALSE, fileEncoding = "UTF-8")
-# write.csv(unmatched_regions, "unmatched_regions.csv", row.names = FALSE, fileEncoding = "UTF-8")
-# write.csv(fuzzy_best, "fuzzy_best.csv", row.names = FALSE, fileEncoding = "UTF-8")
-# write.csv(survey_name_variants, "survey_name_variants.csv", row.names = FALSE, fileEncoding = "UTF-8")
+write.csv(final_match_status, "final_match_status_otherMICS.csv", row.names = FALSE, fileEncoding = "UTF-8")
+#write.csv(unmatched_regions, "unmatched_regions.csv", row.names = FALSE, fileEncoding = "UTF-8")
+#write.csv(fuzzy_best, "fuzzy_best.csv", row.names = FALSE, fileEncoding = "UTF-8")
+#write.csv(survey_name_variants, "survey_name_variants.csv", row.names = FALSE, fileEncoding = "UTF-8")
 ```
