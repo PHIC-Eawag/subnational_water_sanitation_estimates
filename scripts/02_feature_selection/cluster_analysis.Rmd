@@ -1,0 +1,248 @@
+---
+title: "cluster_analysis"
+output: html_document
+---
+
+```{r}
+library(data.table)
+library(factoextra)
+library(tidyverse)
+library(Hmisc)
+library(readr)
+library(dplyr)
+library(tibble)
+
+```
+```{r}
+features_pred_df <- read_csv("/Users/esthergreenwood/Documents/GitHub/mapping_sanitation_access_LMICs/outputs/03_sampled_features/worldbank_sampled_pred.csv")
+
+print(names(features_pred_df))
+```
+
+## Pre-selected environmental varibales
+
+We pre-elected 117 variables based on their relevance for modelling access to infrastructure and urban services as well as anthropogenic, hydrogeologic, climatic, topographic and biogeographic indicators used to model safely managed drinking water services (Greenwood et al., 2024). 
+
+```{r}
+bandNames <- c(
+  "CGIAR_Aridity_Index",
+  "CGIAR_PET",
+  "CHELSA_BIO_Annual_Mean_Temperature",
+  "CHELSA_BIO_Annual_Precipitation",
+  "CHELSA_BIO_Precipitation_Seasonality",
+  "CHELSA_BIO_Precipitation_of_Coldest_Quarter",
+  "CHELSA_BIO_Precipitation_of_Driest_Month",
+  "CHELSA_BIO_Precipitation_of_Driest_Quarter",
+  "CHELSA_BIO_Precipitation_of_Warmest_Quarter",
+  "CHELSA_BIO_Precipitation_of_Wettest_Month",
+  "CHELSA_BIO_Precipitation_of_Wettest_Quarter",
+  "CHELSA_BIO_Temperature_Annual_Range",
+  "CHELSA_BIO_Temperature_Seasonality",
+  "CIFOR_TropicalPeatlandExtent",
+  "CSP_Global_Human_Modification",
+  "ConsensusLandCoverClass_Barren",
+  "ConsensusLandCoverClass_Cultivated_and_Managed_Vegetation",
+  "ConsensusLandCoverClass_Deciduous_Broadleaf_Trees",
+  "ConsensusLandCoverClass_Evergreen_Broadleaf_Trees",
+  "ConsensusLandCoverClass_Evergreen_Deciduous_Needleleaf_Trees",
+  "ConsensusLandCoverClass_Herbaceous_Vegetation",
+  "ConsensusLandCoverClass_Mixed_Other_Trees",
+  "ConsensusLandCoverClass_Open_Water",
+  "ConsensusLandCoverClass_Regularly_Flooded_Vegetation",
+  "ConsensusLandCoverClass_Shrubs",
+  "ConsensusLandCoverClass_Snow_Ice",
+  "ConsensusLandCoverClass_Urban_Builtup",
+  "ConsensusLandCover_Human_Development_Percentage",
+  "CrowtherLab_Tree_Density",
+  "EarthEnvCloudCover_CloudForestPrediction",
+  "EarthEnvTexture_CoOfVar_EVI",
+  "EarthEnvTexture_Contrast_EVI",
+  "EarthEnvTexture_Correlation_EVI",
+  "EarthEnvTexture_Dissimilarity_EVI",
+  "EarthEnvTexture_Entropy_EVI",
+  "EarthEnvTexture_Evenness_EVI",
+  "EarthEnvTexture_Homogeneity_EVI",
+  "EarthEnvTexture_Maximum_EVI",
+  "EarthEnvTexture_Range_EVI",
+  "EarthEnvTexture_Shannon_Index",
+  "EarthEnvTexture_Simpson_Index",
+  "EarthEnvTexture_Std_EVI",
+  "EarthEnvTexture_Uniformity_EVI",
+  "EarthEnvTexture_Variance_EVI",
+  "EarthEnvTopoMed_1stOrderPartialDerivEW",
+  "EarthEnvTopoMed_1stOrderPartialDerivNS",
+  "EarthEnvTopoMed_Eastness",
+  "EarthEnvTopoMed_Elevation",
+  "EarthEnvTopoMed_Roughness",
+  "EarthEnvTopoMed_Slope",
+  "EarthEnvTopoMed_TerrainRuggednessIndex",
+  "EarthEnvTopoMed_TopoPositionIndex",
+  "EsaCci_BurntAreasProbability",
+  "FanEtAl_Depth_to_Water_Table_AnnualMean",
+  "FanEtAl_Depth_to_Water_Table_AnnualSD",
+  "GHS_Population_Density",
+  "GPWv4_Population_Density",
+  "GiriEtAl_MangrovesExtent",
+  "GLW3_RuminantsDistribution_downsampled10km",
+  "MODIS_EVI",
+  "MODIS_NDVI",
+  "MODIS_NPP",
+  "PelletierEtAl_SoilAndSedimentaryDepositThicknesses",
+  "SG_Absolute_depth_to_bedrock",
+  "SG_Bulk_density_015cm",
+  "SG_Depth_to_bedrock",
+  "SG_H2O_Capacity_015cm",
+  "SG_Saturated_H2O_Content_015cm",
+  "TootchiEtAl_WetlandsRegularlyFlooded",
+  "WCS_Human_Footprint_2009",
+  "map_friction",
+
+  # sampled for specific year
+  "chirps_annual_precipitation",
+  "era5_temperature_2m",
+  "ghsl_built_surface",
+  "ghsl_population",
+  "ghsl_population_sum",
+  "ghsl_urban_frac",
+  "jrc_building_height",
+  "modis_evi",
+  "modis_ndvi",
+  "runoff_max_annualmax",
+  "runoff_min_annualmin",
+  "temperature_2m_max_annualmax",
+  "viirs_average"
+  #"worldpop_sum"
+)
+
+length(bandNames)
+```
+```{r}
+samples_lmics_df <- features_pred_df %>% select(all_of(bandNames))
+#%>%
+  #na.omit()
+
+samples_lmics_df <- samples_lmics_df %>% mutate(across(all_of(bandNames), as.numeric))
+
+# Returns the names of columns with zero variance
+constant_cols <- names(samples_lmics_df)[sapply(samples_lmics_df, function(x) length(unique(x)) <= 1)]
+print(constant_cols)
+
+```
+
+
+## Hierarchical cluster analysis. Here we cluster into 24, 39, 51, 73 and 91 groups. Later we select only one feature from each group.
+```{r}
+
+library(ClustOfVar)
+
+
+# Convert to a standard data frame and only include the numeric columns
+hclust <- hclustvar(X.quanti = as.data.frame(samples_lmics_df[, bandNames]))
+plot(hclust,type="index")
+
+  
+
+```
+
+
+```{r}
+set.seed(123)
+
+k_values <- c(5,9,13,15,27,40, 50, 60)
+
+for (k in k_values) {
+  set.seed(123) 
+  
+  message(paste("Processing k =", k, "..."))
+  
+  # 1. Perform the cut
+  cuttree <- cutreevar(hclust, k = k)
+  
+  # 2. Open PDF
+  pdf_filename <- paste0("dendrogram_k", k, ".pdf")
+  pdf(pdf_filename, width = 20, height = 12) 
+  
+  # Use tryCatch to ensure dev.off() runs even if plotting fails
+  tryCatch({
+    # 3. Generate the Plot 
+    plot(hclust, main = paste("Clusters:", k), cex = 0.5)
+    
+    # 4. Draw boxes
+    # We use 'which' to ensure it draws correctly for every specific k
+    rect.hclust(hclust, k = k, border = "red") 
+    
+  }, error = function(e) {
+    message(paste("Plotting failed for k =", k, ":", e$message))
+  })
+  
+  # 5. ALWAYS close the PDF device
+  dev.off()
+  
+  # 6. Save data frame
+  df <- cuttree$cluster %>% 
+    as.data.frame() %>% 
+    rename(cluster = 1) %>% 
+    rownames_to_column("variable") %>% 
+    arrange(cluster)
+  
+  assign(paste0("df_clusters_k", k), df)
+}
+
+```
+
+```{r}
+  set.seed(123) 
+# Create a list to store the representative features for each k
+selected_features_summary <- list()
+
+for (k in k_values) {
+    set.seed(123) 
+  
+  # 1. Access the loadings for this specific k
+  # (Requires the 'cuttree' object from your previous loop)
+  cuttree_temp <- cutreevar(hclust, k = k)
+  loadings <- cuttree_temp$var
+  
+  # 2. Find the variable with the highest squared loading in each cluster
+  reps <- sapply(loadings, function(cluster_df) {
+    rownames(cluster_df)[which.max(cluster_df[, 1])]
+  })
+  
+  # 3. Create a clean data frame of the results
+  rep_df <- data.frame(
+    cluster = seq_along(reps),
+    representative_variable = reps,
+    stringsAsFactors = FALSE
+  )
+  
+  # 4. Save the result to your environment
+  assign(paste0("reps_k", k), rep_df)
+  selected_features_summary[[paste0("k", k)]] <- reps
+  
+  message(paste("Representative variables selected for k =", k))
+}
+
+# Example: To see the features selected for k=13, run:
+# print(reps_k13)
+
+
+```
+
+```{r}
+for (k in k_values) {
+  
+  # Get the representative variables for this k
+  # Using the data frame created in the previous step
+  rep_data <- get(paste0("reps_k", k))
+  
+  #  Define the filename
+  csv_filename <- paste0("representative_variables_k", k, ".csv")
+  
+  #  Write to CSV
+  # row.names = FALSE ensures you don't get an extra index column
+  write.csv(rep_data, file = csv_filename, row.names = FALSE)
+  
+  message(paste("CSV file created:", csv_filename))
+}
+```
+
