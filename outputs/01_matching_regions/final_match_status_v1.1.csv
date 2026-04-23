@@ -266,7 +266,7 @@ Honduras;DISTRITO CENTRAL;2;Distrito Central;exact_unique;NA;NA;NA;NA;exact_uniq
 Honduras;FRANCISCO MORAZAN;1;Francisco Morazán;exact_unique;NA;NA;NA;NA;exact_unique;1;Francisco Morazán;checked;1;NA;;;
 Honduras;SAN PEDRO SULA;2;San Pedro Sula;exact_unique;NA;NA;NA;NA;exact_unique;2;San Pedro Sula;checked;1;NA;;;
 Honduras;CORTES;1;Cortés;exact_unique;NA;NA;NA;NA;exact_unique;1;Cortés;checked;1;NA;;;
-Laos;VIENTIANE CAPITAL;NA;NA;NA;1;Vientiane;0.156862745;review_needed;fuzzy_review;1;Vientiane;checked;5;"Correct match in GADM ""Vientiane [prefecture]""";;;
+Laos;VIENTIANE CAPITAL;NA;NA;NA;1;Vientiane;0.156862745;review_needed;fuzzy_review;1;Vientiane Prefecture;checked;5;"Correct match in GADM ""Vientiane [prefecture]""";;;
 Laos;PHONGSALY;2;Phongsaly;exact_unique;NA;NA;NA;NA;exact_unique;2;Phongsaly;checked;1;NA;;;
 Laos;LUANGNAMTHA;NA;NA;NA;1;Louang Namtha;0.051282051;strong_fuzzy_candidate;fuzzy_review;1;Louang Namtha;checked;1;NA;;;
 Laos;OUDOMXAY;NA;NA;NA;1;Oudômxai;0.083333333;strong_fuzzy_candidate;fuzzy_review;1;Oudômxai;checked;1;NA;;;
@@ -492,11 +492,10 @@ Vanuatu;PENAMA;1;Penama;exact_unique;NA;NA;NA;NA;exact_unique;1;Penama;checked;1
 Vanuatu;MALAMPA;1;Malampa;exact_unique;NA;NA;NA;NA;exact_unique;1;Malampa;checked;1;;;;
 Vanuatu;SHEFA;1;Shefa;exact_unique;NA;NA;NA;NA;exact_unique;1;Shefa;checked;1;;;;
 Vanuatu;TAFEA;1;Tafea;exact_unique;NA;NA;NA;NA;exact_unique;1;Tafea;checked;1;;;;
-Vietnam;RED RIVER DELTA;NA;NA;NA;3;IV;0.288888889;weak_fuzzy_candidate;unmatched;NA;NA;;3;Check Vietnam Excel in Teams;;;
-Vietnam;NORTHERN MIDLANDS AND MOUNTAIN;NA;NA;NA;3;Nh?n An;0.303174603;weak_fuzzy_candidate;unmatched;NA;NA;;3;Check Vietnam Excel in Teams;;;
-Vietnam;NORTH CENTRAL AND CENTRAL COASTAL;NA;NA;NA;3;Nà Nh?n;0.31024531;weak_fuzzy_candidate;unmatched;NA;NA;;3;Check Vietnam Excel in Teams;;;
-Vietnam;NORTH CENTRAL AND CENTRAL COASTAL;NA;NA;NA;3;Nhân La;0.31024531;weak_fuzzy_candidate;unmatched;NA;NA;;3;Check Vietnam Excel in Teams;;;
-Vietnam;CENTRAL HIGHLANDS;NA;NA;NA;3;Canh Hi?n;0.212418301;weak_fuzzy_candidate;unmatched;NA;NA;;3;Check Vietnam Excel in Teams;;;
-Vietnam;SOUTH EAST;NA;NA;NA;2;Tuy Hoà;0.264285714;weak_fuzzy_candidate;unmatched;NA;NA;;3;Check Vietnam Excel in Teams;;;
-Vietnam;MEKONG RIVER DELTA;NA;NA;NA;3;Long Tr? A;0.251851852;weak_fuzzy_candidate;unmatched;NA;NA;;3;Check Vietnam Excel in Teams;;;
-;;;;;;;;;;;;;;;;;
+Vietnam;RED RIVER DELTA;NA;NA;NA;3;IV;0.288888889;weak_fuzzy_candidate;unmatched;NA;NA;checked;3;Check Vietnam Excel in Teams;;;
+Vietnam;NORTHERN MIDLANDS AND MOUNTAIN;NA;NA;NA;3;Nh?n An;0.303174603;weak_fuzzy_candidate;unmatched;NA;NA;checked;3;Check Vietnam Excel in Teams;;;
+Vietnam;NORTH CENTRAL AND CENTRAL COASTAL;NA;NA;NA;3;Nà Nh?n;0.31024531;weak_fuzzy_candidate;unmatched;NA;NA;checked;3;Check Vietnam Excel in Teams;;;
+Vietnam;NORTH CENTRAL AND CENTRAL COASTAL;NA;NA;NA;3;Nhân La;0.31024531;weak_fuzzy_candidate;unmatched;NA;NA;checked;3;Check Vietnam Excel in Teams;;;
+Vietnam;CENTRAL HIGHLANDS;NA;NA;NA;3;Canh Hi?n;0.212418301;weak_fuzzy_candidate;unmatched;NA;NA;checked;3;Check Vietnam Excel in Teams;;;
+Vietnam;SOUTH EAST;NA;NA;NA;2;Tuy Hoà;0.264285714;weak_fuzzy_candidate;unmatched;NA;NA;checked;3;Check Vietnam Excel in Teams;;;
+Vietnam;MEKONG RIVER DELTA;NA;NA;NA;3;Long Tr? A;0.251851852;weak_fuzzy_candidate;unmatched;NA;NA;checked;3;Check Vietnam Excel in Teams;;;
