@@ -1,39 +1,38 @@
 ﻿Column1;region_survey;gadm_level;region_gadm;exact_status;fuzzy_gadm_level;fuzzy_region_gadm;dist;fuzzy_flag;final_status;matched_level;matched_name;Status;Case;Column15;Column16;;
-Afghanistan;KABUL;1;Kabul;exact_unique;NA;NA;NA;NA;exact_unique;1;Kabul;;;;;;
-Afghanistan;KAPISA;1;Kapisa;exact_unique;NA;NA;NA;NA;exact_unique;1;Kapisa;;;;;;
-Afghanistan;PARWAN;1;Parwan;exact_unique;NA;NA;NA;NA;exact_unique;1;Parwan;;;;;;
-Afghanistan;MAIDAN WARDAK;NA;NA;NA;2;Anar Dara;0.227742165242165;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
-Afghanistan;LOGAR;1;Logar;exact_unique;NA;NA;NA;NA;exact_unique;1;Logar;;;;;;Cases
-Afghanistan;NANGARHAR;1;Nangarhar;exact_unique;NA;NA;NA;NA;exact_unique;1;Nangarhar;;;;;0;Correct classification but not all official areas of the country are considered in survey
-Afghanistan;LAGHMAN;1;Laghman;exact_unique;NA;NA;NA;NA;exact_unique;1;Laghman;;;;;1;Correct classification
-Afghanistan;PANJSHER;2;Panjsher;exact_unique;NA;NA;NA;NA;exact_unique;2;Panjsher;;;;;2;country name was changed since release of GADM data
-Afghanistan;BAGHLAN;1;Baghlan;exact_unique;NA;NA;NA;NA;exact_unique;1;Baghlan;;;;;3;Different set of subdivisions in survey than official administrative units (defined by a number of administrative level 1 units)
-Afghanistan;BAMYAN;1;Bamyan;exact_unique;NA;NA;NA;NA;exact_unique;1;Bamyan;;;;;4;Different set of subdivisions in survey than official administrative level units (not defined by a number of administrative units)
-Afghanistan;GHAZNI;2;Ghazni;exact_unique;NA;NA;NA;NA;exact_unique;2;Ghazni;;;;;5;Error coming from capital region and wider region having the same name (e.g. vientiane)
-Afghanistan;PAKTIKA;1;Paktika;exact_unique;NA;NA;NA;NA;exact_unique;1;Paktika;;;;;6;matches other names associated to the country on a village, or city level
-Afghanistan;PAKTYA;1;Paktya;exact_unique;NA;NA;NA;NA;exact_unique;1;Paktya;;;;;7;Different set of subdivisions in survey than official administrative units (defined by a number of administrative level 2 units)
-Afghanistan;KHOST;1;Khost;exact_unique;NA;NA;NA;NA;exact_unique;1;Khost;;;;;8;Shapefile for Survey area not available in GADM 
-Afghanistan;KUNARHA;NA;NA;NA;1;Kunar;0.0952380952380952;strong_fuzzy_candidate;fuzzy_review;1;Kunar;;;;;9;Shapefile for Survey Area partially available in GADM
-Afghanistan;NOORISTAN;NA;NA;NA;1;Nuristan;0.115740740740741;review_needed;fuzzy_review;1;Nuristan;;;;;;
-Afghanistan;NOORISTAN;NA;NA;NA;2;Nuristan;0.115740740740741;review_needed;fuzzy_review;2;Nuristan;;;;;;
-Afghanistan;BADAKHSHAN;1;Badakhshan;exact_unique;NA;NA;NA;NA;exact_unique;1;Badakhshan;;;;;;
-Afghanistan;TAKHAR;1;Takhar;exact_unique;NA;NA;NA;NA;exact_unique;1;Takhar;;;;;;
-Afghanistan;KUNDUZ;2;Kunduz;exact_unique;NA;NA;NA;NA;exact_unique;2;Kunduz;;;;;;
-Afghanistan;SAMANGAN;1;Samangan;exact_unique;NA;NA;NA;NA;exact_unique;1;Samangan;;;;;;
-Afghanistan;BALKH;2;Balkh;exact_unique;NA;NA;NA;NA;exact_unique;2;Balkh;;;;;;
-Afghanistan;SAR-E-PUL;NA;NA;NA;1;Sari Pul;0.115740740740741;review_needed;fuzzy_review;1;Sari Pul;;;;;;
-Afghanistan;GHOR;1;Ghor;exact_unique;NA;NA;NA;NA;exact_unique;1;Ghor;;;;;;
-Afghanistan;DAYKUNDI;1;Daykundi;exact_unique;NA;NA;NA;NA;exact_unique;1;Daykundi;;;;;;
-Afghanistan;UROZGAN;NA;NA;NA;1;Uruzgan;0.0952380952380952;strong_fuzzy_candidate;fuzzy_review;1;Uruzgan;;;;;;
-Afghanistan;ZABUL;1;Zabul;exact_unique;NA;NA;NA;NA;exact_unique;1;Zabul;;;;;;
-Afghanistan;KANDAHAR;1;Kandahar;exact_unique;NA;NA;NA;NA;exact_unique;1;Kandahar;;;;;;
-Afghanistan;JAWZJAN;1;Jawzjan;exact_unique;NA;NA;NA;NA;exact_unique;1;Jawzjan;;;;;;
-Afghanistan;FARYAB;1;Faryab;exact_unique;NA;NA;NA;NA;exact_unique;1;Faryab;;;;;;
-Afghanistan;HELMAND;NA;NA;NA;1;Hilmand;0.0952380952380952;strong_fuzzy_candidate;fuzzy_review;1;Hilmand;;;;;;
-Afghanistan;BADGHIS;1;Badghis;exact_unique;NA;NA;NA;NA;exact_unique;1;Badghis;;;;;;
-Afghanistan;HERAT;NA;NA;NA;1;Hirat;0.133333333333333;review_needed;fuzzy_review;1;Hirat;;;;;;
-Afghanistan;FARAH;1;Farah;exact_unique;NA;NA;NA;NA;exact_unique;1;Farah;;;;;;
-Afghanistan;NIMROZ;1;Nimroz;exact_unique;NA;NA;NA;NA;exact_unique;1;Nimroz;;;;;;
+Afghanistan;KABUL;1;Kabul;exact_unique;NA;NA;NA;NA;exact_unique;1;Kabul;checked;1;;;;
+Afghanistan;KAPISA;1;Kapisa;exact_unique;NA;NA;NA;NA;exact_unique;1;Kapisa;checked;1;;;;
+Afghanistan;PARWAN;1;Parwan;exact_unique;NA;NA;NA;NA;exact_unique;1;Parwan;checked;1;;;;
+Afghanistan;MAIDAN WARDAK;NA;NA;NA;2;Anar Dara;0.227742165242165;weak_fuzzy_candidate;unmatched;NA;Wardak;checked;5;;;;
+Afghanistan;LOGAR;1;Logar;exact_unique;NA;NA;NA;NA;exact_unique;1;Logar;checked;1;;;;Cases
+Afghanistan;NANGARHAR;1;Nangarhar;exact_unique;NA;NA;NA;NA;exact_unique;1;Nangarhar;checked;1;;;0;Correct classification but not all official areas of the country are considered in survey
+Afghanistan;LAGHMAN;1;Laghman;exact_unique;NA;NA;NA;NA;exact_unique;1;Laghman;checked;1;;;1;Correct classification
+Afghanistan;PANJSHER;2;Panjsher;exact_unique;NA;NA;NA;NA;exact_unique;2;Panjsher;checked;1;;;2;country name was changed since release of GADM data
+Afghanistan;BAGHLAN;1;Baghlan;exact_unique;NA;NA;NA;NA;exact_unique;1;Baghlan;checked;1;;;3;Different set of subdivisions in survey than official administrative units (defined by a number of administrative level 1 units)
+Afghanistan;BAMYAN;1;Bamyan;exact_unique;NA;NA;NA;NA;exact_unique;1;Bamyan;checked;1;;;4;Different set of subdivisions in survey than official administrative level units (not defined by a number of administrative units)
+Afghanistan;GHAZNI;2;Ghazni;exact_unique;NA;NA;NA;NA;exact_unique;2;Ghazni;checked;1;;;5;Error coming from capital region and wider region having the same name (e.g. vientiane)
+Afghanistan;PAKTIKA;1;Paktika;exact_unique;NA;NA;NA;NA;exact_unique;1;Paktika;checked;1;;;6;matches other names associated to the country on a village, or city level
+Afghanistan;PAKTYA;1;Paktya;exact_unique;NA;NA;NA;NA;exact_unique;1;Paktya;checked;1;;;7;Different set of subdivisions in survey than official administrative units (defined by a number of administrative level 2 units)
+Afghanistan;KHOST;1;Khost;exact_unique;NA;NA;NA;NA;exact_unique;1;Khost;checked;1;;;8;Shapefile for Survey area not available in GADM 
+Afghanistan;KUNARHA;NA;NA;NA;1;Kunar;0.0952380952380952;strong_fuzzy_candidate;fuzzy_review;1;Kunar;checked;1;;;9;Shapefile for Survey Area partially available in GADM
+Afghanistan;NOORISTAN;NA;NA;NA;1;Nuristan;0.115740740740741;review_needed;fuzzy_review;1;Nuristan;checked;1;;;;
+Afghanistan;BADAKHSHAN;1;Badakhshan;exact_unique;NA;NA;NA;NA;exact_unique;1;Badakhshan;checked;1;;;;
+Afghanistan;TAKHAR;1;Takhar;exact_unique;NA;NA;NA;NA;exact_unique;1;Takhar;checked;1;;;;
+Afghanistan;KUNDUZ;2;Kunduz;exact_unique;NA;NA;NA;NA;exact_unique;2;Kunduz;checked;1;;;;
+Afghanistan;SAMANGAN;1;Samangan;exact_unique;NA;NA;NA;NA;exact_unique;1;Samangan;checked;1;;;;
+Afghanistan;BALKH;2;Balkh;exact_unique;NA;NA;NA;NA;exact_unique;2;Balkh;checked;1;;;;
+Afghanistan;SAR-E-PUL;NA;NA;NA;1;Sari Pul;0.115740740740741;review_needed;fuzzy_review;1;Sari Pul;checked;1;;;;
+Afghanistan;GHOR;1;Ghor;exact_unique;NA;NA;NA;NA;exact_unique;1;Ghor;checked;1;;;;
+Afghanistan;DAYKUNDI;1;Daykundi;exact_unique;NA;NA;NA;NA;exact_unique;1;Daykundi;checked;1;;;;
+Afghanistan;UROZGAN;NA;NA;NA;1;Uruzgan;0.0952380952380952;strong_fuzzy_candidate;fuzzy_review;1;Uruzgan;checked;1;;;;
+Afghanistan;ZABUL;1;Zabul;exact_unique;NA;NA;NA;NA;exact_unique;1;Zabul;checked;1;;;;
+Afghanistan;KANDAHAR;1;Kandahar;exact_unique;NA;NA;NA;NA;exact_unique;1;Kandahar;checked;1;;;;
+Afghanistan;JAWZJAN;1;Jawzjan;exact_unique;NA;NA;NA;NA;exact_unique;1;Jawzjan;checked;1;;;;
+Afghanistan;FARYAB;1;Faryab;exact_unique;NA;NA;NA;NA;exact_unique;1;Faryab;checked;1;;;;
+Afghanistan;HELMAND;NA;NA;NA;1;Hilmand;0.0952380952380952;strong_fuzzy_candidate;fuzzy_review;1;Hilmand;checked;1;;;;
+Afghanistan;BADGHIS;1;Badghis;exact_unique;NA;NA;NA;NA;exact_unique;1;Badghis;checked;1;;;;
+Afghanistan;HERAT;NA;NA;NA;1;Hirat;0.133333333333333;review_needed;fuzzy_review;1;Hirat;checked;1;;;;
+Afghanistan;FARAH;1;Farah;exact_unique;NA;NA;NA;NA;exact_unique;1;Farah;checked;1;;;;
+Afghanistan;NIMROZ;1;Nimroz;exact_unique;NA;NA;NA;NA;exact_unique;1;Nimroz;checked;1;;;;
 Argentina;CIUDAD Y PARTIDOS DE BUENOS AIRES;NA;NA;NA;1;Ciudad de Buenos Aires;0.224747474747475;weak_fuzzy_candidate;unmatched;NA;NA;checked;3;"Greater Buenos Aires (GBA)
 Buenos Aires province
 Cuyo: San Juan, San Luis, Mendoza
@@ -147,7 +146,6 @@ Jamaica;CLARENDON;1;Clarendon;exact_unique;NA;NA;NA;NA;exact_unique;1;Clarendon;
 Kazakhstan;ABAY;NA;NA;NA;2;Abayskiy;0.166666666666667;review_needed;fuzzy_review;2;Abayskiy;;;;;;
 Kazakhstan;AKMOLA;NA;NA;NA;1;Aqmola;0.111111111111111;review_needed;fuzzy_review;1;Aqmola;;;;;;
 Kazakhstan;AKTOBE;NA;NA;NA;1;Aqtöbe;0.111111111111111;review_needed;fuzzy_review;1;Aqtöbe;;;;;;
-Kazakhstan;AKTOBE;NA;NA;NA;2;Aqtobe;0.111111111111111;review_needed;fuzzy_review;2;Aqtobe;;;;;;
 Kazakhstan;ALMATY;1;Almaty;exact_unique;NA;NA;NA;NA;exact_unique;1;Almaty;;;;;;
 Kazakhstan;ATYRAU;2;Atyrau;exact_unique;NA;NA;NA;NA;exact_unique;2;Atyrau;;;;;;
 Kazakhstan;WEST KAZAKHSTAN;1;West Kazakhstan;exact_unique;NA;NA;NA;NA;exact_unique;1;West Kazakhstan;;;;;;
@@ -155,8 +153,6 @@ Kazakhstan;ZHAMBYL;1;Zhambyl;exact_unique;NA;NA;NA;NA;exact_unique;1;Zhambyl;;;;
 Kazakhstan;ZHETYSU;NA;NA;NA;2;Shetskiy;0.286904761904762;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
 Kazakhstan;KARAGANDA;NA;NA;NA;1;Qaraghandy;0.174074074074074;review_needed;fuzzy_review;1;Qaraghandy;;;;;;
 Kazakhstan;KOSTANAY;NA;NA;NA;1;Qostanay;0.0833333333333334;strong_fuzzy_candidate;fuzzy_review;1;Qostanay;;;;;;
-Kazakhstan;KOSTANAY;NA;NA;NA;2;Qostanay;0.0833333333333334;strong_fuzzy_candidate;fuzzy_review;2;Qostanay;;;;;;
-Kazakhstan;KYZYLORDA;NA;NA;NA;1;Qyzylorda;0.0740740740740742;strong_fuzzy_candidate;fuzzy_review;1;Qyzylorda;;;;;;
 Kazakhstan;KYZYLORDA;NA;NA;NA;2;Qyzylorda;0.0740740740740742;strong_fuzzy_candidate;fuzzy_review;2;Qyzylorda;;;;;;
 Kazakhstan;MANGYSTAU;NA;NA;NA;1;Mangghystau;0.0606060606060606;strong_fuzzy_candidate;fuzzy_review;1;Mangghystau;;;;;;
 Kazakhstan;PAVLODAR;1;Pavlodar;exact_unique;NA;NA;NA;NA;exact_unique;1;Pavlodar;;;;;;
