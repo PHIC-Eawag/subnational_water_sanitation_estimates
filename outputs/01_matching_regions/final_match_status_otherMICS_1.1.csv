@@ -33,7 +33,14 @@ Afghanistan;BADGHIS;1;Badghis;exact_unique;NA;NA;NA;NA;exact_unique;1;Badghis;ch
 Afghanistan;HERAT;NA;NA;NA;1;Hirat;0.133333333;review_needed;fuzzy_review;1;Hirat;checked;1;;;;
 Afghanistan;FARAH;1;Farah;exact_unique;NA;NA;NA;NA;exact_unique;1;Farah;checked;1;;;;
 Afghanistan;NIMROZ;1;Nimroz;exact_unique;NA;NA;NA;NA;exact_unique;1;Nimroz;checked;1;;;;
-Argentina;CIUDAD Y PARTIDOS DE BUENOS AIRES;NA;NA;NA;1;Ciudad de Buenos Aires;0.224747474747475;weak_fuzzy_candidate;unmatched;NA;NA;;;;;;
+Argentina;CIUDAD Y PARTIDOS DE BUENOS AIRES;NA;NA;NA;1;Ciudad de Buenos Aires;0.224747475;weak_fuzzy_candidate;unmatched;NA;NA;;;"CIUDAD Y PARTIDOS DE BUENOS AIRES : Ciudad de Buenos Aires
+RESTO PROVINCIA DE BUENOS AIRES: 	Buenos Aires
+NEA: Formosa, Chaco, Corrientes, Misiones
+NOA: Jujuy, Salta, Santiago del Estero, Tucuman, Catamarca, La Rioja,
+PAMPEANA: La Pampa, Córdoba, Santa Fe, Entre Rios
+PATAGÓNICA: Neuquén, Santa Cruz, Tierra del Fuego, Chubut, Río Negro
+
+https://mics.ipums.org/mics-action/variables/GEO1_AR#comparability_section";;;
 Argentina;RESTO PROVINCIA DE BUENOS AIRES;NA;NA;NA;2;San Antonio de Areco;0.330525687;weak_fuzzy_candidate;unmatched;NA;NA;checked;3;"Greater Buenos Aires (GBA)
 Buenos Aires province
 Cuyo: San Juan, San Luis, Mendoza
@@ -91,7 +98,7 @@ https://mics.ipums.org/mics-action/variables/GEO1_AR#comparability_section";;;
 Belarus;BREST;2;Brest;exact_unique;NA;NA;NA;NA;exact_unique;2;Brest;checked;1;;;;
 Belarus;VITEBSK;NA;NA;NA;1;Vitsyebsk;0.145502646;review_needed;fuzzy_review;1;Vitsyebsk;checked;1;;;;
 Belarus;GOMEL;NA;NA;NA;2;Homyel';0.177777778;review_needed;fuzzy_review;2;Homyel';checked;1;;;;
-Belarus;GRODNO;NA;NA;NA;1;Hrodna;0.222222222;weak_fuzzy_candidate;unmatched;NA;NA;checked;1;;;;
+Belarus;GRODNO;NA;NA;NA;1;Hrodna;0.222222222;weak_fuzzy_candidate;unmatched;NA;Hrodna;checked;10;;;;
 Belarus;MINSK CITY;NA;NA;NA;2;Minsk;0.166666667;review_needed;fuzzy_review;2;Minsk;;?;"In Survey, Minsk region and City are separated, whereas in GADM; they are not. In GADM, there is a ""Minsk""  as well on the level two. ";;;
 Belarus;MINSK;2;Minsk;exact_unique;NA;NA;NA;NA;exact_unique;2;Minsk;;?;"In Survey, Minsk region and City are separated, whereas in GADM; they are not. In GADM, there is a ""Minsk""  as well on the level two. ";;;
 Belarus;MOGILEV;NA;NA;NA;1;Mahilyow;0.398809524;weak_fuzzy_candidate;unmatched;NA;Mahilyow;checked;1;;;;
@@ -297,7 +304,7 @@ Nauru;ANABAR;1;Anabar;exact_unique;NA;NA;NA;NA;exact_unique;1;Anabar;checked;1;;
 Nauru;IJUW;1;Ijuw;exact_unique;NA;NA;NA;NA;exact_unique;1;Ijuw;checked;1;;;;
 Nauru;ANIBARE;1;Anibare;exact_unique;NA;NA;NA;NA;exact_unique;1;Anibare;checked;1;;;;
 Nauru;MENENG;1;Meneng;exact_unique;NA;NA;NA;NA;exact_unique;1;Meneng;checked;1;;;;
-Nauru;LOCATION;NA;NA;NA;1;Anetan;0.375;weak_fuzzy_candidate;unmatched;NA;NA;checked;8;"Use HDX dataset ""https://data.humdata.org/dataset/cod-ab-pak""";;;
+Nauru;LOCATION;NA;NA;NA;1;Anetan;0.375;weak_fuzzy_candidate;unmatched;NA;NA;checked;8;probably error in MICS data;;;
 Pakistan Sindh;Badin;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;8;"Use HDX dataset ""https://data.humdata.org/dataset/cod-ab-pak""";;;
 Pakistan Sindh;Dadu;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;8;"Use HDX dataset ""https://data.humdata.org/dataset/cod-ab-pak""";;;
 Pakistan Sindh;Ghotki;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;8;"Use HDX dataset ""https://data.humdata.org/dataset/cod-ab-pak""";;;
@@ -339,10 +346,10 @@ Republic of North Macedonia;SKOPJE;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;
 Serbia;BELGRADE;NA;NA;NA;2;Bosilegrad;0.189285714;review_needed;fuzzy_review;2;Bosilegrad;checked;3;"https://en.wikipedia.org/wiki/Statistical_regions_of_Serbia
 
 
-Vojvodina Region: Severno-Bački, Severno-Banatski, Zapadno-Bački, Srednje-Banatski, Južno-Bački, Južno-Banatski, Sremski
-Belgrade Region: Grad Beograd
-Šumadija and Western Serbia Region: Mačvanski, Kolubarski, Šumadijski, Pomoravski, Moravički, Zlatiborski, Rasinski, Raški
-Southern and Eastern Serbia Region: Braničevski, Podunavski, Borski, Zaječarski, Nišavski, Toplički, Pirotski, Jablanički, Pčinjski";;;
+VOJVODINA: Severno-Bački, Severno-Banatski, Zapadno-Bački, Srednje-Banatski, Južno-Bački, Južno-Banatski, Sremski
+BELGRADE: Grad Beograd
+SUMADIJA AND WESTERN SERBIA: Mačvanski, Kolubarski, Šumadijski, Pomoravski, Moravički, Zlatiborski, Rasinski, Raški
+SOUTHERN AND EASTERN SERBIA: Braničevski, Podunavski, Borski, Zaječarski, Nišavski, Toplički, Pirotski, Jablanički, Pčinjski";;;
 Serbia;VOJVODINA;NA;NA;NA;2;Voždovac;0.25;weak_fuzzy_candidate;unmatched;NA;NA;checked;3;"https://en.wikipedia.org/wiki/Statistical_regions_of_Serbia
 
 
@@ -397,11 +404,11 @@ Northeast: Nakhon Ratchasima, Buriram, Surin, Sisaket, Ubon Ratchathani, Yasotho
 South: Nakhon Si Thammarat, Krabi, Phangnga, Phuket, Surat Thani, Ranong, Chumphon, Songkhla, Satun, Trang, Phatthalung, Pattani, Yala, Narathiwat";;;
 Trinidad and Tobago;North-West RHA;NA;NA;NA;1;Port of Spain;0.368131868;weak_fuzzy_candidate;unmatched;NA;NA;checked;3;"List of regions of Trinidad and Tobago by Human Development Index - Wikipedia
 
-Central (Chaguanas, Couva-Tabaquite-Talbaro)
-North West (Arima, Diego Mártin, Port of Spain, San Juan-Laventille, Tunanpuna-Piarco)
-South West (Penal-Debe, Point Fortin, Princes Town, San Fernando, Siparia)
-Tobago
-East (Sangre-Grande, Mayaro-Río Claro)";;;
+North-Central RHA (Chaguanas, Couva-Tabaquite-Talbaro)
+North-West RHA (Arima, Diego Mártin, Port of Spain, San Juan-Laventille, Tunanpuna-Piarco)
+South-West RHA (Penal-Debe, Point Fortin, Princes Town, San Fernando, Siparia)
+Tobago (Tobago)
+Eastern RHA (Sangre-Grande, Mayaro-Río Claro)";;;
 Trinidad and Tobago;North-Central RHA;NA;NA;NA;1;Port of Spain;0.397543633;weak_fuzzy_candidate;unmatched;NA;NA;checked;3;"List of regions of Trinidad and Tobago by Human Development Index - Wikipedia
 
 Central (Chaguanas, Couva-Tabaquite-Talbaro)
@@ -446,14 +453,14 @@ Uzbekistan;NAVOI REGION;NA;NA;NA;1;Navoi;0.194444444;review_needed;fuzzy_review;
 Uzbekistan;NAMANGAN REGION;NA;NA;NA;1;Namangan;0.155555556;review_needed;fuzzy_review;1;Namangan;checked;1;;;;
 Uzbekistan;SAMARKAND REGION;NA;NA;NA;1;Samarkand;0.145833333;review_needed;fuzzy_review;1;Samarkand;checked;1;;;;
 Uzbekistan;SURKHANDARYA REGION;NA;NA;NA;1;Surkhandarya;0.122807018;review_needed;fuzzy_review;1;Surkhandarya;checked;1;;;;
-Uzbekistan;SYRDARYA REGION;NA;NA;NA;1;Sirdaryo;0.338492063;weak_fuzzy_candidate;unmatched;NA;NA;checked;1;;;;
+Uzbekistan;SYRDARYA REGION;NA;NA;NA;1;Sirdaryo;0.338492063;weak_fuzzy_candidate;unmatched;NA;Sirdaryo;checked;10;;;;
 Uzbekistan;TASHKENT REGION;NA;NA;NA;1;Tashkent;0.155555556;review_needed;fuzzy_review;1;Tashkent;checked;1;;;;
-Uzbekistan;FERGANA REGION;NA;NA;NA;1;Ferghana;0.208333333;weak_fuzzy_candidate;unmatched;NA;NA;checked;1;;;;
+Uzbekistan;FERGANA REGION;NA;NA;NA;1;Ferghana;0.208333333;weak_fuzzy_candidate;unmatched;NA;Ferghana;checked;10;;;;
 Uzbekistan;KHOREZM REGION;NA;NA;NA;1;Khorezm;0.166666667;review_needed;fuzzy_review;1;Khorezm;checked;1;;;;
 Uzbekistan;TASHKENT CITY;2;Tashkent City;exact_unique;NA;NA;NA;NA;exact_unique;2;Tashkent City;checked;1;;;;
 Yemen;Ibb;2;Ibb;exact_unique;NA;NA;NA;NA;exact_unique;2;Ibb;checked;1;;;;
 Yemen;Abyan;1;Abyan;exact_unique;NA;NA;NA;NA;exact_unique;1;Abyan;checked;1;;;;
-Yemen;Sana'a City;NA;NA;NA;2;Al Mukalla City;0.230976431;weak_fuzzy_candidate;unmatched;NA;Amanat Al Asimah;checked;2;;;;
+Yemen;Sana'a City;NA;NA;NA;2;Al Mukalla City;0.230976431;weak_fuzzy_candidate;unmatched;NA;Amanat Al Asimah;checked;10;;;;
 Yemen;Al Bayda;2;Al Bayda;exact_unique;NA;NA;NA;NA;exact_unique;2;Al Bayda;checked;1;;;;
 Yemen;Taizz;NA;NA;NA;1;Ta`izz;0.055555556;strong_fuzzy_candidate;fuzzy_review;1;Ta`izz;checked;1;;;;
 Yemen;Al Jawf;1;Al Jawf;exact_unique;NA;NA;NA;NA;exact_unique;1;Al Jawf;checked;1;;;;
