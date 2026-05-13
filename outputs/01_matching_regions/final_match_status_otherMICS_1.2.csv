@@ -1,0 +1,516 @@
+﻿Column1;region_survey;gadm_level;region_gadm;exact_status;fuzzy_gadm_level;fuzzy_region_gadm;dist;fuzzy_flag;final_status;matched_level;matched_name;Status;Case;Column15;Column16;Column2;_1;_2;_3;_4;_5;_6;_7;_8;_9;_10;_11;_12;_13;_14
+Afghanistan;KABUL;1;Kabul;exact_unique;NA;NA;NA;NA;exact_unique;1;Kabul;checked;1;;;;;;;;;;;;;;;;;
+Afghanistan;KAPISA;1;Kapisa;exact_unique;NA;NA;NA;NA;exact_unique;1;Kapisa;checked;1;;;;;;;;;;;;;;;;;
+Afghanistan;PARWAN;1;Parwan;exact_unique;NA;NA;NA;NA;exact_unique;1;Parwan;checked;1;;;;;;;;;;;;;;;;;
+Afghanistan;MAIDAN WARDAK;NA;NA;NA;2;Anar Dara;0.227742165;weak_fuzzy_candidate;unmatched;NA;Wardak;checked;5;;;;Cases;;;;;;;;;;;;;
+Afghanistan;LOGAR;1;Logar;exact_unique;NA;NA;NA;NA;exact_unique;1;Logar;checked;1;;;;;;;;;;;;;;;;;
+Afghanistan;NANGARHAR;1;Nangarhar;exact_unique;NA;NA;NA;NA;exact_unique;1;Nangarhar;checked;1;;;0;Correct classification but not all official areas of the country are considered in survey;;;;;;;;;;;;;
+Afghanistan;LAGHMAN;1;Laghman;exact_unique;NA;NA;NA;NA;exact_unique;1;Laghman;checked;1;;;1;Correct classification;;;;;;;;;;;;;
+Afghanistan;PANJSHER;2;Panjsher;exact_unique;NA;NA;NA;NA;exact_unique;2;Panjsher;checked;1;;;2;country name was changed since release of GADM data;;;;;;;;;;;;;
+Afghanistan;BAGHLAN;1;Baghlan;exact_unique;NA;NA;NA;NA;exact_unique;1;Baghlan;checked;1;;;3;Different set of subdivisions in survey than official administrative units (defined by a number of administrative level 1 units);;;;;;;;;;;;;
+Afghanistan;BAMYAN;1;Bamyan;exact_unique;NA;NA;NA;NA;exact_unique;1;Bamyan;checked;1;;;4;Different set of subdivisions in survey than official administrative level units (not defined by a number of administrative units);;;;;;;;;;;;;
+Afghanistan;GHAZNI;2;Ghazni;exact_unique;NA;NA;NA;NA;exact_unique;2;Ghazni;checked;1;;;5;Error coming from capital region and wider region having the same name (e.g. vientiane);;;;;;;;;;;;;
+Afghanistan;PAKTIKA;1;Paktika;exact_unique;NA;NA;NA;NA;exact_unique;1;Paktika;checked;1;;;6;matches other names associated to the country on a village, or city level;;;;;;;;;;;;;
+Afghanistan;PAKTYA;1;Paktya;exact_unique;NA;NA;NA;NA;exact_unique;1;Paktya;checked;1;;;7;Different set of subdivisions in survey than official administrative units (defined by a number of administrative level 2 units);;;;;;;;;;;;;
+Afghanistan;KHOST;1;Khost;exact_unique;NA;NA;NA;NA;exact_unique;1;Khost;checked;1;;;8;Shapefile for Survey area not available in GADM ;;;;;;;;;;;;;
+Afghanistan;KUNARHA;NA;NA;NA;1;Kunar;0.095238095;strong_fuzzy_candidate;fuzzy_review;1;Kunar;checked;1;;;9;Shapefile for Survey Area partially available in GADM;;;;;;;;;;;;;
+Afghanistan;NOORISTAN;NA;NA;NA;1;Nuristan;0.115740741;review_needed;fuzzy_review;1;Nuristan;checked;1;;;10;Correct classification manually inserted due to fuzzy match;;;;;;;;;;;;;
+Afghanistan;BADAKHSHAN;1;Badakhshan;exact_unique;NA;NA;NA;NA;exact_unique;1;Badakhshan;checked;1;;;;;;;;;;;;;;;;;
+Afghanistan;TAKHAR;1;Takhar;exact_unique;NA;NA;NA;NA;exact_unique;1;Takhar;checked;1;;;;;;;;;;;;;;;;;
+Afghanistan;KUNDUZ;2;Kunduz;exact_unique;NA;NA;NA;NA;exact_unique;2;Kunduz;checked;1;;;;;;Color coding;;;;;;;;;;;
+Afghanistan;SAMANGAN;1;Samangan;exact_unique;NA;NA;NA;NA;exact_unique;1;Samangan;checked;1;;;;;;Encoded in Positron;;;;;;;;;;;
+Afghanistan;BALKH;2;Balkh;exact_unique;NA;NA;NA;NA;exact_unique;2;Balkh;checked;1;;;;;;Needs HDX data to be encoded;;;;;;;;;;;
+Afghanistan;SAR-E-PUL;NA;NA;NA;1;Sari Pul;0.115740741;review_needed;fuzzy_review;1;Sari Pul;checked;1;;;;;;Issue / Need for discussion;;;;;;;;;;;
+Afghanistan;GHOR;1;Ghor;exact_unique;NA;NA;NA;NA;exact_unique;1;Ghor;checked;1;;;;;;Has been encoded in positron, though needed further operation;;;;;;;;;;;
+Afghanistan;DAYKUNDI;1;Daykundi;exact_unique;NA;NA;NA;NA;exact_unique;1;Daykundi;checked;1;;;;;;;;;;;;;;;;;
+Afghanistan;UROZGAN;NA;NA;NA;1;Uruzgan;0.095238095;strong_fuzzy_candidate;fuzzy_review;1;Uruzgan;checked;1;;;;;;;;;;;;;;;;;
+Afghanistan;ZABUL;1;Zabul;exact_unique;NA;NA;NA;NA;exact_unique;1;Zabul;checked;1;;;;;;;;;;;;;;;;;
+Afghanistan;KANDAHAR;1;Kandahar;exact_unique;NA;NA;NA;NA;exact_unique;1;Kandahar;checked;1;;;;;;;;;;;;;;;;;
+Afghanistan;JAWZJAN;1;Jawzjan;exact_unique;NA;NA;NA;NA;exact_unique;1;Jawzjan;checked;1;;;;;;;;;;;;;;;;;
+Afghanistan;FARYAB;1;Faryab;exact_unique;NA;NA;NA;NA;exact_unique;1;Faryab;checked;1;;;;;;;;;;;;;;;;;
+Afghanistan;HELMAND;NA;NA;NA;1;Hilmand;0.095238095;strong_fuzzy_candidate;fuzzy_review;1;Hilmand;checked;1;;;;;;;;;;;;;;;;;
+Afghanistan;BADGHIS;1;Badghis;exact_unique;NA;NA;NA;NA;exact_unique;1;Badghis;checked;1;;;;;;;;;;;;;;;;;
+Afghanistan;HERAT;NA;NA;NA;1;Hirat;0.133333333;review_needed;fuzzy_review;1;Hirat;checked;1;;;;;;;;;;;;;;;;;
+Afghanistan;FARAH;1;Farah;exact_unique;NA;NA;NA;NA;exact_unique;1;Farah;checked;1;;;;;;;;;;;;;;;;;
+Afghanistan;NIMROZ;1;Nimroz;exact_unique;NA;NA;NA;NA;exact_unique;1;Nimroz;checked;1;;;;;;;;;;;;;;;;;
+Argentina;CIUDAD Y PARTIDOS DE BUENOS AIRES;NA;NA;NA;1;Ciudad de Buenos Aires;0.224747475;weak_fuzzy_candidate;unmatched;NA;NA;;;"CIUDAD Y PARTIDOS DE BUENOS AIRES : Ciudad de Buenos Aires
+RESTO PROVINCIA DE BUENOS AIRES: 	Buenos Aires
+NEA: Formosa, Chaco, Corrientes, Misiones
+NOA: Jujuy, Salta, Santiago del Estero, Tucuman, Catamarca, La Rioja,
+PAMPEANA: La Pampa, Córdoba, Santa Fe, Entre Rios
+PATAGÓNICA: Neuquén, Santa Cruz, Tierra del Fuego, Chubut, Río Negro
+
+https://mics.ipums.org/mics-action/variables/GEO1_AR#comparability_section";;;;;;;;;;;;;;;;
+Argentina;RESTO PROVINCIA DE BUENOS AIRES;NA;NA;NA;2;San Antonio de Areco;0.330525687;weak_fuzzy_candidate;unmatched;NA;NA;checked;3;"Greater Buenos Aires (GBA)
+Buenos Aires province
+Cuyo: San Juan, San Luis, Mendoza
+Northeast (NEA): Formosa, Chaco, Corrientes, Misiones
+Northwest (NOA): Jujuy, Salta, Santiago del Estero, Tucuman, Catamarca, La Rioja,
+Pampeana: La Pampa, Córdoba, Santa Fe, Entre Rios
+Patagonia: Neuquén, Santa Cruz, Tierra del Fuego, Chubut, Río Negro
+
+https://mics.ipums.org/mics-action/variables/GEO1_AR#comparability_section";;;;;;;;;;;;;;;;
+Argentina;CUYO;NA;NA;NA;2;Curacó;0.25;weak_fuzzy_candidate;unmatched;NA;NA;checked;3;"Greater Buenos Aires (GBA)
+Buenos Aires province
+Cuyo: San Juan, San Luis, Mendoza
+Northeast (NEA): Formosa, Chaco, Corrientes, Misiones
+Northwest (NOA): Jujuy, Salta, Santiago del Estero, Tucuman, Catamarca, La Rioja,
+Pampeana: La Pampa, Córdoba, Santa Fe, Entre Rios
+Patagonia: Neuquén, Santa Cruz, Tierra del Fuego, Chubut, Río Negro
+
+https://mics.ipums.org/mics-action/variables/GEO1_AR#comparability_section";;;;;;;;;;;;;;;;
+Argentina;NOA;NA;NA;NA;2;Tinogasta;0.222222222;weak_fuzzy_candidate;unmatched;NA;NA;checked;3;"Greater Buenos Aires (GBA)
+Buenos Aires province
+Cuyo: San Juan, San Luis, Mendoza
+Northeast (NEA): Formosa, Chaco, Corrientes, Misiones
+Northwest (NOA): Jujuy, Salta, Santiago del Estero, Tucuman, Catamarca, La Rioja,
+Pampeana: La Pampa, Córdoba, Santa Fe, Entre Rios
+Patagonia: Neuquén, Santa Cruz, Tierra del Fuego, Chubut, Río Negro
+
+https://mics.ipums.org/mics-action/variables/GEO1_AR#comparability_section";;;;;;;;;;;;;;;;
+Argentina;NEA;NA;NA;NA;2;Montecarlo;0.233333333;weak_fuzzy_candidate;unmatched;NA;NA;checked;3;"Greater Buenos Aires (GBA)
+Buenos Aires province
+Cuyo: San Juan, San Luis, Mendoza
+Northeast (NEA): Formosa, Chaco, Corrientes, Misiones
+Northwest (NOA): Jujuy, Salta, Santiago del Estero, Tucuman, Catamarca, La Rioja,
+Pampeana: La Pampa, Córdoba, Santa Fe, Entre Rios
+Patagonia: Neuquén, Santa Cruz, Tierra del Fuego, Chubut, Río Negro
+
+https://mics.ipums.org/mics-action/variables/GEO1_AR#comparability_section";;;;;;;;;;;;;;;;
+Argentina;PAMPEANA (EXCLUYE RESTO DE PROVINCIA DE BUENOS AIRES;NA;NA;NA;2;General José de San Martín;0.330163727;weak_fuzzy_candidate;unmatched;NA;NA;checked;;"Greater Buenos Aires (GBA)
+Buenos Aires province
+Cuyo: San Juan, San Luis, Mendoza
+Northeast (NEA): Formosa, Chaco, Corrientes, Misiones
+Northwest (NOA): Jujuy, Salta, Santiago del Estero, Tucuman, Catamarca, La Rioja,
+Pampeana: La Pampa, Córdoba, Santa Fe, Entre Rios
+Patagonia: Neuquén, Santa Cruz, Tierra del Fuego, Chubut, Río Negro
+
+https://mics.ipums.org/mics-action/variables/GEO1_AR#comparability_section";;;;;;;;;;;;;;;;
+Argentina;PATAGÓNICA;NA;NA;NA;2;Patagones;0.174074074;review_needed;fuzzy_review;2;Patagones;checked;3;"Greater Buenos Aires (GBA)
+Buenos Aires province
+Cuyo: San Juan, San Luis, Mendoza
+Northeast (NEA): Formosa, Chaco, Corrientes, Misiones
+Northwest (NOA): Jujuy, Salta, Santiago del Estero, Tucuman, Catamarca, La Rioja,
+Pampeana: La Pampa, Córdoba, Santa Fe, Entre Rios
+Patagonia: Neuquén, Santa Cruz, Tierra del Fuego, Chubut, Río Negro
+
+https://mics.ipums.org/mics-action/variables/GEO1_AR#comparability_section";;;;;;;;;;;;;;;;
+Belarus;BREST;2;Brest;exact_unique;NA;NA;NA;NA;exact_unique;2;Brest;checked;1;;;;;;;;;;;;;;;;;
+Belarus;VITEBSK;NA;NA;NA;1;Vitsyebsk;0.145502646;review_needed;fuzzy_review;1;Vitsyebsk;checked;1;;;;;;;;;;;;;;;;;
+Belarus;GOMEL;NA;NA;NA;2;Homyel';0.177777778;review_needed;fuzzy_review;2;Homyel';checked;1;;;;;;;;;;;;;;;;;
+Belarus;GRODNO;NA;NA;NA;1;Hrodna;0.222222222;weak_fuzzy_candidate;unmatched;NA;Hrodna;checked;10;;;;;;;;;;;;;;;;;
+Belarus;MINSK CITY;NA;NA;NA;2;Minsk;0.166666667;review_needed;fuzzy_review;2;Minsk;;?;"In Survey, Minsk region and City are separated, whereas in GADM; they are not. In GADM, there is a ""Minsk""  as well on the level two. ";;;;;;;;;;;;;;;;
+Belarus;MINSK;2;Minsk;exact_unique;NA;NA;NA;NA;exact_unique;2;Minsk;;?;"In Survey, Minsk region and City are separated, whereas in GADM; they are not. In GADM, there is a ""Minsk""  as well on the level two. ";;;;;;;;;;;;;;;;
+Belarus;MOGILEV;NA;NA;NA;1;Mahilyow;0.398809524;weak_fuzzy_candidate;unmatched;NA;Mahilyow;checked;1;;;;;;;;;;;;;;;;;
+Comoros;Mwali;1;Mwali;exact_unique;NA;NA;NA;NA;exact_unique;1;Mwali;checked;1;;;;;;;;;;;;;;;;;
+Comoros;Ndzuwani;NA;NA;NA;1;Nzwani;0.083333333;strong_fuzzy_candidate;fuzzy_review;1;Nzwani;checked;1;;;;;;;;;;;;;;;;;
+Comoros;Ngazidja;NA;NA;NA;1;Njazídja;0.083333333;strong_fuzzy_candidate;fuzzy_review;1;Njazídja;checked;1;;;;;;;;;;;;;;;;;
+Costa Rica;San José;2;San José;exact_unique;NA;NA;NA;NA;exact_unique;2;San José;checked;1;;;;;;;;;;;;;;;;;
+Costa Rica;Alajuela;2;Alajuela;exact_unique;NA;NA;NA;NA;exact_unique;2;Alajuela;checked;1;;;;;;;;;;;;;;;;;
+Costa Rica;Cartago;2;Cartago;exact_unique;NA;NA;NA;NA;exact_unique;2;Cartago;checked;1;;;;;;;;;;;;;;;;;
+Costa Rica;Heredia;2;Heredia;exact_unique;NA;NA;NA;NA;exact_unique;2;Heredia;checked;1;;;;;;;;;;;;;;;;;
+Costa Rica;Guanacaste;1;Guanacaste;exact_unique;NA;NA;NA;NA;exact_unique;1;Guanacaste;checked;1;;;;;;;;;;;;;;;;;
+Costa Rica;Puntarenas;2;Puntarenas;exact_unique;NA;NA;NA;NA;exact_unique;2;Puntarenas;checked;1;;;;;;;;;;;;;;;;;
+Costa Rica;Limón;2;Limón;exact_unique;NA;NA;NA;NA;exact_unique;2;Limón;checked;1;;;;;;;;;;;;;;;;;
+Cuba;Pinar del Río;2;Pinar del Río;exact_unique;NA;NA;NA;NA;exact_unique;2;Pinar del Río;checked;;"HDX Data recommended, perfectly matched:
+https://data.humdata.org/dataset/cod-ab-cub
+
+Otherwise, the GADM data ist mostly correctly matched, except for: 
+New region artemisia needs to be created out of La Habana and Mayabeque. ""La Habana"" for MICS is ""	Ciudad de la Habana"" in GADM. 
+The newly formed province combined the eight western municipalities of La Habana Province and three eastern municipalities of neighbor province Pinar del Río (Bahía Honda, Candelaria and San Cristóbal). These are the districts of artemisa
+[""Artemisa"", ""Mariel"",""Guanajay"",""Caimito"",""Bauta"",""San Antonio de los Baños"",""Güira de Melena"",""Alquízar"",""Bahía Honda"",""Candelaria"",""San Cristóbal""]";;;;;;;;;;;;;;;;
+Cuba;Artemisa;2;Artemisa;exact_unique;NA;NA;NA;NA;exact_unique;2;Artemisa;checked;;"HDX Data recommended, perfectly matched:
+https://data.humdata.org/dataset/cod-ab-cub
+
+Otherwise, the GADM data ist mostly correctly matched, except for: 
+New region artemisia needs to be created out of La Habana and Mayabeque. ""La Habana"" for MICS is ""	Ciudad de la Habana"" in GADM. 
+The newly formed province combined the eight western municipalities of La Habana Province and three eastern municipalities of neighbor province Pinar del Río (Bahía Honda, Candelaria and San Cristóbal). These are the districts of artemisa
+[""Artemisa"", ""Mariel"",""Guanajay"",""Caimito"",""Bauta"",""San Antonio de los Baños"",""Güira de Melena"",""Alquízar"",""Bahía Honda"",""Candelaria"",""San Cristóbal""]";;;;;;;;;;;;;;;;
+Cuba;La Habana;1;La Habana;exact_unique;NA;NA;NA;NA;exact_unique;1;La Habana;checked;;"HDX Data recommended, perfectly matched:
+https://data.humdata.org/dataset/cod-ab-cub
+
+Otherwise, the GADM data ist mostly correctly matched, except for: 
+New region artemisia needs to be created out of La Habana and Mayabeque. ""La Habana"" for MICS is ""	Ciudad de la Habana"" in GADM. 
+The newly formed province combined the eight western municipalities of La Habana Province and three eastern municipalities of neighbor province Pinar del Río (Bahía Honda, Candelaria and San Cristóbal). These are the districts of artemisa
+[""Artemisa"", ""Mariel"",""Guanajay"",""Caimito"",""Bauta"",""San Antonio de los Baños"",""Güira de Melena"",""Alquízar"",""Bahía Honda"",""Candelaria"",""San Cristóbal""]";;;;;;;;;;;;;;;;
+Cuba;Mayabeque;1;Mayabeque;exact_unique;NA;NA;NA;NA;exact_unique;1;Mayabeque;checked;;"HDX Data recommended, perfectly matched:
+https://data.humdata.org/dataset/cod-ab-cub
+
+Otherwise, the GADM data ist mostly correctly matched, except for: 
+New region artemisia needs to be created out of La Habana and Mayabeque. ""La Habana"" for MICS is ""	Ciudad de la Habana"" in GADM. 
+The newly formed province combined the eight western municipalities of La Habana Province and three eastern municipalities of neighbor province Pinar del Río (Bahía Honda, Candelaria and San Cristóbal). These are the districts of artemisa
+[""Artemisa"", ""Mariel"",""Guanajay"",""Caimito"",""Bauta"",""San Antonio de los Baños"",""Güira de Melena"",""Alquízar"",""Bahía Honda"",""Candelaria"",""San Cristóbal""]";;;;;;;;;;;;;;;;
+Cuba;Matanzas;2;Matanzas;exact_unique;NA;NA;NA;NA;exact_unique;2;Matanzas;checked;;"HDX Data recommended, perfectly matched:
+https://data.humdata.org/dataset/cod-ab-cub
+
+Otherwise, the GADM data ist mostly correctly matched, except for: 
+New region artemisia needs to be created out of La Habana and Mayabeque. ""La Habana"" for MICS is ""	Ciudad de la Habana"" in GADM. 
+The newly formed province combined the eight western municipalities of La Habana Province and three eastern municipalities of neighbor province Pinar del Río (Bahía Honda, Candelaria and San Cristóbal). These are the districts of artemisa
+[""Artemisa"", ""Mariel"",""Guanajay"",""Caimito"",""Bauta"",""San Antonio de los Baños"",""Güira de Melena"",""Alquízar"",""Bahía Honda"",""Candelaria"",""San Cristóbal""]";;;;;;;;;;;;;;;;
+Cuba;Villa Clara;1;Villa Clara;exact_unique;NA;NA;NA;NA;exact_unique;1;Villa Clara;checked;;"HDX Data recommended, perfectly matched:
+https://data.humdata.org/dataset/cod-ab-cub
+
+Otherwise, the GADM data ist mostly correctly matched, except for: 
+New region artemisia needs to be created out of La Habana and Mayabeque. ""La Habana"" for MICS is ""	Ciudad de la Habana"" in GADM. 
+The newly formed province combined the eight western municipalities of La Habana Province and three eastern municipalities of neighbor province Pinar del Río (Bahía Honda, Candelaria and San Cristóbal). These are the districts of artemisa
+[""Artemisa"", ""Mariel"",""Guanajay"",""Caimito"",""Bauta"",""San Antonio de los Baños"",""Güira de Melena"",""Alquízar"",""Bahía Honda"",""Candelaria"",""San Cristóbal""]";;;;;;;;;;;;;;;;
+Cuba;Cienfuegos;1;Cienfuegos;exact_unique;NA;NA;NA;NA;exact_unique;1;Cienfuegos;checked;;"HDX Data recommended, perfectly matched:
+https://data.humdata.org/dataset/cod-ab-cub
+
+Otherwise, the GADM data ist mostly correctly matched, except for: 
+New region artemisia needs to be created out of La Habana and Mayabeque. ""La Habana"" for MICS is ""	Ciudad de la Habana"" in GADM. 
+The newly formed province combined the eight western municipalities of La Habana Province and three eastern municipalities of neighbor province Pinar del Río (Bahía Honda, Candelaria and San Cristóbal). These are the districts of artemisa
+[""Artemisa"", ""Mariel"",""Guanajay"",""Caimito"",""Bauta"",""San Antonio de los Baños"",""Güira de Melena"",""Alquízar"",""Bahía Honda"",""Candelaria"",""San Cristóbal""]";;;;;;;;;;;;;;;;
+Cuba;Sancti Spíritus;2;Sancti Spíritus;exact_unique;NA;NA;NA;NA;exact_unique;2;Sancti Spíritus;checked;;"HDX Data recommended, perfectly matched:
+https://data.humdata.org/dataset/cod-ab-cub
+
+Otherwise, the GADM data ist mostly correctly matched, except for: 
+New region artemisia needs to be created out of La Habana and Mayabeque. ""La Habana"" for MICS is ""	Ciudad de la Habana"" in GADM. 
+The newly formed province combined the eight western municipalities of La Habana Province and three eastern municipalities of neighbor province Pinar del Río (Bahía Honda, Candelaria and San Cristóbal). These are the districts of artemisa
+[""Artemisa"", ""Mariel"",""Guanajay"",""Caimito"",""Bauta"",""San Antonio de los Baños"",""Güira de Melena"",""Alquízar"",""Bahía Honda"",""Candelaria"",""San Cristóbal""]";;;;;;;;;;;;;;;;
+Cuba;Ciego de Ávila;2;Ciego de ávila;exact_unique;NA;NA;NA;NA;exact_unique;2;Ciego de ávila;checked;;"HDX Data recommended, perfectly matched:
+https://data.humdata.org/dataset/cod-ab-cub
+
+Otherwise, the GADM data ist mostly correctly matched, except for: 
+New region artemisia needs to be created out of La Habana and Mayabeque. ""La Habana"" for MICS is ""	Ciudad de la Habana"" in GADM. 
+The newly formed province combined the eight western municipalities of La Habana Province and three eastern municipalities of neighbor province Pinar del Río (Bahía Honda, Candelaria and San Cristóbal). These are the districts of artemisa
+[""Artemisa"", ""Mariel"",""Guanajay"",""Caimito"",""Bauta"",""San Antonio de los Baños"",""Güira de Melena"",""Alquízar"",""Bahía Honda"",""Candelaria"",""San Cristóbal""]";;;;;;;;;;;;;;;;
+Cuba;Camagüey;2;Camagüey;exact_unique;NA;NA;NA;NA;exact_unique;2;Camagüey;checked;;"HDX Data recommended, perfectly matched:
+https://data.humdata.org/dataset/cod-ab-cub
+
+Otherwise, the GADM data ist mostly correctly matched, except for: 
+New region artemisia needs to be created out of La Habana and Mayabeque. ""La Habana"" for MICS is ""	Ciudad de la Habana"" in GADM. 
+The newly formed province combined the eight western municipalities of La Habana Province and three eastern municipalities of neighbor province Pinar del Río (Bahía Honda, Candelaria and San Cristóbal). These are the districts of artemisa
+[""Artemisa"", ""Mariel"",""Guanajay"",""Caimito"",""Bauta"",""San Antonio de los Baños"",""Güira de Melena"",""Alquízar"",""Bahía Honda"",""Candelaria"",""San Cristóbal""]";;;;;;;;;;;;;;;;
+Cuba;Las Tunas;2;Las Tunas;exact_unique;NA;NA;NA;NA;exact_unique;2;Las Tunas;checked;;"HDX Data recommended, perfectly matched:
+https://data.humdata.org/dataset/cod-ab-cub
+
+Otherwise, the GADM data ist mostly correctly matched, except for: 
+New region artemisia needs to be created out of La Habana and Mayabeque. ""La Habana"" for MICS is ""	Ciudad de la Habana"" in GADM. 
+The newly formed province combined the eight western municipalities of La Habana Province and three eastern municipalities of neighbor province Pinar del Río (Bahía Honda, Candelaria and San Cristóbal). These are the districts of artemisa
+[""Artemisa"", ""Mariel"",""Guanajay"",""Caimito"",""Bauta"",""San Antonio de los Baños"",""Güira de Melena"",""Alquízar"",""Bahía Honda"",""Candelaria"",""San Cristóbal""]";;;;;;;;;;;;;;;;
+Cuba;Holguín;2;Holguín;exact_unique;NA;NA;NA;NA;exact_unique;2;Holguín;checked;;"HDX Data recommended, perfectly matched:
+https://data.humdata.org/dataset/cod-ab-cub
+
+Otherwise, the GADM data ist mostly correctly matched, except for: 
+New region artemisia needs to be created out of La Habana and Mayabeque. ""La Habana"" for MICS is ""	Ciudad de la Habana"" in GADM. 
+The newly formed province combined the eight western municipalities of La Habana Province and three eastern municipalities of neighbor province Pinar del Río (Bahía Honda, Candelaria and San Cristóbal). These are the districts of artemisa
+[""Artemisa"", ""Mariel"",""Guanajay"",""Caimito"",""Bauta"",""San Antonio de los Baños"",""Güira de Melena"",""Alquízar"",""Bahía Honda"",""Candelaria"",""San Cristóbal""]";;;;;;;;;;;;;;;;
+Cuba;Granma;1;Granma;exact_unique;NA;NA;NA;NA;exact_unique;1;Granma;checked;;"HDX Data recommended, perfectly matched:
+https://data.humdata.org/dataset/cod-ab-cub
+
+Otherwise, the GADM data ist mostly correctly matched, except for: 
+New region artemisia needs to be created out of La Habana and Mayabeque. ""La Habana"" for MICS is ""	Ciudad de la Habana"" in GADM. 
+The newly formed province combined the eight western municipalities of La Habana Province and three eastern municipalities of neighbor province Pinar del Río (Bahía Honda, Candelaria and San Cristóbal). These are the districts of artemisa
+[""Artemisa"", ""Mariel"",""Guanajay"",""Caimito"",""Bauta"",""San Antonio de los Baños"",""Güira de Melena"",""Alquízar"",""Bahía Honda"",""Candelaria"",""San Cristóbal""]";;;;;;;;;;;;;;;;
+Cuba;Santiago de Cuba;2;Santiago de Cuba;exact_unique;NA;NA;NA;NA;exact_unique;2;Santiago de Cuba;checked;;"HDX Data recommended, perfectly matched:
+https://data.humdata.org/dataset/cod-ab-cub
+
+Otherwise, the GADM data ist mostly correctly matched, except for: 
+New region artemisia needs to be created out of La Habana and Mayabeque. ""La Habana"" for MICS is ""	Ciudad de la Habana"" in GADM. 
+The newly formed province combined the eight western municipalities of La Habana Province and three eastern municipalities of neighbor province Pinar del Río (Bahía Honda, Candelaria and San Cristóbal). These are the districts of artemisa
+[""Artemisa"", ""Mariel"",""Guanajay"",""Caimito"",""Bauta"",""San Antonio de los Baños"",""Güira de Melena"",""Alquízar"",""Bahía Honda"",""Candelaria"",""San Cristóbal""]";;;;;;;;;;;;;;;;
+Cuba;Guantánamo;2;Guantánamo;exact_unique;NA;NA;NA;NA;exact_unique;2;Guantánamo;checked;;"HDX Data recommended, perfectly matched:
+https://data.humdata.org/dataset/cod-ab-cub
+
+Otherwise, the GADM data ist mostly correctly matched, except for: 
+New region artemisia needs to be created out of La Habana and Mayabeque. ""La Habana"" for MICS is ""	Ciudad de la Habana"" in GADM. 
+The newly formed province combined the eight western municipalities of La Habana Province and three eastern municipalities of neighbor province Pinar del Río (Bahía Honda, Candelaria and San Cristóbal). These are the districts of artemisa
+[""Artemisa"", ""Mariel"",""Guanajay"",""Caimito"",""Bauta"",""San Antonio de los Baños"",""Güira de Melena"",""Alquízar"",""Bahía Honda"",""Candelaria"",""San Cristóbal""]";;;;;;;;;;;;;;;;
+Cuba;Isla de la Juventud;2;Isla de la Juventud;exact_unique;NA;NA;NA;NA;exact_unique;2;Isla de la Juventud;checked;;"HDX Data recommended, perfectly matched:
+https://data.humdata.org/dataset/cod-ab-cub
+
+Otherwise, the GADM data ist mostly correctly matched, except for: 
+New region artemisia needs to be created out of La Habana and Mayabeque. ""La Habana"" for MICS is ""	Ciudad de la Habana"" in GADM. 
+The newly formed province combined the eight western municipalities of La Habana Province and three eastern municipalities of neighbor province Pinar del Río (Bahía Honda, Candelaria and San Cristóbal). These are the districts of artemisa
+[""Artemisa"", ""Mariel"",""Guanajay"",""Caimito"",""Bauta"",""San Antonio de los Baños"",""Güira de Melena"",""Alquízar"",""Bahía Honda"",""Candelaria"",""San Cristóbal""]";;;;;;;;;;;;;;;;
+Jamaica;KINGSTON;1;Kingston;exact_unique;NA;NA;NA;NA;exact_unique;1;Kingston;checked;1;;;;;;;;;;;;;;;;;
+Jamaica;ST. ANDREW;NA;NA;NA;1;Saint Andrew;0.157407407;review_needed;fuzzy_review;1;Saint Andrew;checked;1;;;;;;;;;;;;;;;;;
+Jamaica;ST. CATHERINE;NA;NA;NA;1;Saint Catherine;0.122222222;review_needed;fuzzy_review;1;Saint Catherine;checked;1;;;;;;;;;;;;;;;;;
+Jamaica;ST. THOMAS;NA;NA;NA;1;Saint Thomas;0.083333333;strong_fuzzy_candidate;fuzzy_review;1;Saint Thomas;checked;1;;;;;;;;;;;;;;;;;
+Jamaica;PORTLAND;1;Portland;exact_unique;NA;NA;NA;NA;exact_unique;1;Portland;checked;1;;;;;;;;;;;;;;;;;
+Jamaica;ST. MARY;NA;NA;NA;1;Saint Mary;0.195238095;review_needed;fuzzy_review;1;Saint Mary;checked;1;;;;;;;;;;;;;;;;;
+Jamaica;ST. ANN;NA;NA;NA;1;Saint Ann;0.222222222;weak_fuzzy_candidate;unmatched;NA;Saint Ann;checked;10;;;;;;;;;;;;;;;;;
+Jamaica;TRELAWNY;1;Trelawny;exact_unique;NA;NA;NA;NA;exact_unique;1;Trelawny;checked;1;;;;;;;;;;;;;;;;;
+Jamaica;ST. JAMES;NA;NA;NA;1;Saint James;0.174242424;review_needed;fuzzy_review;1;Saint James;checked;1;;;;;;;;;;;;;;;;;
+Jamaica;HANOVER;1;Hanover;exact_unique;NA;NA;NA;NA;exact_unique;1;Hanover;checked;1;;;;;;;;;;;;;;;;;
+Jamaica;WESTMORELAND;1;Westmoreland;exact_unique;NA;NA;NA;NA;exact_unique;1;Westmoreland;checked;1;;;;;;;;;;;;;;;;;
+Jamaica;ST. ELIZABETH;NA;NA;NA;1;Saint Elizabeth;0.163888889;review_needed;fuzzy_review;1;Saint Elizabeth;checked;1;;;;;;;;;;;;;;;;;
+Jamaica;MANCHESTER;1;Manchester;exact_unique;NA;NA;NA;NA;exact_unique;1;Manchester;checked;1;;;;;;;;;;;;;;;;;
+Jamaica;CLARENDON;1;Clarendon;exact_unique;NA;NA;NA;NA;exact_unique;1;Clarendon;checked;1;;;;;;;;;;;;;;;;;
+Kazakhstan;ABAY;NA;NA;NA;2;Abayskiy;0.166666667;review_needed;fuzzy_review;2;Abayskiy;checked;8;"GADM Data in the east of the contry is errounous. HDX Data matches the MICS dataset perfectly, hence recommended:
+
+https://data.humdata.org/dataset/cod-ab-kaz#";;;;;;;;;;;;;;;;
+Kazakhstan;AKMOLA;NA;NA;NA;1;Aqmola;0.111111111;review_needed;fuzzy_review;1;Aqmola;checked;8;"GADM Data in the east of the contry is errounous. HDX Data matches the MICS dataset perfectly, hence recommended:
+
+https://data.humdata.org/dataset/cod-ab-kaz#";;;;;;;;;;;;;;;;
+Kazakhstan;AKTOBE;NA;NA;NA;1;Aqtöbe;0.111111111;review_needed;fuzzy_review;1;Aqtöbe;checked;8;"GADM Data in the east of the contry is errounous. HDX Data matches the MICS dataset perfectly, hence recommended:
+
+https://data.humdata.org/dataset/cod-ab-kaz#";;;;;;;;;;;;;;;;
+Kazakhstan;ALMATY;1;Almaty;exact_unique;NA;NA;NA;NA;exact_unique;1;Almaty;checked;8;"GADM Data in the east of the contry is errounous. HDX Data matches the MICS dataset perfectly, hence recommended:
+
+https://data.humdata.org/dataset/cod-ab-kaz#";;;;;;;;;;;;;;;;
+Kazakhstan;ATYRAU;2;Atyrau;exact_unique;NA;NA;NA;NA;exact_unique;2;Atyrau;checked;8;"GADM Data in the east of the contry is errounous. HDX Data matches the MICS dataset perfectly, hence recommended:
+
+https://data.humdata.org/dataset/cod-ab-kaz#";;;;;;;;;;;;;;;;
+Kazakhstan;WEST KAZAKHSTAN;1;West Kazakhstan;exact_unique;NA;NA;NA;NA;exact_unique;1;West Kazakhstan;checked;8;"GADM Data in the east of the contry is errounous. HDX Data matches the MICS dataset perfectly, hence recommended:
+
+https://data.humdata.org/dataset/cod-ab-kaz#";;;;;;;;;;;;;;;;
+Kazakhstan;ZHAMBYL;1;Zhambyl;exact_unique;NA;NA;NA;NA;exact_unique;1;Zhambyl;checked;8;"GADM Data in the east of the contry is errounous. HDX Data matches the MICS dataset perfectly, hence recommended:
+
+https://data.humdata.org/dataset/cod-ab-kaz#";;;;;;;;;;;;;;;;
+Kazakhstan;ZHETYSU;NA;NA;NA;2;Shetskiy;0.286904762;weak_fuzzy_candidate;unmatched;NA;NA;checked;8;"GADM Data in the east of the contry is errounous. HDX Data matches the MICS dataset perfectly, hence recommended:
+
+https://data.humdata.org/dataset/cod-ab-kaz#";;;;;;;;;;;;;;;;
+Kazakhstan;KARAGANDA;NA;NA;NA;1;Qaraghandy;0.174074074;review_needed;fuzzy_review;1;Qaraghandy;checked;8;"GADM Data in the east of the contry is errounous. HDX Data matches the MICS dataset perfectly, hence recommended:
+
+https://data.humdata.org/dataset/cod-ab-kaz#";;;;;;;;;;;;;;;;
+Kazakhstan;KOSTANAY;NA;NA;NA;1;Qostanay;0.083333333;strong_fuzzy_candidate;fuzzy_review;1;Qostanay;checked;8;"GADM Data in the east of the contry is errounous. HDX Data matches the MICS dataset perfectly, hence recommended:
+
+https://data.humdata.org/dataset/cod-ab-kaz#";;;;;;;;;;;;;;;;
+Kazakhstan;KYZYLORDA;NA;NA;NA;2;Qyzylorda;0.074074074;strong_fuzzy_candidate;fuzzy_review;2;Qyzylorda;checked;8;"GADM Data in the east of the contry is errounous. HDX Data matches the MICS dataset perfectly, hence recommended:
+
+https://data.humdata.org/dataset/cod-ab-kaz#";;;;;;;;;;;;;;;;
+Kazakhstan;MANGYSTAU;NA;NA;NA;1;Mangghystau;0.060606061;strong_fuzzy_candidate;fuzzy_review;1;Mangghystau;checked;8;"GADM Data in the east of the contry is errounous. HDX Data matches the MICS dataset perfectly, hence recommended:
+
+https://data.humdata.org/dataset/cod-ab-kaz#";;;;;;;;;;;;;;;;
+Kazakhstan;PAVLODAR;1;Pavlodar;exact_unique;NA;NA;NA;NA;exact_unique;1;Pavlodar;checked;8;"GADM Data in the east of the contry is errounous. HDX Data matches the MICS dataset perfectly, hence recommended:
+
+https://data.humdata.org/dataset/cod-ab-kaz#";;;;;;;;;;;;;;;;
+Kazakhstan;NORTH KAZAKHSTAN;1;North Kazakhstan;exact_unique;NA;NA;NA;NA;exact_unique;1;North Kazakhstan;checked;8;"GADM Data in the east of the contry is errounous. HDX Data matches the MICS dataset perfectly, hence recommended:
+
+https://data.humdata.org/dataset/cod-ab-kaz#";;;;;;;;;;;;;;;;
+Kazakhstan;TURKISTAN;NA;NA;NA;2;Turkestan;0.074074074;strong_fuzzy_candidate;fuzzy_review;2;Turkestan;checked;8;"GADM Data in the east of the contry is errounous. HDX Data matches the MICS dataset perfectly, hence recommended:
+
+https://data.humdata.org/dataset/cod-ab-kaz#";;;;;;;;;;;;;;;;
+Kazakhstan;ULYTAU;NA;NA;NA;2;Ulytauskiy;0.133333333;review_needed;fuzzy_review;2;Ulytauskiy;checked;8;"GADM Data in the east of the contry is errounous. HDX Data matches the MICS dataset perfectly, hence recommended:
+
+https://data.humdata.org/dataset/cod-ab-kaz#";;;;;;;;;;;;;;;;
+Kazakhstan;EAST KAZAKHSTAN;1;East Kazakhstan;exact_unique;NA;NA;NA;NA;exact_unique;1;East Kazakhstan;checked;8;"GADM Data in the east of the contry is errounous. HDX Data matches the MICS dataset perfectly, hence recommended:
+
+https://data.humdata.org/dataset/cod-ab-kaz#";;;;;;;;;;;;;;;;
+Kazakhstan;ASTANA CITY;NA;NA;NA;2;Astrakhansiy;0.243686869;weak_fuzzy_candidate;unmatched;NA;NA;checked;8;"GADM Data in the east of the contry is errounous. HDX Data matches the MICS dataset perfectly, hence recommended:
+
+https://data.humdata.org/dataset/cod-ab-kaz#";;;;;;;;;;;;;;;;
+Kazakhstan;ALMATY CITY;NA;NA;NA;1;Almaty;0.151515152;review_needed;fuzzy_review;1;Almaty;checked;8;"GADM Data in the east of the contry is errounous. HDX Data matches the MICS dataset perfectly, hence recommended:
+
+https://data.humdata.org/dataset/cod-ab-kaz#";;;;;;;;;;;;;;;;
+Kazakhstan;SHYMKENT CITY;NA;NA;NA;2;Shymkent;0.128205128;review_needed;fuzzy_review;2;Shymkent;checked;8;"GADM Data in the east of the contry is errounous. HDX Data matches the MICS dataset perfectly, hence recommended:
+
+https://data.humdata.org/dataset/cod-ab-kaz#";;;;;;;;;;;;;;;;
+Kyrgyzstan;Issyk-kul;NA;NA;NA;1;Ysyk-Köl;0.25;weak_fuzzy_candidate;unmatched;NA;Ysyk-Köl;checked;10;;;;;;;;;;;;;;;;;
+Kyrgyzstan;Jalal-Abad;1;Jalal-Abad;exact_unique;NA;NA;NA;NA;exact_unique;1;Jalal-Abad;checked;1;;;;;;;;;;;;;;;;;
+Kyrgyzstan;Naryn;2;Naryn;exact_unique;NA;NA;NA;NA;exact_unique;2;Naryn;checked;1;;;;;;;;;;;;;;;;;
+Kyrgyzstan;Batken;2;Batken;exact_unique;NA;NA;NA;NA;exact_unique;2;Batken;checked;1;;;;;;;;;;;;;;;;;
+Kyrgyzstan;Osh;2;Osh;exact_unique;NA;NA;NA;NA;exact_unique;2;Osh;checked;1;;;;;;;;;;;;;;;;;
+Kyrgyzstan;Talas;2;Talas;exact_unique;NA;NA;NA;NA;exact_unique;2;Talas;checked;1;;;;;;;;;;;;;;;;;
+Kyrgyzstan;Chui;2;Chui;exact_unique;NA;NA;NA;NA;exact_unique;2;Chui;checked;1;;;;;;;;;;;;;;;;;
+Kyrgyzstan;Bishkek c;NA;NA;NA;1;Biškek;0.111111111;review_needed;fuzzy_review;1;Biškek;checked;1;;;;;;;;;;;;;;;;;
+Kyrgyzstan;Osh c;NA;NA;NA;1;Osh (city);0.125;review_needed;fuzzy_review;1;Osh (city);checked;1;;;;;;;;;;;;;;;;;
+Montenegro;SOUTH;NA;NA;NA;1;Kotor;0.4;weak_fuzzy_candidate;unmatched;3;NA;checked;3;"https://en.wikipedia.org/wiki/Statistical_regions_of_Montenegro
+
+North Region: Pljevlja, Plužine, Žabljak, Bijelo Polje, Šavnik, Mojkovac, Rožaje, Berane, Kolašin, Andrijevica, Plav
+Central Region: Nikšic, Danilovgrad, Cetinje, Podgorica
+South / Coastal Region: Herceg Novi, Kotor, Tivat, Budva, Bar, Ulcinj";;;;;;;;;;;;;;;;
+Montenegro;CENTRE;NA;NA;NA;1;Cetinje;0.217460317;weak_fuzzy_candidate;unmatched;3;NA;checked;3;"https://en.wikipedia.org/wiki/Statistical_regions_of_Montenegro
+
+North Region: Pljevlja, Plužine, Žabljak, Bijelo Polje, Šavnik, Mojkovac, Rožaje, Berane, Kolašin, Andrijevica, Plav
+Central Region: Nikšic, Danilovgrad, Cetinje, Podgorica
+South / Coastal Region: Herceg Novi, Kotor, Tivat, Budva, Bar, Ulcinj";;;;;;;;;;;;;;;;
+Montenegro;NORTH;NA;NA;NA;1;Kotor;0.4;weak_fuzzy_candidate;unmatched;3;NA;checked;3;"https://en.wikipedia.org/wiki/Statistical_regions_of_Montenegro
+
+North Region: Pljevlja, Plužine, Žabljak, Bijelo Polje, Šavnik, Mojkovac, Rožaje, Berane, Kolašin, Andrijevica, Plav
+Central Region: Nikšic, Danilovgrad, Cetinje, Podgorica
+South / Coastal Region: Herceg Novi, Kotor, Tivat, Budva, Bar, Ulcinj";;;;;;;;;;;;;;;;
+Nauru;YAREN;1;Yaren;exact_unique;NA;NA;NA;NA;exact_unique;1;Yaren;checked;1;;;;;;;;;;;;;;;;;
+Nauru;BOE;1;Boe;exact_unique;NA;NA;NA;NA;exact_unique;1;Boe;checked;1;;;;;;;;;;;;;;;;;
+Nauru;AIWO;1;Aiwo;exact_unique;NA;NA;NA;NA;exact_unique;1;Aiwo;checked;1;;;;;;;;;;;;;;;;;
+Nauru;BUADA;1;Buada;exact_unique;NA;NA;NA;NA;exact_unique;1;Buada;checked;1;;;;;;;;;;;;;;;;;
+Nauru;DENIGOMODU;1;Denigomodu;exact_unique;NA;NA;NA;NA;exact_unique;1;Denigomodu;checked;1;;;;;;;;;;;;;;;;;
+Nauru;NIBOK;1;Nibok;exact_unique;NA;NA;NA;NA;exact_unique;1;Nibok;checked;1;;;;;;;;;;;;;;;;;
+Nauru;UABOE;1;Uaboe;exact_unique;NA;NA;NA;NA;exact_unique;1;Uaboe;checked;1;;;;;;;;;;;;;;;;;
+Nauru;BAITSI;NA;NA;NA;1;Baiti;0.055555556;strong_fuzzy_candidate;fuzzy_review;1;Baiti;checked;1;;;;;;;;;;;;;;;;;
+Nauru;EWA;1;Ewa;exact_unique;NA;NA;NA;NA;exact_unique;1;Ewa;checked;1;;;;;;;;;;;;;;;;;
+Nauru;ANETAN;1;Anetan;exact_unique;NA;NA;NA;NA;exact_unique;1;Anetan;checked;1;;;;;;;;;;;;;;;;;
+Nauru;ANABAR;1;Anabar;exact_unique;NA;NA;NA;NA;exact_unique;1;Anabar;checked;1;;;;;;;;;;;;;;;;;
+Nauru;IJUW;1;Ijuw;exact_unique;NA;NA;NA;NA;exact_unique;1;Ijuw;checked;1;;;;;;;;;;;;;;;;;
+Nauru;ANIBARE;1;Anibare;exact_unique;NA;NA;NA;NA;exact_unique;1;Anibare;checked;1;;;;;;;;;;;;;;;;;
+Nauru;MENENG;1;Meneng;exact_unique;NA;NA;NA;NA;exact_unique;1;Meneng;checked;1;;;;;;;;;;;;;;;;;
+Nauru;LOCATION;NA;NA;NA;1;Anetan;0.375;weak_fuzzy_candidate;unmatched;NA;NA;checked;8;probably error in MICS data;;;;;;;;;;;;;;;;
+Pakistan Sindh;Badin;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;8;"Use HDX dataset ""https://data.humdata.org/dataset/cod-ab-pak""";;;;;;;;;;;;;;;;
+Pakistan Sindh;Dadu;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;8;"Use HDX dataset ""https://data.humdata.org/dataset/cod-ab-pak""";;;;;;;;;;;;;;;;
+Pakistan Sindh;Ghotki;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;8;"Use HDX dataset ""https://data.humdata.org/dataset/cod-ab-pak""";;;;;;;;;;;;;;;;
+Pakistan Sindh;Hyderabad;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;8;"Use HDX dataset ""https://data.humdata.org/dataset/cod-ab-pak""";;;;;;;;;;;;;;;;
+Pakistan Sindh;Jacobabad;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;8;"Use HDX dataset ""https://data.humdata.org/dataset/cod-ab-pak""";;;;;;;;;;;;;;;;
+Pakistan Sindh;Jamshoro;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;8;"Use HDX dataset ""https://data.humdata.org/dataset/cod-ab-pak""";;;;;;;;;;;;;;;;
+Pakistan Sindh;Shahdad Kot;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;Kambar Shahdad Kot;checked;8;"https://data.humdata.org/dataset/cod-ab-pak
+Shadat Koth"" is called ""Kambar Shahdad Kot"" in HDX dataset";;;;;;;;;;;;;;;;
+Pakistan Sindh;Karachi Central;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;8;"Use HDX dataset ""https://data.humdata.org/dataset/cod-ab-pak""";;;;;;;;;;;;;;;;
+Pakistan Sindh;Karachi East;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;8;"Use HDX dataset ""https://data.humdata.org/dataset/cod-ab-pak""";;;;;;;;;;;;;;;;
+Pakistan Sindh;Karachi South;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;8;"Use HDX dataset ""https://data.humdata.org/dataset/cod-ab-pak""";;;;;;;;;;;;;;;;
+Pakistan Sindh;Karachi West;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;8;"Use HDX dataset ""https://data.humdata.org/dataset/cod-ab-pak""";;;;;;;;;;;;;;;;
+Pakistan Sindh;Kashmore;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;8;"Use HDX dataset ""https://data.humdata.org/dataset/cod-ab-pak""";;;;;;;;;;;;;;;;
+Pakistan Sindh;Khairpur;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;8;"Use HDX dataset ""https://data.humdata.org/dataset/cod-ab-pak""";;;;;;;;;;;;;;;;
+Pakistan Sindh;Karachi Korangi;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;8;"Use HDX dataset ""https://data.humdata.org/dataset/cod-ab-pak""";;;;;;;;;;;;;;;;
+Pakistan Sindh;Larkana;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;8;"Use HDX dataset ""https://data.humdata.org/dataset/cod-ab-pak""";;;;;;;;;;;;;;;;
+Pakistan Sindh;Karachi Malir;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;8;"Use HDX dataset ""https://data.humdata.org/dataset/cod-ab-pak""";;;;;;;;;;;;;;;;
+Pakistan Sindh;Matiari;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;8;"Use HDX dataset ""https://data.humdata.org/dataset/cod-ab-pak""";;;;;;;;;;;;;;;;
+Pakistan Sindh;Mirpur Khas;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;8;"Use HDX dataset ""https://data.humdata.org/dataset/cod-ab-pak""";;;;;;;;;;;;;;;;
+Pakistan Sindh;Naushahro Feroze;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;8;"Use HDX dataset ""https://data.humdata.org/dataset/cod-ab-pak""";;;;;;;;;;;;;;;;
+Pakistan Sindh;Sanghar;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;8;"Use HDX dataset ""https://data.humdata.org/dataset/cod-ab-pak""";;;;;;;;;;;;;;;;
+Pakistan Sindh;Shaheed Benazirabad;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;8;"Use HDX dataset ""https://data.humdata.org/dataset/cod-ab-pak""";;;;;;;;;;;;;;;;
+Pakistan Sindh;Shikarpur;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;8;"Use HDX dataset ""https://data.humdata.org/dataset/cod-ab-pak""";;;;;;;;;;;;;;;;
+Pakistan Sindh;Sujawal;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;8;"Use HDX dataset ""https://data.humdata.org/dataset/cod-ab-pak""";;;;;;;;;;;;;;;;
+Pakistan Sindh;Sukkur;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;8;"Use HDX dataset ""https://data.humdata.org/dataset/cod-ab-pak""";;;;;;;;;;;;;;;;
+Pakistan Sindh;Tando Allahyar;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;8;"Use HDX dataset ""https://data.humdata.org/dataset/cod-ab-pak""";;;;;;;;;;;;;;;;
+Pakistan Sindh;Tando Muhmmad Khan;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;8;"Use HDX dataset ""https://data.humdata.org/dataset/cod-ab-pak""";;;;;;;;;;;;;;;;
+Pakistan Sindh;Tharparkar;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;8;"Use HDX dataset ""https://data.humdata.org/dataset/cod-ab-pak""";;;;;;;;;;;;;;;;
+Pakistan Sindh;Thatta;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;8;"Use HDX dataset ""https://data.humdata.org/dataset/cod-ab-pak""";;;;;;;;;;;;;;;;
+Pakistan Sindh;Umer Kot;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;8;"Use HDX dataset ""https://data.humdata.org/dataset/cod-ab-pak""";;;;;;;;;;;;;;;;
+Republic of North Macedonia;VARDAR;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;3;see separate excel document for correct classification;;;;;;;;;;;;;;;;
+Republic of North Macedonia;EAST;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;3;see separate excel document for correct classification;;;;;;;;;;;;;;;;
+Republic of North Macedonia;SOUTHWEST;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;3;see separate excel document for correct classification;;;;;;;;;;;;;;;;
+Republic of North Macedonia;SOUTHEAST;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;3;see separate excel document for correct classification;;;;;;;;;;;;;;;;
+Republic of North Macedonia;PELAGONIJA;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;3;see separate excel document for correct classification;;;;;;;;;;;;;;;;
+Republic of North Macedonia;POLOG;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;3;see separate excel document for correct classification;;;;;;;;;;;;;;;;
+Republic of North Macedonia;NORTHEAST;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;3;see separate excel document for correct classification;;;;;;;;;;;;;;;;
+Republic of North Macedonia;SKOPJE;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;3;see separate excel document for correct classification;;;;;;;;;;;;;;;;
+Serbia;BELGRADE;NA;NA;NA;2;Bosilegrad;0.189285714;review_needed;fuzzy_review;2;Bosilegrad;checked;3;"https://en.wikipedia.org/wiki/Statistical_regions_of_Serbia
+
+
+VOJVODINA: Severno-Bački, Severno-Banatski, Zapadno-Bački, Srednje-Banatski, Južno-Bački, Južno-Banatski, Sremski
+BELGRADE: Grad Beograd
+SUMADIJA AND WESTERN SERBIA: Mačvanski, Kolubarski, Šumadijski, Pomoravski, Moravički, Zlatiborski, Rasinski, Raški
+SOUTHERN AND EASTERN SERBIA: Braničevski, Podunavski, Borski, Zaječarski, Nišavski, Toplički, Pirotski, Jablanički, Pčinjski";;;;;;;;;;;;;;;;
+Serbia;VOJVODINA;NA;NA;NA;2;Voždovac;0.25;weak_fuzzy_candidate;unmatched;NA;NA;checked;3;"https://en.wikipedia.org/wiki/Statistical_regions_of_Serbia
+
+
+Vojvodina Region: Severno-Bački, Severno-Banatski, Zapadno-Bački, Srednje-Banatski, Južno-Bački, Južno-Banatski, Sremski
+Belgrade Region: Grad Beograd
+Šumadija and Western Serbia Region: Mačvanski, Kolubarski, Šumadijski, Pomoravski, Moravički, Zlatiborski, Rasinski, Raški
+Southern and Eastern Serbia Region: Braničevski, Podunavski, Borski, Zaječarski, Nišavski, Toplički, Pirotski, Jablanički, Pčinjski";;;;;;;;;;;;;;;;
+Serbia;SUMADIJA AND WESTERN SERBIA;NA;NA;NA;2;Ada;0.296296296;weak_fuzzy_candidate;unmatched;NA;NA;checked;3;"https://en.wikipedia.org/wiki/Statistical_regions_of_Serbia
+
+
+Vojvodina Region: Severno-Bački, Severno-Banatski, Zapadno-Bački, Srednje-Banatski, Južno-Bački, Južno-Banatski, Sremski
+Belgrade Region: Grad Beograd
+Šumadija and Western Serbia Region: Mačvanski, Kolubarski, Šumadijski, Pomoravski, Moravički, Zlatiborski, Rasinski, Raški
+Southern and Eastern Serbia Region: Braničevski, Podunavski, Borski, Zaječarski, Nišavski, Toplički, Pirotski, Jablanički, Pčinjski";;;;;;;;;;;;;;;;
+Serbia;SOUTHERN AND EASTERN SERBIA;NA;NA;NA;2;Ada;0.296296296;weak_fuzzy_candidate;unmatched;NA;NA;checked;3;"https://en.wikipedia.org/wiki/Statistical_regions_of_Serbia
+
+
+Vojvodina Region: Severno-Bački, Severno-Banatski, Zapadno-Bački, Srednje-Banatski, Južno-Bački, Južno-Banatski, Sremski
+Belgrade Region: Grad Beograd
+Šumadija and Western Serbia Region: Mačvanski, Kolubarski, Šumadijski, Pomoravski, Moravički, Zlatiborski, Rasinski, Raški
+Southern and Eastern Serbia Region: Braničevski, Podunavski, Borski, Zaječarski, Nišavski, Toplički, Pirotski, Jablanički, Pčinjski";;;;;;;;;;;;;;;;
+Suriname;PARAMARIBO;1;Paramaribo;exact_unique;NA;NA;NA;NA;exact_unique;1;Paramaribo;checked;1;;;;;;;;;;;;;;;;;
+Suriname;WANICA;1;Wanica;exact_unique;NA;NA;NA;NA;exact_unique;1;Wanica;checked;1;;;;;;;;;;;;;;;;;
+Suriname;NICKERIE;1;Nickerie;exact_unique;NA;NA;NA;NA;exact_unique;1;Nickerie;checked;1;;;;;;;;;;;;;;;;;
+Suriname;CORONIE;1;Coronie;exact_unique;NA;NA;NA;NA;exact_unique;1;Coronie;checked;1;;;;;;;;;;;;;;;;;
+Suriname;SARAMACCA;1;Saramacca;exact_unique;NA;NA;NA;NA;exact_unique;1;Saramacca;checked;1;;;;;;;;;;;;;;;;;
+Suriname;COMMEWIJNE;1;Commewijne;exact_unique;NA;NA;NA;NA;exact_unique;1;Commewijne;checked;1;;;;;;;;;;;;;;;;;
+Suriname;MAROWIJNE;1;Marowijne;exact_unique;NA;NA;NA;NA;exact_unique;1;Marowijne;checked;1;;;;;;;;;;;;;;;;;
+Suriname;PARA;1;Para;exact_unique;NA;NA;NA;NA;exact_unique;1;Para;checked;1;;;;;;;;;;;;;;;;;
+Suriname;BROKOPONDO;1;Brokopondo;exact_unique;NA;NA;NA;NA;exact_unique;1;Brokopondo;checked;1;;;;;;;;;;;;;;;;;
+Suriname;SIPALIWINI;1;Sipaliwini;exact_unique;NA;NA;NA;NA;exact_unique;1;Sipaliwini;checked;1;;;;;;;;;;;;;;;;;
+Thailand;Bangkok;NA;NA;NA;3;Ban Kok;0.095238095;strong_fuzzy_candidate;fuzzy_review;3;Ban Kok;checked;3;"Bangkok: Bangkok
+Central: Samut Prakan, Nonthaburi, Pathum Thani, Phra Nakhon Si Ayutthaya, Ang Thong, Lop Buri, Sing Buri, Chai Nat, Saraburi, Chon Buri, Rayong, Chanthaburi, Trat, Chachoengsao, Prachin Buri, Nakhon Nayok, Sa Kaeo, Ratchaburi, Kanchanaburi, Suphanburi, Nakhon Pathom, Samut Sakhon, Samut Songkhram, Phetchaburi, Prachuap Khiri Khan
+North: Chiang Mai, Lamphun, Lampang, Uttaradit, Phrae, Nan, Phayao, Chiang Rai, Mae Hong Son, Nakhon Sawan, Uthai Thani, Kamphaeng Phet, Tak, Sukhothai, Phitsanulok, Phichit, Phetchabun
+Northeast: Nakhon Ratchasima, Buriram, Surin, Sisaket, Ubon Ratchathani, Yasothon, Chaiyaphum, Amnat Charoen, Bueng Kan, Nong Bua Lam Phu, Khon Kaen, Udon Thani, Loei, Kong Khai, Maha Sarakham, Roi Et, Kalasin, Sakon Nakhon, Nakhon Phanom, Mukdahan
+South: Nakhon Si Thammarat, Krabi, Phangnga, Phuket, Surat Thani, Ranong, Chumphon, Songkhla, Satun, Trang, Phatthalung, Pattani, Yala, Narathiwat";;;;;;;;;;;;;;;;
+Thailand;Central;NA;NA;NA;3;Choeng Tale;0.199134199;review_needed;fuzzy_review;3;Choeng Tale;checked;3;"Bangkok: Bangkok
+Central: Samut Prakan, Nonthaburi, Pathum Thani, Phra Nakhon Si Ayutthaya, Ang Thong, Lop Buri, Sing Buri, Chai Nat, Saraburi, Chon Buri, Rayong, Chanthaburi, Trat, Chachoengsao, Prachin Buri, Nakhon Nayok, Sa Kaeo, Ratchaburi, Kanchanaburi, Suphanburi, Nakhon Pathom, Samut Sakhon, Samut Songkhram, Phetchaburi, Prachuap Khiri Khan
+North: Chiang Mai, Lamphun, Lampang, Uttaradit, Phrae, Nan, Phayao, Chiang Rai, Mae Hong Son, Nakhon Sawan, Uthai Thani, Kamphaeng Phet, Tak, Sukhothai, Phitsanulok, Phichit, Phetchabun
+Northeast: Nakhon Ratchasima, Buriram, Surin, Sisaket, Ubon Ratchathani, Yasothon, Chaiyaphum, Amnat Charoen, Bueng Kan, Nong Bua Lam Phu, Khon Kaen, Udon Thani, Loei, Kong Khai, Maha Sarakham, Roi Et, Kalasin, Sakon Nakhon, Nakhon Phanom, Mukdahan
+South: Nakhon Si Thammarat, Krabi, Phangnga, Phuket, Surat Thani, Ranong, Chumphon, Songkhla, Satun, Trang, Phatthalung, Pattani, Yala, Narathiwat";;;;;;;;;;;;;;;;
+Thailand;North;NA;NA;NA;3;Nong Krathum;0.194444444;review_needed;fuzzy_review;3;Nong Krathum;checked;3;"Bangkok: Bangkok
+Central: Samut Prakan, Nonthaburi, Pathum Thani, Phra Nakhon Si Ayutthaya, Ang Thong, Lop Buri, Sing Buri, Chai Nat, Saraburi, Chon Buri, Rayong, Chanthaburi, Trat, Chachoengsao, Prachin Buri, Nakhon Nayok, Sa Kaeo, Ratchaburi, Kanchanaburi, Suphanburi, Nakhon Pathom, Samut Sakhon, Samut Songkhram, Phetchaburi, Prachuap Khiri Khan
+North: Chiang Mai, Lamphun, Lampang, Uttaradit, Phrae, Nan, Phayao, Chiang Rai, Mae Hong Son, Nakhon Sawan, Uthai Thani, Kamphaeng Phet, Tak, Sukhothai, Phitsanulok, Phichit, Phetchabun
+Northeast: Nakhon Ratchasima, Buriram, Surin, Sisaket, Ubon Ratchathani, Yasothon, Chaiyaphum, Amnat Charoen, Bueng Kan, Nong Bua Lam Phu, Khon Kaen, Udon Thani, Loei, Kong Khai, Maha Sarakham, Roi Et, Kalasin, Sakon Nakhon, Nakhon Phanom, Mukdahan
+South: Nakhon Si Thammarat, Krabi, Phangnga, Phuket, Surat Thani, Ranong, Chumphon, Songkhla, Satun, Trang, Phatthalung, Pattani, Yala, Narathiwat";;;;;;;;;;;;;;;;
+Thailand;Northeast;NA;NA;NA;3;Non That;0.194444444;review_needed;fuzzy_review;3;Non That;checked;3;https://mics.ipums.org/mics-action/variables/GEO1_TH#comparability_section;;;;;;;;;;;;;;;;
+Thailand;South;NA;NA;NA;3;Suthep;0.177777778;review_needed;fuzzy_review;3;Suthep;checked;3;"Bangkok: Bangkok
+Central: Samut Prakan, Nonthaburi, Pathum Thani, Phra Nakhon Si Ayutthaya, Ang Thong, Lop Buri, Sing Buri, Chai Nat, Saraburi, Chon Buri, Rayong, Chanthaburi, Trat, Chachoengsao, Prachin Buri, Nakhon Nayok, Sa Kaeo, Ratchaburi, Kanchanaburi, Suphanburi, Nakhon Pathom, Samut Sakhon, Samut Songkhram, Phetchaburi, Prachuap Khiri Khan
+North: Chiang Mai, Lamphun, Lampang, Uttaradit, Phrae, Nan, Phayao, Chiang Rai, Mae Hong Son, Nakhon Sawan, Uthai Thani, Kamphaeng Phet, Tak, Sukhothai, Phitsanulok, Phichit, Phetchabun
+Northeast: Nakhon Ratchasima, Buriram, Surin, Sisaket, Ubon Ratchathani, Yasothon, Chaiyaphum, Amnat Charoen, Bueng Kan, Nong Bua Lam Phu, Khon Kaen, Udon Thani, Loei, Kong Khai, Maha Sarakham, Roi Et, Kalasin, Sakon Nakhon, Nakhon Phanom, Mukdahan
+South: Nakhon Si Thammarat, Krabi, Phangnga, Phuket, Surat Thani, Ranong, Chumphon, Songkhla, Satun, Trang, Phatthalung, Pattani, Yala, Narathiwat";;;;;;;;;;;;;;;;
+Trinidad and Tobago;North-West RHA;NA;NA;NA;1;Port of Spain;0.368131868;weak_fuzzy_candidate;unmatched;NA;NA;checked;3;"List of regions of Trinidad and Tobago by Human Development Index - Wikipedia
+
+North-Central RHA (Chaguanas, Couva-Tabaquite-Talbaro)
+North-West RHA (Arima, Diego Mártin, Port of Spain, San Juan-Laventille, Tunanpuna-Piarco)
+South-West RHA (Penal-Debe, Point Fortin, Princes Town, San Fernando, Siparia)
+Tobago (Tobago)
+Eastern RHA (Sangre-Grande, Mayaro-Río Claro)";;;;;;;;;;;;;;;;
+Trinidad and Tobago;North-Central RHA;NA;NA;NA;1;Port of Spain;0.397543633;weak_fuzzy_candidate;unmatched;NA;NA;checked;3;"List of regions of Trinidad and Tobago by Human Development Index - Wikipedia
+
+Central (Chaguanas, Couva-Tabaquite-Talbaro)
+North West (Arima, Diego Mártin, Port of Spain, San Juan-Laventille, Tunanpuna-Piarco)
+South West (Penal-Debe, Point Fortin, Princes Town, San Fernando, Siparia)
+Tobago
+East (Sangre-Grande, Mayaro-Río Claro)";;;;;;;;;;;;;;;;
+Trinidad and Tobago;Eastern RHA;NA;NA;NA;1;Sangre Grande;0.281614219;weak_fuzzy_candidate;unmatched;NA;NA;checked;3;"List of regions of Trinidad and Tobago by Human Development Index - Wikipedia
+
+Central (Chaguanas, Couva-Tabaquite-Talbaro)
+North West (Arima, Diego Mártin, Port of Spain, San Juan-Laventille, Tunanpuna-Piarco)
+South West (Penal-Debe, Point Fortin, Princes Town, San Fernando, Siparia)
+Tobago
+East (Sangre-Grande, Mayaro-Río Claro)";;;;;;;;;;;;;;;;
+Trinidad and Tobago;South-West RHA;NA;NA;NA;1;San Fernando;0.408730159;weak_fuzzy_candidate;unmatched;NA;NA;checked;3;"List of regions of Trinidad and Tobago by Human Development Index - Wikipedia
+
+Central (Chaguanas, Couva-Tabaquite-Talbaro)
+North West (Arima, Diego Mártin, Port of Spain, San Juan-Laventille, Tunanpuna-Piarco)
+South West (Penal-Debe, Point Fortin, Princes Town, San Fernando, Siparia)
+Tobago
+East (Sangre-Grande, Mayaro-Río Claro)";;;;;;;;;;;;;;;;
+Trinidad and Tobago;Tobago RHA;NA;NA;NA;1;Tobago;0.133333333;review_needed;fuzzy_review;1;Tobago;checked;3;"List of regions of Trinidad and Tobago by Human Development Index - Wikipedia
+
+Central (Chaguanas, Couva-Tabaquite-Talbaro)
+North West (Arima, Diego Mártin, Port of Spain, San Juan-Laventille, Tunanpuna-Piarco)
+South West (Penal-Debe, Point Fortin, Princes Town, San Fernando, Siparia)
+Tobago
+East (Sangre-Grande, Mayaro-Río Claro)";;;;;;;;;;;;;;;;
+Turkmenistan;ASHGABAT CITY;NA;NA;NA;1;Aşgabat;0.153846154;review_needed;fuzzy_review;1;Aşgabat;checked;1;;;;;;;;;;;;;;;;;
+Turkmenistan;ARKADAG CITY;NA;NA;NA;1;Aşgabat;0.356349206;weak_fuzzy_candidate;unmatched;NA;NA;;8;"Ahal and Arkadag MICS dataa has to be merged, since only ahal as entire region is available in MICS, without Arkadag. 
+";;;;;;;;;;;;;;;;
+Turkmenistan;AKHAL VELAYAT;NA;NA;NA;1;Ahal;0.230769231;weak_fuzzy_candidate;unmatched;NA;ahal;checked;2;"Ahal and Arkadag MICS dataa has to be merged, since only ahal as entire region is available in MICS, without Arkadag. 
+";;;;;;;;;;;;;;;;
+Turkmenistan;BALKAN VELAYAT;NA;NA;NA;1;Balkan;0.19047619;review_needed;fuzzy_review;1;Balkan;checked;1;;;;;;;;;;;;;;;;;
+Turkmenistan;DASHOGUZ VELAYAT;NA;NA;NA;1;Tashauz;0.324404762;weak_fuzzy_candidate;unmatched;NA;Tashauz;checked;1;;;;;;;;;;;;;;;;;
+Turkmenistan;LEBAP VELAYAT;NA;NA;NA;1;Balkan;0.466880342;weak_fuzzy_candidate;unmatched;NA;Chardzhou;checked;2;;;;;;;;;;;;;;;;;
+Turkmenistan;MARY VELAYAT;NA;NA;NA;1;Mary;0.222222222;weak_fuzzy_candidate;unmatched;NA;mary;checked;2;;;;;;;;;;;;;;;;;
+Uzbekistan;REPUBLIC OF KARAKALPAKSTAN;NA;NA;NA;1;Karakalpakstan;0.237179487;weak_fuzzy_candidate;unmatched;NA;Karakalpakstan;checked;10;;;;;;;;;;;;;;;;;
+Uzbekistan;ANDIJAN REGION;NA;NA;NA;1;Andijon;0.238095238;weak_fuzzy_candidate;unmatched;NA;Andijon;checked;10;;;;;;;;;;;;;;;;;
+Uzbekistan;BUKHARA REGION;NA;NA;NA;1;Bukhoro;0.238095238;weak_fuzzy_candidate;unmatched;NA;Bukhoro;checked;10;;;;;;;;;;;;;;;;;
+Uzbekistan;JIZZAKH REGION;NA;NA;NA;1;Jizzakh;0.166666667;review_needed;fuzzy_review;1;Jizzakh;checked;2;;;;;;;;;;;;;;;;;
+Uzbekistan;KASHKADARYA REGION;NA;NA;NA;1;Kashkadarya;0.12962963;review_needed;fuzzy_review;1;Kashkadarya;checked;2;;;;;;;;;;;;;;;;;
+Uzbekistan;NAVOI REGION;NA;NA;NA;1;Navoi;0.194444444;review_needed;fuzzy_review;1;Navoi;checked;2;;;;;;;;;;;;;;;;;
+Uzbekistan;NAMANGAN REGION;NA;NA;NA;1;Namangan;0.155555556;review_needed;fuzzy_review;1;Namangan;checked;1;;;;;;;;;;;;;;;;;
+Uzbekistan;SAMARKAND REGION;NA;NA;NA;1;Samarkand;0.145833333;review_needed;fuzzy_review;1;Samarkand;checked;1;;;;;;;;;;;;;;;;;
+Uzbekistan;SURKHANDARYA REGION;NA;NA;NA;1;Surkhandarya;0.122807018;review_needed;fuzzy_review;1;Surkhandarya;checked;1;;;;;;;;;;;;;;;;;
+Uzbekistan;SYRDARYA REGION;NA;NA;NA;1;Sirdaryo;0.338492063;weak_fuzzy_candidate;unmatched;NA;Sirdaryo;checked;10;;;;;;;;;;;;;;;;;
+Uzbekistan;TASHKENT REGION;NA;NA;NA;1;Tashkent;0.155555556;review_needed;fuzzy_review;1;Tashkent;checked;1;;;;;;;;;;;;;;;;;
+Uzbekistan;FERGANA REGION;NA;NA;NA;1;Ferghana;0.208333333;weak_fuzzy_candidate;unmatched;NA;Ferghana;checked;10;;;;;;;;;;;;;;;;;
+Uzbekistan;KHOREZM REGION;NA;NA;NA;1;Khorezm;0.166666667;review_needed;fuzzy_review;1;Khorezm;checked;1;;;;;;;;;;;;;;;;;
+Uzbekistan;TASHKENT CITY;2;Tashkent City;exact_unique;NA;NA;NA;NA;exact_unique;2;Tashkent City;checked;1;;;;;;;;;;;;;;;;;
+Yemen;Ibb;2;Ibb;exact_unique;NA;NA;NA;NA;exact_unique;2;Ibb;checked;1;;;;;;;;;;;;;;;;;
+Yemen;Abyan;1;Abyan;exact_unique;NA;NA;NA;NA;exact_unique;1;Abyan;checked;1;;;;;;;;;;;;;;;;;
+Yemen;Sana'a City;NA;NA;NA;2;Al Mukalla City;0.230976431;weak_fuzzy_candidate;unmatched;NA;Amanat Al Asimah;checked;10;;;;;;;;;;;;;;;;;
+Yemen;Al Bayda;2;Al Bayda;exact_unique;NA;NA;NA;NA;exact_unique;2;Al Bayda;checked;1;;;;;;;;;;;;;;;;;
+Yemen;Taizz;NA;NA;NA;1;Ta`izz;0.055555556;strong_fuzzy_candidate;fuzzy_review;1;Ta`izz;checked;1;;;;;;;;;;;;;;;;;
+Yemen;Al Jawf;1;Al Jawf;exact_unique;NA;NA;NA;NA;exact_unique;1;Al Jawf;checked;1;;;;;;;;;;;;;;;;;
+Yemen;Hajjah;2;Hajjah;exact_unique;NA;NA;NA;NA;exact_unique;2;Hajjah;checked;1;;;;;;;;;;;;;;;;;
+Yemen;Al Hudaydah;1;Al Hudaydah;exact_unique;NA;NA;NA;NA;exact_unique;1;Al Hudaydah;checked;1;;;;;;;;;;;;;;;;;
+Yemen;Hadramaut;NA;NA;NA;1;Hadramawt;0.074074074;strong_fuzzy_candidate;fuzzy_review;1;Hadramawt;checked;1;;;;;;;;;;;;;;;;;
+Yemen;Dhamar;1;Dhamar;exact_unique;NA;NA;NA;NA;exact_unique;1;Dhamar;checked;1;;;;;;;;;;;;;;;;;
+Yemen;Shabwah;1;Shabwah;exact_unique;NA;NA;NA;NA;exact_unique;1;Shabwah;checked;1;;;;;;;;;;;;;;;;;
+Yemen;Sa'ada;NA;NA;NA;2;Sa'adah;0.047619048;strong_fuzzy_candidate;fuzzy_review;2;Sa'adah;checked;1;;;;;;;;;;;;;;;;;
+Yemen;Sana'a;NA;NA;NA;1;San`a';0.122222222;review_needed;fuzzy_review;1;San`a';checked;1;;;;;;;;;;;;;;;;;
+Yemen;Aden;NA;NA;NA;1;`Adan;0.166666667;review_needed;fuzzy_review;1;`Adan;checked;1;;;;;;;;;;;;;;;;;
+Yemen;Lahj;NA;NA;NA;1;Lahij;0.066666667;strong_fuzzy_candidate;fuzzy_review;1;Lahij;checked;1;;;;;;;;;;;;;;;;;
+Yemen;Marib;2;Marib;exact_unique;NA;NA;NA;NA;exact_unique;2;Marib;checked;1;;;;;;;;;;;;;;;;;
+Yemen;Al Mahwit;1;Al Mahwit;exact_unique;NA;NA;NA;NA;exact_unique;1;Al Mahwit;checked;1;;;;;;;;;;;;;;;;;
+Yemen;Al Maharah;NA;NA;NA;1;Al Mahrah;0.07037037;strong_fuzzy_candidate;fuzzy_review;1;Al Mahrah;checked;1;;;;;;;;;;;;;;;;;
+Yemen;Amran;2;Amran;exact_unique;NA;NA;NA;NA;exact_unique;2;Amran;checked;1;;;;;;;;;;;;;;;;;
+Yemen;Al Dhale'e;NA;NA;NA;2;Ad Dhale'e;0.103703704;review_needed;fuzzy_review;2;Ad Dhale'e;checked;1;;;;;;;;;;;;;;;;;
+Yemen;Raymah;1;Raymah;exact_unique;NA;NA;NA;NA;exact_unique;1;Raymah;checked;1;;;;;;;;;;;;;;;;;
+Yemen;Socotra;NA;NA;NA;2;Sharas;0.357142857;weak_fuzzy_candidate;unmatched;NA;NA;checked;4;Is island to the south east of Yemen, boundary layer needs to be drawn manually. ;;;;;;;;;;;;;;;;
