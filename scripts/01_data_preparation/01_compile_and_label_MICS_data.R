@@ -1,4 +1,4 @@
-#title: "Compiling and Labeling Multiple Indicator Cluster Survey Data for Testing Set"
+#title: "Compiling and Labeling Multiple Indicator Cluster Survey Data"
 
 
 library(foreign)
