@@ -1,0 +1,570 @@
+country_wb,country_outcome,HH7_region_outcome,country_cov,HH7_region_cov,dist,match_type,n_best_candidates
+Algeria,Algeria,HAUT PLATEAU CENTRE,Algeria,HAUT_PLATEAU_CENTRE,0,exact,1
+Algeria,Algeria,HAUT PLATEAU EST,Algeria,HAUT_PLATEAU_EST,0,exact,1
+Algeria,Algeria,HAUT PLATEAU OUEST,Algeria,HAUT_PLATEAU_OUEST,0,exact,1
+Algeria,Algeria,NORD CENTRE,Algeria,NORD_CENTRE,0,exact,1
+Algeria,Algeria,NORD EST,Algeria,NORD_EST,0,exact,1
+Algeria,Algeria,NORD OUEST Algeria,Algeria,NORD_OUEST,0,exact,1
+Algeria,Algeria,SUD,Algeria,SUD,0,exact,1
+Azerbaijan,Azerbaijan,ABSHERON-KHIZI,Azerbaijan,ABSHERON_KHIZI,0,exact,1
+Azerbaijan,Azerbaijan,BAKU,Azerbaijan,BAKU,0,exact,1
+Azerbaijan,Azerbaijan,CENTRAL ARAN,Azerbaijan,CENTRAL_ARAN,0,exact,1
+Azerbaijan,Azerbaijan,DAGHLIG SHIRVAN,Azerbaijan,DAGHLIG_SHIRVAN,0,exact,1
+Azerbaijan,Azerbaijan,GANJA-DASHKASAN,Azerbaijan,GANJA_DASHKASAN,0,exact,1
+Azerbaijan,Azerbaijan,GAZAKH-TOVUZ,Azerbaijan,GAZAKH_TOVUZ,0,exact,1
+Azerbaijan,Azerbaijan,GUBA-KHACHMAZ,Azerbaijan,GUBA_KHACHMAZ,0,exact,1
+Azerbaijan,Azerbaijan,KARABAKH,Azerbaijan,KARABAKH,0,exact,1
+Azerbaijan,Azerbaijan,LANKARAN-ASTARA,Azerbaijan,LANKARAN_ASTARA,0,exact,1
+Azerbaijan,Azerbaijan,MIL-MUGHAN,Azerbaijan,MIL_MUGHAN,0,exact,1
+Azerbaijan,Azerbaijan,NAKHCHIVAN AR,Azerbaijan,NAKHCHIVAN_AR,0,exact,1
+Azerbaijan,Azerbaijan,SHAKI-ZAGATALA,Azerbaijan,SHAKI_ZAGATALA,0,exact,1
+Azerbaijan,Azerbaijan,SHIRVAN-SALYAN,Azerbaijan,SHIRVAN_SALYAN,0,exact,1
+Bangladesh,Bangladesh,Barishal,Bangladesh,Barishal,0,exact,1
+Bangladesh,Bangladesh,Chattogram,Bangladesh,Chattogram,0,exact,1
+Bangladesh,Bangladesh,Dhaka,Bangladesh,Dhaka,0,exact,1
+Bangladesh,Bangladesh,Khulna,Bangladesh,Khulna,0,exact,1
+Bangladesh,Bangladesh,Mymenshing,Bangladesh,Mymenshing,0,exact,1
+Bangladesh,Bangladesh,Rajshahi,Bangladesh,Rajshahi,0,exact,1
+Bangladesh,Bangladesh,Rangpur,Bangladesh,Rangpur,0,exact,1
+Bangladesh,Bangladesh,Sylhet,Bangladesh,Sylhet,0,exact,1
+Benin,Benin,ALIBORI,Benin,Alibori,0,exact,1
+Benin,Benin,ATACORA,Benin,Atakora,0.09523809523809525,strong_fuzzy,1
+Benin,Benin,ATLANTIQUE,Benin,Atlantique,0,exact,1
+Benin,Benin,BORGOU,Benin,Borgou,0,exact,1
+Benin,Benin,COLLINES,Benin,Collines,0,exact,1
+Benin,Benin,COUFFO,Benin,Kouffo,0.11111111111111106,review_fuzzy,1
+Benin,Benin,DONGA,Benin,Donga,0,exact,1
+Benin,Benin,LITTORAL,Benin,Littoral,0,exact,1
+Benin,Benin,MONO,Benin,Mono,0,exact,1
+Benin,Benin,OUEME,Benin,Ouémé,0,exact,1
+Benin,Benin,PLATEAU,Benin,Plateau,0,exact,1
+Benin,Benin,ZOU,Benin,Zou,0,exact,1
+Central African Republic,Central African Republic,Région 1,Central African Republic,REGION_1,0,exact,1
+Central African Republic,Central African Republic,Région 2,Central African Republic,REGION_2,0,exact,1
+Central African Republic,Central African Republic,Région 3,Central African Republic,REGION_3,0,exact,1
+Central African Republic,Central African Republic,Région 4,Central African Republic,REGION_4,0,exact,1
+Central African Republic,Central African Republic,Région 5,Central African Republic,REGION_5,0,exact,1
+Central African Republic,Central African Republic,Région 6,Central African Republic,REGION_6,0,exact,1
+Central African Republic,Central African Republic,Région 7,Central African Republic,REGION_7,0,exact,1
+Chad,Chad,Barh El Gazal,Chad,Barh el Ghazel,0.07326007326007335,strong_fuzzy,1
+Chad,Chad,Batha,Chad,Batha,0,exact,1
+Chad,Chad,Borkou,Chad,Borkou,0,exact,1
+Chad,Chad,Chari Baguirmi,Chad,Chari-Baguirmi,0,exact,1
+Chad,Chad,Ennedi Est,Chad,Ennedi Est,0,exact,1
+Chad,Chad,Ennedi Ouest,Chad,Ennedi Ouest,0,exact,1
+Chad,Chad,Guera,Chad,Guéra,0,exact,1
+Chad,Chad,Hadjer Lamis,Chad,Hadjer-Lamis,0,exact,1
+Chad,Chad,Kanem,Chad,Kanem,0,exact,1
+Chad,Chad,Lac,Chad,Lac,0,exact,1
+Chad,Chad,Logone Occidental,Chad,Logone Occidental,0,exact,1
+Chad,Chad,Logone Oriental,Chad,Logone Oriental,0,exact,1
+Chad,Chad,Mandoul,Chad,Mandoul,0,exact,1
+Chad,Chad,Mayo Kebbi Est,Chad,Mayo-Kebbi Est,0,exact,1
+Chad,Chad,Mayo Kebbi Ouest,Chad,Mayo-Kebbi Ouest,0,exact,1
+Chad,Chad,Moyen Chari,Chad,Moyen-Chari,0,exact,1
+Chad,Chad,Ndjamena,Chad,Ville de N'Djamena,0,manual_override,1
+Chad,Chad,Ouadda?,Chad,Ouaddaï,0.04761904761904765,strong_fuzzy,1
+Chad,Chad,Salamat,Chad,Salamat,0,exact,1
+Chad,Chad,Sila,Chad,Sila,0,exact,1
+Chad,Chad,Tandjile,Chad,Tandjilé,0,exact,1
+Chad,Chad,Wadi Fira,Chad,Wadi Fira,0,exact,1
+"Congo, Dem. Rep.",DR Congo,Bas Uele,Democratic Republic of the Congo,Bas-Uélé,0,exact,1
+"Congo, Dem. Rep.",DR Congo,Equateur,Democratic Republic of the Congo,Équateur,0,exact,1
+"Congo, Dem. Rep.",DR Congo,Haut Katanga,Democratic Republic of the Congo,Haut-Katanga,0,exact,1
+"Congo, Dem. Rep.",DR Congo,Haut Lomami,Democratic Republic of the Congo,Haut-Lomami,0,exact,1
+"Congo, Dem. Rep.",DR Congo,Haut Uele,Democratic Republic of the Congo,Haut-Uélé,0,exact,1
+"Congo, Dem. Rep.",DR Congo,Ituri,Democratic Republic of the Congo,Ituri,0,exact,1
+"Congo, Dem. Rep.",DR Congo,Kasai,Democratic Republic of the Congo,Kasaï,0,exact,1
+"Congo, Dem. Rep.",DR Congo,Kasai Central,Democratic Republic of the Congo,Kasaï-Central,0,exact,1
+"Congo, Dem. Rep.",DR Congo,Kasai Oriental,Democratic Republic of the Congo,Kasaï-Oriental,0,exact,1
+"Congo, Dem. Rep.",DR Congo,Kinshasa,Democratic Republic of the Congo,Kinshasa,0,exact,1
+"Congo, Dem. Rep.",DR Congo,Kongo Central,Democratic Republic of the Congo,Kongo-Central,0,exact,1
+"Congo, Dem. Rep.",DR Congo,Kwango,Democratic Republic of the Congo,Kwango,0,exact,1
+"Congo, Dem. Rep.",DR Congo,Kwilu,Democratic Republic of the Congo,Kwilu,0,exact,1
+"Congo, Dem. Rep.",DR Congo,Lomami,Democratic Republic of the Congo,Lomami,0,exact,1
+"Congo, Dem. Rep.",DR Congo,Lualaba,Democratic Republic of the Congo,Lualaba,0,exact,1
+"Congo, Dem. Rep.",DR Congo,Maindombe,Democratic Republic of the Congo,Maï-Ndombe,0.033333333333333416,strong_fuzzy,1
+"Congo, Dem. Rep.",DR Congo,Maniema,Democratic Republic of the Congo,Maniema,0,exact,1
+"Congo, Dem. Rep.",DR Congo,Mongala,Democratic Republic of the Congo,Mongala,0,exact,1
+"Congo, Dem. Rep.",DR Congo,Nord Kivu,Democratic Republic of the Congo,Nord-Kivu,0,exact,1
+"Congo, Dem. Rep.",DR Congo,Nord Ubangi,Democratic Republic of the Congo,Nord-Ubangi,0,exact,1
+"Congo, Dem. Rep.",DR Congo,Sankuru,Democratic Republic of the Congo,Sankuru,0,exact,1
+"Congo, Dem. Rep.",DR Congo,Sud Kivu,Democratic Republic of the Congo,Sud-Kivu,0,exact,1
+"Congo, Dem. Rep.",DR Congo,Sud Ubangi,Democratic Republic of the Congo,Sud-Ubangi,0,exact,1
+"Congo, Dem. Rep.",DR Congo,Tanganyika,Democratic Republic of the Congo,Tanganyika,0,exact,1
+"Congo, Dem. Rep.",DR Congo,Tshopo,Democratic Republic of the Congo,Tshopo,0,exact,1
+"Congo, Dem. Rep.",DR Congo,Tshuapa,Democratic Republic of the Congo,Tshuapa,0,exact,1
+Cote d'Ivoire,Côte d'Ivoire,Abidjan,Cote d'Ivoire,Abidjan,0,exact,1
+Cote d'Ivoire,Côte d'Ivoire,Bas Sassandra,Cote d'Ivoire,Bas-Sassandra,0,exact,1
+Cote d'Ivoire,Côte d'Ivoire,Comoe,Cote d'Ivoire,Comoe,0,exact,1
+Cote d'Ivoire,Côte d'Ivoire,Denguele,Cote d'Ivoire,Denguele,0,exact,1
+Cote d'Ivoire,Côte d'Ivoire,Goh-Djiboua,Cote d'Ivoire,Goh-Djiboua,0,exact,1
+Cote d'Ivoire,Côte d'Ivoire,Lacs,Cote d'Ivoire,Lacs,0,exact,1
+Cote d'Ivoire,Côte d'Ivoire,Lagunes,Cote d'Ivoire,Lagunes,0,exact,1
+Cote d'Ivoire,Côte d'Ivoire,Montagnes,Cote d'Ivoire,Montagnes,0,exact,1
+Cote d'Ivoire,Côte d'Ivoire,Sassandra-Marahoue,Cote d'Ivoire,Sassandra-Marahoue,0,exact,1
+Cote d'Ivoire,Côte d'Ivoire,Savanes,Cote d'Ivoire,Savanes,0,exact,1
+Cote d'Ivoire,Côte d'Ivoire,Vallee du bandama,Cote d'Ivoire,Vallee du Bandama,0,exact,1
+Cote d'Ivoire,Côte d'Ivoire,Woroba,Cote d'Ivoire,Woroba,0,exact,1
+Cote d'Ivoire,Côte d'Ivoire,Yamoussoukro,Cote d'Ivoire,Yamoussoukro,0,exact,1
+Cote d'Ivoire,Côte d'Ivoire,Zanzan,Cote d'Ivoire,Zanzan,0,exact,1
+Dominican Republic,Dominican Republic,CIBAO NORDESTE,Dominican Republic,CIBAO_NORDESTE,0,exact,1
+Dominican Republic,Dominican Republic,CIBAO NOROESTE,Dominican Republic,CIBAO_NOROESTE,0,exact,1
+Dominican Republic,Dominican Republic,CIBAO NORTE,Dominican Republic,CIBAO_NORTE,0,exact,1
+Dominican Republic,Dominican Republic,CIBAO SUR,Dominican Republic,CIBAO_SUR,0,exact,1
+Dominican Republic,Dominican Republic,EL VALLE,Dominican Republic,EL_VALLE,0,exact,1
+Dominican Republic,Dominican Republic,ENRIQUILLO,Dominican Republic,ENRIQUILLO,0,exact,1
+Dominican Republic,Dominican Republic,HIGUAMO,Dominican Republic,HIGUAMO,0,exact,1
+Dominican Republic,Dominican Republic,OZAMA,Dominican Republic,OZAMA,0,exact,1
+Dominican Republic,Dominican Republic,VALDESIA,Dominican Republic,VALDESIA,0,exact,1
+Dominican Republic,Dominican Republic,YUMA,Dominican Republic,YUMA,0,exact,1
+Eswatini,Eswatini,HHOHHO,Eswatini,Hhohho,0,exact,1
+Eswatini,Eswatini,LUBOMBO,Eswatini,Lubombo,0,exact,1
+Eswatini,Eswatini,MANZINI,Eswatini,Manzini,0,exact,1
+Eswatini,Eswatini,SHISELWENI,Eswatini,Shiselweni,0,exact,1
+Fiji,Fiji,CENTRAL,NA,NA,NA,no_covariate_country_match,NA
+Fiji,Fiji,EASTERN,NA,NA,NA,no_covariate_country_match,NA
+Fiji,Fiji,NORTHERN,NA,NA,NA,no_covariate_country_match,NA
+Fiji,Fiji,WESTERN,NA,NA,NA,no_covariate_country_match,NA
+"Gambia, The",Gambia,Banjul,Gambia,Banjul,0,exact,1
+"Gambia, The",Gambia,Basse,Gambia,Basse,0,exact,1
+"Gambia, The",Gambia,Brikama,Gambia,Brikama,0,exact,1
+"Gambia, The",Gambia,Janjanbureh,Gambia,Janjanbureh,0,exact,1
+"Gambia, The",Gambia,Kanifing,Gambia,Kanifing,0,exact,1
+"Gambia, The",Gambia,Kerewan,Gambia,Kerewan,0,exact,1
+"Gambia, The",Gambia,Kuntaur,Gambia,Kuntaur,0,exact,1
+"Gambia, The",Gambia,Mansakonko,Gambia,Mansakonko,0,exact,1
+Georgia,Georgia,ADJARA A.R.,Georgia,Adjara A.R.,0,exact,1
+Georgia,Georgia,GURIA,Georgia,Guria,0,exact,1
+Georgia,Georgia,IMERETI,Georgia,"Imereti, Racha-Lechkhumi and Kvemo Svaneti",0.2764227642276423,weak_fuzzy,1
+Georgia,Georgia,KHAKHETI,Georgia,Kakheti,0.11309523809523819,review_fuzzy,1
+Georgia,Georgia,KVEMO KARTLI,Georgia,Kvemo Kartli,0,exact,1
+Georgia,Georgia,MTKHETA-MTIANETI,Georgia,Mtkheta-Mtianeti,0,exact,1
+Georgia,Georgia,SAMEGRELO-ZEMO SVANETI,Georgia,Samegrelo-Zemo Svaneti,0,exact,1
+Georgia,Georgia,SAMTSKHE-JAVAKHETI,Georgia,Samtskhe-Javakheti,0,exact,1
+Georgia,Georgia,SHIDA KARTLI,Georgia,Shida Kartli,0,exact,1
+Georgia,Georgia,TBILISI,Georgia,Tbilisi,0,exact,1
+Ghana,Ghana,ASHANTI,Ghana,Ashanti,0,exact,1
+Ghana,Ghana,BRONG AHAFO,Ghana,Brong Ahafo,0,exact,1
+Ghana,Ghana,CENTRAL,Ghana,Central,0,exact,1
+Ghana,Ghana,EASTERN,Ghana,Eastern,0,exact,1
+Ghana,Ghana,GREATER ACCRA,Ghana,Greater Accra,0,exact,1
+Ghana,Ghana,NORTHERN,Ghana,Northern,0,exact,1
+Ghana,Ghana,UPPER EAST,Ghana,Upper East,0,exact,1
+Ghana,Ghana,UPPER WEST,Ghana,Upper West,0,exact,1
+Ghana,Ghana,VOLTA,Ghana,Volta,0,exact,1
+Ghana,Ghana,WESTERN,Ghana,Western,0,exact,1
+Guinea-Bissau,Guinea Bissau,Bafatá,Guinea-Bissau,Bafatá,0,exact,1
+Guinea-Bissau,Guinea Bissau,Biombo,Guinea-Bissau,Biombo,0,exact,1
+Guinea-Bissau,Guinea Bissau,Bolama/Bijagós,Guinea-Bissau,Bolama,0.19047619047619044,review_fuzzy,1
+Guinea-Bissau,Guinea Bissau,Cacheu,Guinea-Bissau,Cacheu,0,exact,1
+Guinea-Bissau,Guinea Bissau,Gabú,Guinea-Bissau,Gabú,0,exact,1
+Guinea-Bissau,Guinea Bissau,Oio,Guinea-Bissau,Oio,0,exact,1
+Guinea-Bissau,Guinea Bissau,Quinara,Guinea-Bissau,Quinara,0,exact,1
+Guinea-Bissau,Guinea Bissau,SAB,Guinea-Bissau,Bissau,0,manual_override,1
+Guinea-Bissau,Guinea Bissau,Tombali,Guinea-Bissau,Tombali,0,exact,1
+Guyana,Guyana,BARIMA-WAINI,Guyana,Barima-Waini,0,exact,1
+Guyana,Guyana,CUYUNI-MAZARUNI,Guyana,Cuyuni-Mazaruni,0,exact,1
+Guyana,Guyana,DEMERARA-MAHAICA,Guyana,Demerara-Mahaica,0,exact,1
+Guyana,Guyana,EAST BERBICE-CORENTYNE,Guyana,East Berbice-Corentyne,0,exact,1
+Guyana,Guyana,ESSEQUIBO ISLANDS-WEST DEMERARA,Guyana,Essequibo Islands-West Demerara,0,exact,1
+Guyana,Guyana,MAHAICA-BERBICE,Guyana,Mahaica-Berbice,0,exact,1
+Guyana,Guyana,POMEROON-SUPENAAM,Guyana,Pomeroon-Supenaam,0,exact,1
+Guyana,Guyana,POTARO-SIPARUNI,Guyana,Potaro-Siparuni,0,exact,1
+Guyana,Guyana,UPPER DEMERARA-BERBICE,Guyana,Upper Demerara-Berbice,0,exact,1
+Guyana,Guyana,UPPER TAKUTU-UPPER ESSEQUIBO,Guyana,Upper Takutu-Upper Essequibo,0,exact,1
+Honduras,Honduras,ATLANTIDA,Honduras,Atlántida,0,exact,1
+Honduras,Honduras,CHOLUTECA,Honduras,Choluteca,0,exact,1
+Honduras,Honduras,COLON,Honduras,Colón,0,exact,1
+Honduras,Honduras,COMAYAGUA,Honduras,Comayagua,0,exact,1
+Honduras,Honduras,COPAN,Honduras,Copán,0,exact,1
+Honduras,Honduras,CORTES,Honduras,Resto Cortés,0,exact,1
+Honduras,Honduras,DISTRITO CENTRAL,Honduras,Distrito Central,0,exact,1
+Honduras,Honduras,EL PARAISO,Honduras,El Paraíso,0,exact,1
+Honduras,Honduras,FRANCISCO MORAZAN,Honduras,Resto Francisco Morazán,0,exact,1
+Honduras,Honduras,GRACIAS A DIOS,Honduras,Gracias A Dios,0,exact,1
+Honduras,Honduras,INTIBUCA,Honduras,Intibucá,0,exact,1
+Honduras,Honduras,ISLAS DE LA BAHIA,Honduras,Islas De La Bahía,0,exact,1
+Honduras,Honduras,LA PAZ,Honduras,La Paz,0,exact,1
+Honduras,Honduras,LEMPIRA,Honduras,Lempira,0,exact,1
+Honduras,Honduras,OCOTEPEQUE,Honduras,Ocotepeque,0,exact,1
+Honduras,Honduras,OLANCHO,Honduras,Olancho,0,exact,1
+Honduras,Honduras,SAN PEDRO SULA,Honduras,San Pedro Sula,0,exact,1
+Honduras,Honduras,SANTA BARBARA,Honduras,Santa Bárbara,0,exact,1
+Honduras,Honduras,VALLE,Honduras,Valle,0,exact,1
+Honduras,Honduras,YORO,Honduras,Yoro,0,exact,1
+Iraq,Iraq,ANBAR,Iraq,Al-Anbar,0.22499999999999998,weak_fuzzy,1
+Iraq,Iraq,BABIL,Iraq,Babil,0,exact,1
+Iraq,Iraq,BAGHDAD,Iraq,Baghdad,0,exact,1
+Iraq,Iraq,BASRAH,Iraq,Al-Basrah,0.25000000000000006,weak_fuzzy,1
+Iraq,Iraq,DIALA,Iraq,Diyala,0.05555555555555556,strong_fuzzy,1
+Iraq,Iraq,DUHOK,Iraq,Dihok,0.13333333333333336,review_fuzzy,1
+Iraq,Iraq,ERBIL,Iraq,Arbil,0.13333333333333336,review_fuzzy,1
+Iraq,Iraq,KARBALAH,Iraq,Karbala',0.04166666666666672,strong_fuzzy,1
+Iraq,Iraq,KIRKUK,Iraq,At-Ta'mim,0,manual_override,1
+Iraq,Iraq,MISAN,Iraq,Maysan,0.2611111111111111,weak_fuzzy,1
+Iraq,Iraq,MUTHANA,Iraq,Al-Muthannia,0.3055555555555555,weak_fuzzy,1
+Iraq,Iraq,NAINAWA,Iraq,Ninawa,0.18650793650793648,review_fuzzy,1
+Iraq,Iraq,NAJAF,Iraq,An-Najaf,0.25833333333333336,weak_fuzzy,1
+Iraq,Iraq,QADISYAH,Iraq,Al-Qadisiyah,0.25694444444444453,weak_fuzzy,1
+Iraq,Iraq,SALAHADDIN,Iraq,Sala ad-Din,0.09393939393939396,strong_fuzzy,1
+Iraq,Iraq,SULAIMANIYA,Iraq,As-Sulaymaniyah,0,manual_override,1
+Iraq,Iraq,THIQAR,Iraq,Dhi-Qar,0.1507936507936509,review_fuzzy,1
+Iraq,Iraq,WASIT,Iraq,Wasit,0,exact,1
+Kiribati,Kiribati,CENTRAL GILBERT,Kiribati,CENTRAL_GILBERT,0,exact,1
+Kiribati,Kiribati,LINE AND PHOENIX GROUP,Kiribati,LINE_AND_PHOENIX,0.09090909090909088,strong_fuzzy,1
+Kiribati,Kiribati,NORTHERN GILBERT,Kiribati,NORTHERN_GILBERT,0,exact,1
+Kiribati,Kiribati,SOUTH TARAWA,Kiribati,SOUTH_TARAWA,0,exact,1
+Kiribati,Kiribati,SOUTHERN GILBERT,Kiribati,SOUTHERN_GILBERT,0,exact,1
+Kosovo,Kosovo,FERIZAJ,Kosovo,Ferizaj,0,exact,1
+Kosovo,Kosovo,GJAKOVA,Kosovo,Gjakova,0,exact,1
+Kosovo,Kosovo,GJILAN,Kosovo,Gjilan,0,exact,1
+Kosovo,Kosovo,MITROVICA,Kosovo,Mitrovica,0,exact,1
+Kosovo,Kosovo,PEJA,Kosovo,Peja,0,exact,1
+Kosovo,Kosovo,PRISHTINA,Kosovo,Prishtina,0,exact,1
+Kosovo,Kosovo,PRIZREN,Kosovo,Prizren,0,exact,1
+Lao PDR,Lao PDR,ATTAPEU,Lao People's Democratic Republic,Attapeu,0,exact,1
+Lao PDR,Lao PDR,BOKEO,Lao People's Democratic Republic,Bokeo,0,exact,1
+Lao PDR,Lao PDR,BORIKHAMXAY,Lao People's Democratic Republic,Borikhamxay,0,exact,1
+Lao PDR,Lao PDR,CHAMPASACK,Lao People's Democratic Republic,Champasack,0,exact,1
+Lao PDR,Lao PDR,HUAPHANH,Lao People's Democratic Republic,Huaphanh,0,exact,1
+Lao PDR,Lao PDR,KHAMMUAN,Lao People's Democratic Republic,Khammua,0.04166666666666672,strong_fuzzy,1
+Lao PDR,Lao PDR,LUANGNAMTHA,Lao People's Democratic Republic,Luangnamtha,0,exact,1
+Lao PDR,Lao PDR,LUANGPRABANG,Lao People's Democratic Republic,Luangprabang,0,exact,1
+Lao PDR,Lao PDR,OUDOMXAY,Lao People's Democratic Republic,Oudomxay,0,exact,1
+Lao PDR,Lao PDR,PHONGSALY,Lao People's Democratic Republic,Phongsaly,0,exact,1
+Lao PDR,Lao PDR,SARAVANE,Lao People's Democratic Republic,Saravane,0,exact,1
+Lao PDR,Lao PDR,SAVANNAKHET,Lao People's Democratic Republic,Savannakhet,0,exact,1
+Lao PDR,Lao PDR,SEKONG,Lao People's Democratic Republic,Sekong,0,exact,1
+Lao PDR,Lao PDR,VIENTIANE,Lao People's Democratic Republic,Vientiane,0,exact,1
+Lao PDR,Lao PDR,VIENTIANE CAPITAL,Lao People's Democratic Republic,Vientiane Capital,0,exact,1
+Lao PDR,Lao PDR,XAYABURY,Lao People's Democratic Republic,Xayabury,0,exact,1
+Lao PDR,Lao PDR,XAYSOMBOUN,Lao People's Democratic Republic,Xaysomboune,0.03030303030303033,strong_fuzzy,1
+Lao PDR,Lao PDR,XIENGKHUANG,Lao People's Democratic Republic,Xiengkhuang,0,exact,1
+Lesotho,Lesotho,BEREA,Lesotho,Berea,0,exact,1
+Lesotho,Lesotho,BOTHA-BOTHE,Lesotho,Botha-Bothe,0,exact,1
+Lesotho,Lesotho,LERIBE,Lesotho,Leribe,0,exact,1
+Lesotho,Lesotho,MAFETENG,Lesotho,Mafeteng,0,exact,1
+Lesotho,Lesotho,MASERU,Lesotho,Maseru,0,exact,1
+Lesotho,Lesotho,MOHALES HOEK,Lesotho,Mohale's Hoek,0.05341880341880343,strong_fuzzy,1
+Lesotho,Lesotho,MOKHOTLONG,Lesotho,Mokhotlong,0,exact,1
+Lesotho,Lesotho,QACHAS NEK,Lesotho,Qacha's Nek,0.06363636363636369,strong_fuzzy,1
+Lesotho,Lesotho,QUTHING,Lesotho,Quthing,0,exact,1
+Lesotho,Lesotho,THABA-TSEKA,Lesotho,Thaba-Tseka,0,exact,1
+Madagascar,Madagascar,ALAOTRA MANGORO,Madagascar,Alaotra Mangoro,0,exact,1
+Madagascar,Madagascar,AMORON'I MANIA,Madagascar,Amoron'I Mania,0,exact,1
+Madagascar,Madagascar,ANALAMANGA,Madagascar,Analamanga,0,exact,1
+Madagascar,Madagascar,ANALANJIROFO,Madagascar,Analanjirofo,0,exact,1
+Madagascar,Madagascar,ANDROY,Madagascar,Androy,0,exact,1
+Madagascar,Madagascar,ANOSY,Madagascar,Anosy,0,exact,1
+Madagascar,Madagascar,ATSIMO ANDREFANA,Madagascar,Atsimo Andrefana,0,exact,1
+Madagascar,Madagascar,ATSIMO ATSINANANA,Madagascar,Atsimo Atsinanana,0,exact,1
+Madagascar,Madagascar,ATSINANANA,Madagascar,Atsinanana,0,exact,1
+Madagascar,Madagascar,BETSIBOKA,Madagascar,Betsiboka,0,exact,1
+Madagascar,Madagascar,BOENY,Madagascar,Boeny,0,exact,1
+Madagascar,Madagascar,BONGOLAVA,Madagascar,Bongolava,0,exact,1
+Madagascar,Madagascar,DIANA,Madagascar,Diana,0,exact,1
+Madagascar,Madagascar,HAUTE MATSIATRA,Madagascar,Haute Matsiatra,0,exact,1
+Madagascar,Madagascar,IHOROMBE,Madagascar,Ihorombe,0,exact,1
+Madagascar,Madagascar,ITASY,Madagascar,Itasy,0,exact,1
+Madagascar,Madagascar,MELAKY,Madagascar,Melaky,0,exact,1
+Madagascar,Madagascar,MENABE,Madagascar,Menabe,0,exact,1
+Madagascar,Madagascar,SAVA,Madagascar,Sava,0,exact,1
+Madagascar,Madagascar,SOFIA,Madagascar,Sofia,0,exact,1
+Madagascar,Madagascar,VAKINANKARATRA,Madagascar,Vakinankaratra,0,exact,1
+Madagascar,Madagascar,VATOVAVY FITOVINANY,Madagascar,Vatovavy Fitovinany,0,exact,1
+Malawi,Malawi,Balaka,Malawi,Balaka,0,exact,1
+Malawi,Malawi,Blantyre,Malawi,Blantyre,0,exact,1
+Malawi,Malawi,Blantyre City,Malawi,Blantyre City,0,exact,1
+Malawi,Malawi,Chikwawa,Malawi,Chikwawa,0,exact,1
+Malawi,Malawi,Chiradzulu,Malawi,Chiradzulu,0,exact,1
+Malawi,Malawi,Chitipa,Malawi,Chitipa,0,exact,1
+Malawi,Malawi,Dedza,Malawi,Dedza,0,exact,1
+Malawi,Malawi,Dowa,Malawi,Dowa,0,exact,1
+Malawi,Malawi,Dowa (Camps),Malawi,Dowa,0.20000000000000007,weak_fuzzy,1
+Malawi,Malawi,Karonga,Malawi,Karonga,0,exact,1
+Malawi,Malawi,Kasungu,Malawi,Kasungu,0,exact,1
+Malawi,Malawi,Likoma,Malawi,Likoma,0,exact,1
+Malawi,Malawi,Lilongwe,Malawi,Lilongwe,0,exact,1
+Malawi,Malawi,Lilongwe City,Malawi,Lilongwe City,0,exact,1
+Malawi,Malawi,Machinga,Malawi,Machinga,0,exact,1
+Malawi,Malawi,Mangochi,Malawi,Mangochi,0,exact,1
+Malawi,Malawi,Mchinji,Malawi,Mchinji,0,exact,1
+Malawi,Malawi,Mulanje,Malawi,Mulanje,0,exact,1
+Malawi,Malawi,Mwanza,Malawi,Mwanza,0,exact,1
+Malawi,Malawi,Mzimba,Malawi,Mzimba,0,exact,1
+Malawi,Malawi,Mzuzu City,Malawi,Mzuzu City,0,exact,1
+Malawi,Malawi,Neno,Malawi,Neno,0,exact,1
+Malawi,Malawi,Nkhata Bay,Malawi,Nkhata Bay,0,exact,1
+Malawi,Malawi,Nkhotakota,Malawi,Nkhotakota,0,exact,1
+Malawi,Malawi,Nsanje,Malawi,Nsanje,0,exact,1
+Malawi,Malawi,Ntcheu,Malawi,Ntcheu,0,exact,1
+Malawi,Malawi,Ntchisi,Malawi,Ntchisi,0,exact,1
+Malawi,Malawi,Phalombe,Malawi,Phalombe,0,exact,1
+Malawi,Malawi,Rumphi,Malawi,Rumphi,0,exact,1
+Malawi,Malawi,Salima,Malawi,Salima,0,exact,1
+Malawi,Malawi,Thyolo,Malawi,Thyolo,0,exact,1
+Malawi,Malawi,Zomba,Malawi,Zomba,0,exact,1
+Malawi,Malawi,Zomba City,Malawi,Zomba City,0,exact,1
+Mongolia,Mongolia,Central,Mongolia,CENTRAL,0,exact,1
+Mongolia,Mongolia,Eastern,Mongolia,EASTERN,0,exact,1
+Mongolia,Mongolia,Khangai,Mongolia,KHANGAI,0,exact,1
+Mongolia,Mongolia,Ulaanbaatar,Mongolia,ULAANBAATAR,0,exact,1
+Mongolia,Mongolia,Western,Mongolia,WESTERN,0,exact,1
+Mozambique,Mozambique,Cabo Delgado,Mozambique,Cabo Delgado,0,exact,1
+Mozambique,Mozambique,Cidade de Maputo,Mozambique,Maputo City,0,manual_override,1
+Mozambique,Mozambique,Gaza,Mozambique,Gaza,0,exact,1
+Mozambique,Mozambique,Inhambane,Mozambique,Inhambane,0,exact,1
+Mozambique,Mozambique,Manica,Mozambique,Manica,0,exact,1
+Mozambique,Mozambique,Maputo,Mozambique,Maputo,0,exact,1
+Mozambique,Mozambique,Nampula,Mozambique,Nampula,0,exact,1
+Mozambique,Mozambique,Niassa,Mozambique,Niassa,0,exact,1
+Mozambique,Mozambique,Sofala,Mozambique,Sofala,0,exact,1
+Mozambique,Mozambique,Tete,Mozambique,Tete,0,exact,1
+Mozambique,Mozambique,Zambézia,Mozambique,Zambezia,0,exact,1
+Nepal,Nepal,Bagmati,Nepal,Bagmati,0,exact,1
+Nepal,Nepal,Gandaki,Nepal,Gandaki,0,exact,1
+Nepal,Nepal,Karnali,Nepal,Karnali,0,exact,1
+Nepal,Nepal,Koshi,Nepal,Koshi,0,exact,1
+Nepal,Nepal,Lumbini,Nepal,Lumbini,0,exact,1
+Nepal,Nepal,Madhesh,Nepal,Madhesh,0,exact,1
+Nepal,Nepal,Sudurpashchim,Nepal,Sudur Paschim,0.07905982905982913,strong_fuzzy,1
+Nigeria,Nigeria,Abia,Nigeria,Abia,0,exact,1
+Nigeria,Nigeria,Adamawa,Nigeria,Adamawa,0,exact,1
+Nigeria,Nigeria,Akwa Ibom,Nigeria,Akwa Ibom,0,exact,1
+Nigeria,Nigeria,Anambra,Nigeria,Anambra,0,exact,1
+Nigeria,Nigeria,Bauchi,Nigeria,Bauchi,0,exact,1
+Nigeria,Nigeria,Bayelsa,Nigeria,Bayelsa,0,exact,1
+Nigeria,Nigeria,Benue,Nigeria,Benue,0,exact,1
+Nigeria,Nigeria,Borno,Nigeria,Borno,0,exact,1
+Nigeria,Nigeria,Cross River,Nigeria,Cross River,0,exact,1
+Nigeria,Nigeria,Delta,Nigeria,Delta,0,exact,1
+Nigeria,Nigeria,Ebonyi,Nigeria,Ebonyi,0,exact,1
+Nigeria,Nigeria,Edo,Nigeria,Edo,0,exact,1
+Nigeria,Nigeria,Ekiti,Nigeria,Ekiti,0,exact,1
+Nigeria,Nigeria,Enugu,Nigeria,Enugu,0,exact,1
+Nigeria,Nigeria,FCT Abuja,Nigeria,FCT Abuja,0,exact,1
+Nigeria,Nigeria,Gombe,Nigeria,Gombe,0,exact,1
+Nigeria,Nigeria,Imo,Nigeria,Imo,0,exact,1
+Nigeria,Nigeria,Jigawa,Nigeria,Jigawa,0,exact,1
+Nigeria,Nigeria,Kaduna,Nigeria,Kaduna,0,exact,1
+Nigeria,Nigeria,Kano,Nigeria,Kano,0,exact,1
+Nigeria,Nigeria,Katsina,Nigeria,Katsina,0,exact,1
+Nigeria,Nigeria,Kebbi,Nigeria,Kebbi,0,exact,1
+Nigeria,Nigeria,Kogi,Nigeria,Kogi,0,exact,1
+Nigeria,Nigeria,Kwara,Nigeria,Kwara,0,exact,1
+Nigeria,Nigeria,Lagos,Nigeria,Lagos,0,exact,1
+Nigeria,Nigeria,Nasarawa,Nigeria,Nasarawa,0,exact,1
+Nigeria,Nigeria,Niger,Nigeria,Niger,0,exact,1
+Nigeria,Nigeria,Ogun,Nigeria,Ogun,0,exact,1
+Nigeria,Nigeria,Ondo,Nigeria,Ondo,0,exact,1
+Nigeria,Nigeria,Osun,Nigeria,Osun,0,exact,1
+Nigeria,Nigeria,Oyo,Nigeria,Oyo,0,exact,1
+Nigeria,Nigeria,Plateau,Nigeria,Plateau,0,exact,1
+Nigeria,Nigeria,Rivers,Nigeria,Rivers,0,exact,1
+Nigeria,Nigeria,Sokoto,Nigeria,Sokoto,0,exact,1
+Nigeria,Nigeria,Taraba,Nigeria,Taraba,0,exact,1
+Nigeria,Nigeria,Yobe,Nigeria,Yobe,0,exact,1
+Nigeria,Nigeria,Zamfara,Nigeria,Zamfara,0,exact,1
+Pakistan,Pakistan Balochistan,Awaran,Pakistan,Awaran,0,exact,1
+Pakistan,Pakistan Balochistan,Barkhan,Pakistan,Barkhan,0,exact,1
+Pakistan,Pakistan Balochistan,Chaghi,Pakistan,Chagai,0.11111111111111106,review_fuzzy,1
+Pakistan,Pakistan Balochistan,Dera Bugti,Pakistan,Dera Bugti,0,exact,1
+Pakistan,Pakistan Balochistan,Gwadar,Pakistan,Gwadar,0,exact,1
+Pakistan,Pakistan Balochistan,Harnai,Pakistan,Harnai,0,exact,1
+Pakistan,Pakistan Balochistan,Jaffarabad,Pakistan,Jaffarabad,0,exact,1
+Pakistan,Pakistan Balochistan,Jhal Magsi,Pakistan,Jhal Magsi,0,exact,1
+Pakistan,Pakistan Balochistan,Kachhi (Bolan),Pakistan,Kachhi,0.1666666666666667,review_fuzzy,1
+Pakistan,Pakistan Balochistan,Kalat,Pakistan,Kalat,0,exact,1
+Pakistan,Pakistan Balochistan,Kech (Turbat),Pakistan,Kech,0.21212121212121213,weak_fuzzy,1
+Pakistan,Pakistan Balochistan,Kharan,Pakistan,Kharan,0,exact,1
+Pakistan,Pakistan Balochistan,Khuzdar,Pakistan,Khuzdar,0,exact,1
+Pakistan,Pakistan Balochistan,Killa Abdullah,Pakistan,Killa Abdullah,0,exact,1
+Pakistan,Pakistan Balochistan,Killa Saifullah,Pakistan,Killa Saifullah,0,exact,1
+Pakistan,Pakistan Balochistan,Kohlu,Pakistan,Kohlu,0,exact,1
+Pakistan,Pakistan Balochistan,Lasbela,Pakistan,Lasbela,0,exact,1
+Pakistan,Pakistan Balochistan,Lehri,Pakistan,Lehri,0,exact,1
+Pakistan,Pakistan Balochistan,Loralai,Pakistan,Loralai,0,exact,1
+Pakistan,Pakistan Balochistan,Mastung,Pakistan,Mastung,0,exact,1
+Pakistan,Pakistan Balochistan,Musakhel,Pakistan,Musakhel,0,exact,1
+Pakistan,Pakistan Balochistan,Nasirabad,Pakistan,Nasirabad,0,exact,1
+Pakistan,Pakistan Balochistan,Nushki,Pakistan,Nushki,0,exact,1
+Pakistan,Pakistan Balochistan,Panjgur,Pakistan,Panjgur,0,exact,1
+Pakistan,Pakistan Balochistan,Pishin,Pakistan,Pishin,0,exact,1
+Pakistan,Pakistan Balochistan,Quetta,Pakistan,Quetta,0,exact,1
+Pakistan,Pakistan Balochistan,Sheerani,Pakistan,Sherani,0.04166666666666672,strong_fuzzy,1
+Pakistan,Pakistan Balochistan,Sibbi,Pakistan,Sibi,0.06666666666666678,strong_fuzzy,1
+Pakistan,Pakistan Balochistan,SohbatPur,Pakistan,Sohbatpur,0,exact,1
+Pakistan,Pakistan Balochistan,Washuk,Pakistan,Washuk,0,exact,1
+Pakistan,Pakistan Balochistan,Zhob,Pakistan,Zhob,0,exact,1
+Pakistan,Pakistan Balochistan,Ziarat,Pakistan,Ziarat,0,exact,1
+Pakistan,Pakistan Khyber Pakhtunkhwa,Abbotabad,Pakistan,Abbottabad,0.033333333333333416,strong_fuzzy,1
+Pakistan,Pakistan Khyber Pakhtunkhwa,Bajor,Pakistan,Bajaur,0.17777777777777778,review_fuzzy,1
+Pakistan,Pakistan Khyber Pakhtunkhwa,Bannu,Pakistan,Bannu,0,exact,1
+Pakistan,Pakistan Khyber Pakhtunkhwa,Batagram,Pakistan,Batagram,0,exact,1
+Pakistan,Pakistan Khyber Pakhtunkhwa,Buner,Pakistan,Buner,0,exact,1
+Pakistan,Pakistan Khyber Pakhtunkhwa,Charsadda,Pakistan,Charsadda,0,exact,1
+Pakistan,Pakistan Khyber Pakhtunkhwa,Chitral,Pakistan,Chitral,0,exact,1
+Pakistan,Pakistan Khyber Pakhtunkhwa,Dera Ismail Khan,Pakistan,Dera Ismail Khan,0,exact,1
+Pakistan,Pakistan Khyber Pakhtunkhwa,Hangu,Pakistan,Hangu,0,exact,1
+Pakistan,Pakistan Khyber Pakhtunkhwa,Hari Pur,Pakistan,Haripur,0.04166666666666672,strong_fuzzy,1
+Pakistan,Pakistan Khyber Pakhtunkhwa,Karak,Pakistan,Karak,0,exact,1
+Pakistan,Pakistan Khyber Pakhtunkhwa,Khyber,Pakistan,Khyber,0,exact,1
+Pakistan,Pakistan Khyber Pakhtunkhwa,Kohat,Pakistan,Kohat,0,exact,1
+Pakistan,Pakistan Khyber Pakhtunkhwa,Kohistan,Pakistan,Kohistan,0,exact,1
+Pakistan,Pakistan Khyber Pakhtunkhwa,Kuram,Pakistan,Kurram,0.05555555555555556,strong_fuzzy,1
+Pakistan,Pakistan Khyber Pakhtunkhwa,Laki Marwat,Pakistan,Lakki Marwat,0.02777777777777788,strong_fuzzy,1
+Pakistan,Pakistan Khyber Pakhtunkhwa,Lower Dir,Pakistan,Lower Dir,0,exact,1
+Pakistan,Pakistan Khyber Pakhtunkhwa,Malakand,Pakistan,Malakand,0,exact,1
+Pakistan,Pakistan Khyber Pakhtunkhwa,Mansehra,Pakistan,Mansehra,0,exact,1
+Pakistan,Pakistan Khyber Pakhtunkhwa,Mardan,Pakistan,Mardan,0,exact,1
+Pakistan,Pakistan Khyber Pakhtunkhwa,Mohmind,Pakistan,Mohmand,0.09523809523809525,strong_fuzzy,1
+Pakistan,Pakistan Khyber Pakhtunkhwa,North Waziristan,Pakistan,North Waziristan,0,exact,1
+Pakistan,Pakistan Khyber Pakhtunkhwa,Nowshehra,Pakistan,Nowshera,0.037037037037037104,strong_fuzzy,1
+Pakistan,Pakistan Khyber Pakhtunkhwa,Orakzai,Pakistan,Orakzai,0,exact,1
+Pakistan,Pakistan Khyber Pakhtunkhwa,Peshawar,Pakistan,Peshawar,0,exact,1
+Pakistan,Pakistan Khyber Pakhtunkhwa,Shangla,Pakistan,Shangla,0,exact,1
+Pakistan,Pakistan Khyber Pakhtunkhwa,South Waziristan,Pakistan,South Waziristan,0,exact,1
+Pakistan,Pakistan Khyber Pakhtunkhwa,Swabi,Pakistan,Swabi,0,exact,1
+Pakistan,Pakistan Khyber Pakhtunkhwa,Swat,Pakistan,Swat,0,exact,1
+Pakistan,Pakistan Khyber Pakhtunkhwa,Tank,Pakistan,Tank,0,exact,1
+Pakistan,Pakistan Khyber Pakhtunkhwa,Torghar,Pakistan,Tor Ghar,0.04166666666666672,strong_fuzzy,1
+Pakistan,Pakistan Khyber Pakhtunkhwa,Upper Dir,Pakistan,Upper Dir,0,exact,1
+Pakistan,Pakistan Punjab,Attock,Pakistan,Attock,0,exact,1
+Pakistan,Pakistan Punjab,Bahawalnagar,Pakistan,Bahawalnagar,0,exact,1
+Pakistan,Pakistan Punjab,Bahawalpur,Pakistan,Bahawalpur,0,exact,1
+Pakistan,Pakistan Punjab,Bhakkar,Pakistan,Bhakkar,0,exact,1
+Pakistan,Pakistan Punjab,Chakwal,Pakistan,Chakwal,0,exact,1
+Pakistan,Pakistan Punjab,Chiniot,Pakistan,Chiniot,0,exact,1
+Pakistan,Pakistan Punjab,DG Khan,Pakistan,Dera Ghazi Khan,0,manual_override,1
+Pakistan,Pakistan Punjab,Faisalabad,Pakistan,Faisalabad,0,exact,1
+Pakistan,Pakistan Punjab,Gujranwala,Pakistan,Gujranwala,0,exact,1
+Pakistan,Pakistan Punjab,Gujrat,Pakistan,Gujrat,0,exact,1
+Pakistan,Pakistan Punjab,Hafizabad,Pakistan,Hafizabad,0,exact,1
+Pakistan,Pakistan Punjab,Jhang,Pakistan,Jhang,0,exact,1
+Pakistan,Pakistan Punjab,Jhelum,Pakistan,Jhelum,0,exact,1
+Pakistan,Pakistan Punjab,Kasur,Pakistan,Kasur,0,exact,1
+Pakistan,Pakistan Punjab,Khanewal,Pakistan,Khanewal,0,exact,1
+Pakistan,Pakistan Punjab,Khushab,Pakistan,Khushab,0,exact,1
+Pakistan,Pakistan Punjab,Lahore,Pakistan,Lahore,0,exact,1
+Pakistan,Pakistan Punjab,Layyah,Pakistan,Layyah,0,exact,1
+Pakistan,Pakistan Punjab,Lodhran,Pakistan,Lodhran,0,exact,1
+Pakistan,Pakistan Punjab,Mandi Bahauddin,Pakistan,Mandi Bahauddin,0,exact,1
+Pakistan,Pakistan Punjab,Mianwali,Pakistan,Mianwali,0,exact,1
+Pakistan,Pakistan Punjab,Multan,Pakistan,Multan,0,exact,1
+Pakistan,Pakistan Punjab,Muzaffargarh,Pakistan,Muzaffargarh,0,exact,1
+Pakistan,Pakistan Punjab,Nankana Sahib,Pakistan,Nankana Sahib,0,exact,1
+Pakistan,Pakistan Punjab,Narowal,Pakistan,Narowal,0,exact,1
+Pakistan,Pakistan Punjab,Okara,Pakistan,Okara,0,exact,1
+Pakistan,Pakistan Punjab,Pakpattan,Pakistan,Pakpattan,0,exact,1
+Pakistan,Pakistan Punjab,Rajanpur,Pakistan,Rajanpur,0,exact,1
+Pakistan,Pakistan Punjab,Rawalpindi,Pakistan,Rawalpindi,0,exact,1
+Pakistan,Pakistan Punjab,RY Khan,Pakistan,Rahim Yar Khan,0,manual_override,1
+Pakistan,Pakistan Punjab,Sahiwal,Pakistan,Sahiwal,0,exact,1
+Pakistan,Pakistan Punjab,Sargodha,Pakistan,Sargodha,0,exact,1
+Pakistan,Pakistan Punjab,Sheikhupura,Pakistan,Sheikhupura,0,exact,1
+Pakistan,Pakistan Punjab,Sialkot,Pakistan,Sialkot,0,exact,1
+Pakistan,Pakistan Punjab,TT Singh,Pakistan,Toba Tek Singh,0,manual_override,1
+Pakistan,Pakistan Punjab,Vehari,Pakistan,Vehari,0,exact,1
+Paraguay,Paraguay,Alto Paraguay,Paraguay,Alto Paraguay,0,exact,1
+Paraguay,Paraguay,Alto Paraná,Paraguay,Alto Paraná,0,exact,1
+Paraguay,Paraguay,Asunción,Paraguay,Asunción,0,exact,1
+Paraguay,Paraguay,Boquerón,Paraguay,Boquerón,0,exact,1
+Paraguay,Paraguay,Caaguazú,Paraguay,Caaguazú,0,exact,1
+Paraguay,Paraguay,Central Paraguay,Paraguay,Central,0,exact,1
+Paraguay,Paraguay,Itapúa,Paraguay,Itapúa,0,exact,1
+Paraguay,Paraguay,Resto,Paraguay,Resto,0,exact,1
+Paraguay,Paraguay,San Pedro,Paraguay,San Pedro,0,exact,1
+Samoa,Samoa,SAVAII,Samoa,SAVAII,0,exact,1
+Samoa,Samoa,UPOLU,Samoa,UPOLU,0,exact,1
+Sao Tome and Principe,Sao Tome and Principe,REGIÃO AUTÓNOMA DO PRÍNCIPE,São Tomé and Príncipe,Príncipe,0,manual_override,1
+Sao Tome and Principe,Sao Tome and Principe,REGIÃO NORTE OESTE,São Tomé and Príncipe,REGIAO_NORTE_OESTE,0,exact,1
+Sao Tome and Principe,Sao Tome and Principe,REGIÃO SUL ESTE,São Tomé and Príncipe,REGIAO_SUL_ESTE,0,exact,1
+Sao Tome and Principe,Sao Tome and Principe,São Tomé,São Tomé and Príncipe,São Tomé,0,exact,1
+Sierra Leone,Sierra Leone,BO,Sierra Leone,Bo,0,exact,1
+Sierra Leone,Sierra Leone,BOMBALI,Sierra Leone,Bombali,0,exact,1
+Sierra Leone,Sierra Leone,BONTHE,Sierra Leone,Bonthe,0,exact,1
+Sierra Leone,Sierra Leone,KAILAHUN,Sierra Leone,Kailahun,0,exact,1
+Sierra Leone,Sierra Leone,KAMBIA,Sierra Leone,Kambia,0,exact,1
+Sierra Leone,Sierra Leone,KENEMA,Sierra Leone,Kenema,0,exact,1
+Sierra Leone,Sierra Leone,KOINADUGU,Sierra Leone,Koinadugu,0,exact,1
+Sierra Leone,Sierra Leone,KONO,Sierra Leone,Kono,0,exact,1
+Sierra Leone,Sierra Leone,MOYAMBA,Sierra Leone,Moyamba,0,exact,1
+Sierra Leone,Sierra Leone,PORT LOKO,Sierra Leone,Port Loko,0,exact,1
+Sierra Leone,Sierra Leone,PUJEHUN,Sierra Leone,Pujehun,0,exact,1
+Sierra Leone,Sierra Leone,TONKOLILI,Sierra Leone,Tonkolili,0,exact,1
+Sierra Leone,Sierra Leone,WESTERN AREA RURAL,Sierra Leone,Western Area Rural,0,exact,1
+Sierra Leone,Sierra Leone,WESTERN AREA URBAN,Sierra Leone,Western Area Urban,0,exact,1
+Suriname,Suriname,BROKOPONDO,Suriname,Brokopondo,0,exact,1
+Suriname,Suriname,COMMEWIJNE,Suriname,Commewijne,0,exact,1
+Suriname,Suriname,CORONIE,Suriname,Coronie,0,exact,1
+Suriname,Suriname,MAROWIJNE,Suriname,Marowijne,0,exact,1
+Suriname,Suriname,NICKERIE,Suriname,Nickerie,0,exact,1
+Suriname,Suriname,PARA,Suriname,Para,0,exact,1
+Suriname,Suriname,PARAMARIBO,Suriname,Paramaribo,0,exact,1
+Suriname,Suriname,SARAMACCA,Suriname,Saramacca,0,exact,1
+Suriname,Suriname,SIPALIWINI,Suriname,Sipaliwini,0,exact,1
+Suriname,Suriname,WANICA,Suriname,Wanica,0,exact,1
+Togo,Togo,Centrale,Togo,Centrale,0,exact,1
+Togo,Togo,Kara,Togo,Kara,0,exact,1
+Togo,Togo,Lomé Commune/Golfe Urbain,Togo,Lomé Commune/Golfe Urbain,0,exact,1
+Togo,Togo,Maritime,Togo,Maritime,0,exact,1
+Togo,Togo,Plateaux,Togo,Plateaux,0,exact,1
+Togo,Togo,Savanes,Togo,Savanes,0,exact,1
+Tonga,Tonga,'EUA,Tonga,'Eua,0,exact,1
+Tonga,Tonga,HA'APAI,Tonga,Ha'apai,0,exact,1
+Tonga,Tonga,ONGO NIUA,Tonga,Niuas,0,manual_override,1
+Tonga,Tonga,TONGATAPU,Tonga,Tongatapu,0,exact,1
+Tonga,Tonga,VAVA'U,Tonga,Vava'u,0,exact,1
+Tunisia,Tunisia,CENTRE EST,Tunisia,TUNISIA_CENTRE_EST,0,exact,1
+Tunisia,Tunisia,CENTRE OUEST,Tunisia,TUNISIA_CENTRE_OUEST,0,exact,1
+Tunisia,Tunisia,DISTRICT TUNIS,Tunisia,TUNISIA_DISTRICT_TUNIS,0,exact,1
+Tunisia,Tunisia,NORD EST,Tunisia,TUNISIA_NORD_EST,0,exact,1
+Tunisia,Tunisia,NORD OUEST Tunisia,Tunisia,TUNISIA_NORD_OUEST,0,exact,1
+Tunisia,Tunisia,SUD EST,Tunisia,TUNISIA_SUD_EST,0,exact,1
+Tunisia,Tunisia,SUD OUEST,Tunisia,TUNISIA_SUD_OUEST,0,exact,1
+Tuvalu,Tuvalu,Funafuti,Tuvalu,Funafuti,0,exact,1
+Tuvalu,Tuvalu,Nanumaga,Tuvalu,Nanumanga,0.037037037037037104,strong_fuzzy,1
+Tuvalu,Tuvalu,Nanumea,Tuvalu,Nanumea,0,exact,1
+Tuvalu,Tuvalu,Niutao,Tuvalu,Niutao,0,exact,1
+Tuvalu,Tuvalu,Nui,Tuvalu,Nui,0,exact,1
+Tuvalu,Tuvalu,Nukufetau,Tuvalu,Nukufetau,0,exact,1
+Tuvalu,Tuvalu,Vaitupu,Tuvalu,Vaitupu,0,exact,1
+Vanuatu,Vanuatu,MALAMPA,Vanuatu,Malampa,0,exact,1
+Vanuatu,Vanuatu,PENAMA,Vanuatu,Penama,0,exact,1
+Vanuatu,Vanuatu,SANMA,Vanuatu,Sanma,0,exact,1
+Vanuatu,Vanuatu,SHEFA,Vanuatu,Shefa,0,exact,1
+Vanuatu,Vanuatu,TAFEA,Vanuatu,Tafea,0,exact,1
+Vanuatu,Vanuatu,TORBA,Vanuatu,Torba,0,exact,1
+Viet Nam,Vietnam,CENTRAL HIGHLANDS,Vietnam,CENTRAL_HIGHLANDS,0,exact,1
+Viet Nam,Vietnam,MEKONG RIVER DELTA,Vietnam,MEKONG_RIVER_DELTA,0,exact,1
+Viet Nam,Vietnam,NORTH CENTRAL AND CENTRAL COASTAL,Vietnam,NORTH_CENTRAL_AND_COASTAL,0.10747474747474747,review_fuzzy,1
+Viet Nam,Vietnam,NORTHERN MIDLANDS AND MOUNTAIN,Vietnam,NORTHERN_MIDLANDS_AND_MOUNTAIN,0,exact,1
+Viet Nam,Vietnam,RED RIVER DELTA,Vietnam,RED_RIVER_DELTA,0,exact,1
+Viet Nam,Vietnam,SOUTH EAST,Vietnam,SOUTH_EAST,0,exact,1
+West Bank and Gaza,West Bank and Gaza,Ariha & Al Aghwar,Palestina,Jericho,0,manual_override,1
+West Bank and Gaza,West Bank and Gaza,Bethlehem,Palestina,Bethlehem,0,exact,1
+West Bank and Gaza,West Bank and Gaza,Deir Al-balah,Palestina,Deir Al-Balah,0,exact,1
+West Bank and Gaza,West Bank and Gaza,Gaza,Palestina,Gaza,0,exact,1
+West Bank and Gaza,West Bank and Gaza,Hebron,Palestina,Hebron,0,exact,1
+West Bank and Gaza,West Bank and Gaza,Jenin,Palestina,Jenin,0,exact,1
+West Bank and Gaza,West Bank and Gaza,Jerusalem,Palestina,Jerusalem,0,exact,1
+West Bank and Gaza,West Bank and Gaza,Khan Yunis,Palestina,Khan Yunis,0,exact,1
+West Bank and Gaza,West Bank and Gaza,Nablus,Palestina,Nablus,0,exact,1
+West Bank and Gaza,West Bank and Gaza,North Gaza,Palestina,Gaza ash Shamaliyah,0,manual_override,1
+West Bank and Gaza,West Bank and Gaza,Qalqilia,Palestina,Qalqilya,0.08333333333333338,strong_fuzzy,1
+West Bank and Gaza,West Bank and Gaza,Rafah,Palestina,Rafah,0,exact,1
+West Bank and Gaza,West Bank and Gaza,Ramallah & Al bireh,Palestina,Ramallah and Al-Bireh,0,exact,1
+West Bank and Gaza,West Bank and Gaza,Salfit,Palestina,Salfit,0,exact,1
+West Bank and Gaza,West Bank and Gaza,Tubas & Northen Valley,Palestina,Tubas,0.263888888888889,weak_fuzzy,1
+West Bank and Gaza,West Bank and Gaza,Tulkarm,Palestina,Tulkarm,0,exact,1
+Zimbabwe,Zimbabwe,Bulawayo,Zimbabwe,Bulawayo,0,exact,1
+Zimbabwe,Zimbabwe,Harare,Zimbabwe,Harare,0,exact,1
+Zimbabwe,Zimbabwe,Manicaland,Zimbabwe,Manicaland,0,exact,1
+Zimbabwe,Zimbabwe,Mashonaland Central,Zimbabwe,Mashonaland Central,0,exact,1
+Zimbabwe,Zimbabwe,Mashonaland East,Zimbabwe,Mashonaland East,0,exact,1
+Zimbabwe,Zimbabwe,Mashonaland West,Zimbabwe,Mashonaland West,0,exact,1
+Zimbabwe,Zimbabwe,Masvingo,Zimbabwe,Masvingo,0,exact,1
+Zimbabwe,Zimbabwe,Matabeleland North,Zimbabwe,Matabeleland North,0,exact,1
+Zimbabwe,Zimbabwe,Matabeleland South,Zimbabwe,Matabeleland South,0,exact,1
+Zimbabwe,Zimbabwe,Midlands,Zimbabwe,Midlands,0,exact,1

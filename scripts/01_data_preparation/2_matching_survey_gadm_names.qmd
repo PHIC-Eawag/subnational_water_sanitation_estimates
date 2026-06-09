@@ -41,7 +41,7 @@ clean_key <- function(x) {
 This chunk reads the survey file, keeps the region and country variables needed for matching, standardises names, and creates cleaned matching keys.
 
 ```{r}
-survey_raw <- fread('/Users/esthergreenwood/switchdrive/Eawag/WorldBankProject/HH_surveys/HH_survey_data/df_other_MICS.csv', encoding = "UTF-8") %>%
+survey_raw <- fread('/Users/esthergreenwood/switchdrive/Eawag/WorldBankProject/HH_surveys/HH_survey_data/df_SMDW_oldMICS.csv', encoding = "UTF-8") %>%
   transmute(
     region_survey  = HH7_region,
     country_survey = country
@@ -53,7 +53,8 @@ survey_raw <- fread('/Users/esthergreenwood/switchdrive/Eawag/WorldBankProject/H
       "DR Congo" = "Democratic Republic of the Congo",
       "Lao PDR" = "Laos",
       "Pakistan Balochistan" = "Pakistan",
-      "Pakistan Khyber Pakhtunkhwa" = "Pakistan"
+      "Pakistan Khyber Pakhtunkhwa" = "Pakistan",
+      "West Bank and Gaza" = "Palestina",
     ),
     region_key  = clean_key(region_survey),
     country_key = clean_key(country_survey)
@@ -273,7 +274,7 @@ unmatched_regions
 The outputs can be written to file for later review.
 
 ```{r}
-write.csv(final_match_status, "final_match_status_otherMICS.csv", row.names = FALSE, fileEncoding = "UTF-8")
+write.csv(final_match_status, "final_match_status_oldMICS_SMDW.csv", row.names = FALSE, fileEncoding = "UTF-8")
 #write.csv(unmatched_regions, "unmatched_regions.csv", row.names = FALSE, fileEncoding = "UTF-8")
 #write.csv(fuzzy_best, "fuzzy_best.csv", row.names = FALSE, fileEncoding = "UTF-8")
 #write.csv(survey_name_variants, "survey_name_variants.csv", row.names = FALSE, fileEncoding = "UTF-8")
