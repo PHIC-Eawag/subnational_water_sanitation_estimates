@@ -2,7 +2,7 @@
 Afghanistan;KABUL;1;Kabul;exact_unique;NA;NA;NA;NA;exact_unique;1;Kabul;checked;1;;;;;;;;;;;;;;;;;
 Afghanistan;KAPISA;1;Kapisa;exact_unique;NA;NA;NA;NA;exact_unique;1;Kapisa;checked;1;;;;;;;;;;;;;;;;;
 Afghanistan;PARWAN;1;Parwan;exact_unique;NA;NA;NA;NA;exact_unique;1;Parwan;checked;1;;;;;;;;;;;;;;;;;
-Afghanistan;MAIDAN WARDAK;NA;NA;NA;2;Anar Dara;0.227742165;weak_fuzzy_candidate;unmatched;NA;Wardak;checked;5;;;;Cases;;;;;;;;;;;;;
+;MAIDAN WARDAK;NA;NA;NA;2;Anar Dara;0.227742165;weak_fuzzy_candidate;unmatched;NA;Wardak;checked;5;;;;Cases;;;;;;;;;;;;;
 Afghanistan;LOGAR;1;Logar;exact_unique;NA;NA;NA;NA;exact_unique;1;Logar;checked;1;;;;;;;;;;;;;;;;;
 Afghanistan;NANGARHAR;1;Nangarhar;exact_unique;NA;NA;NA;NA;exact_unique;1;Nangarhar;checked;1;;;0;Correct classification but not all official areas of the country are considered in survey;;;;;;;;;;;;;
 Afghanistan;LAGHMAN;1;Laghman;exact_unique;NA;NA;NA;NA;exact_unique;1;Laghman;checked;1;;;1;Correct classification;;;;;;;;;;;;;
@@ -367,14 +367,86 @@ Pakistan Sindh;Tando Muhmmad Khan;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;8
 Pakistan Sindh;Tharparkar;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;8;"Use HDX dataset ""https://data.humdata.org/dataset/cod-ab-pak""";;;;;;;;;;;;;;;;
 Pakistan Sindh;Thatta;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;8;"Use HDX dataset ""https://data.humdata.org/dataset/cod-ab-pak""";;;;;;;;;;;;;;;;
 Pakistan Sindh;Umer Kot;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;8;"Use HDX dataset ""https://data.humdata.org/dataset/cod-ab-pak""";;;;;;;;;;;;;;;;
-Republic of North Macedonia;VARDAR;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;3;see separate excel document for correct classification;;;;;;;;;;;;;;;;
-Republic of North Macedonia;EAST;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;3;see separate excel document for correct classification;;;;;;;;;;;;;;;;
-Republic of North Macedonia;SOUTHWEST;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;3;see separate excel document for correct classification;;;;;;;;;;;;;;;;
-Republic of North Macedonia;SOUTHEAST;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;3;see separate excel document for correct classification;;;;;;;;;;;;;;;;
-Republic of North Macedonia;PELAGONIJA;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;3;see separate excel document for correct classification;;;;;;;;;;;;;;;;
-Republic of North Macedonia;POLOG;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;3;see separate excel document for correct classification;;;;;;;;;;;;;;;;
-Republic of North Macedonia;NORTHEAST;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;3;see separate excel document for correct classification;;;;;;;;;;;;;;;;
-Republic of North Macedonia;SKOPJE;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;3;see separate excel document for correct classification;;;;;;;;;;;;;;;;
+Republic of North Macedonia;VARDAR;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;3;"https://mics.ipums.org/mics-action/variables/220751#description_section
+
+Vardar: Čaška, Demir Kapija, Gradsko, Kavadarci, Lozovo, Negotino, Rosoman, Sveti Nikole, Veles
+East: Berovo, Češinovo-Obleševo, Delčevo, Karbinci, Kočani, Makedonska Kamenica, Pehčevo, Probištip, Štip, Vinica, Zrnovci
+Southwest: Centar Župa, Debar, Debarca, Kičevo, Makedonski Brod, Ohrid, Plasnica, Struga, Vevčani
+Southeast: Bogdanci, Bosilovo, Dojran, Gevgelija, Konče, Novo Selo, Radoviš, Strumica, Valandovo, Vasilevo
+Pelagonia: Bitola, Demir Hisar, Dolneni, Krivogaštani, Kruševo, Mogila, Novaci, Prilep, Resen
+Polog: Bogonivje, Brvenica, Gostivar, Jegunovce, Mavrovo and Rostuša, Tearce, Tetovo, Vrapčište, Želino
+Northeast: Kratovo, Kriva Palanka, Kumanovo, Lipkovo, Rankovce, Staro Nagoričane
+Skopje: City of Skopje, Aračinovo, Čučer-Sandevo, Ilinden, Petrovec, Sopište, Studeničani, Zelenikovo";;;;;;;;;;;;;;;;
+Republic of North Macedonia;EAST;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;3;"https://mics.ipums.org/mics-action/variables/220751#description_section
+
+Vardar: Čaška, Demir Kapija, Gradsko, Kavadarci, Lozovo, Negotino, Rosoman, Sveti Nikole, Veles
+East: Berovo, Češinovo-Obleševo, Delčevo, Karbinci, Kočani, Makedonska Kamenica, Pehčevo, Probištip, Štip, Vinica, Zrnovci
+Southwest: Centar Župa, Debar, Debarca, Kičevo, Makedonski Brod, Ohrid, Plasnica, Struga, Vevčani
+Southeast: Bogdanci, Bosilovo, Dojran, Gevgelija, Konče, Novo Selo, Radoviš, Strumica, Valandovo, Vasilevo
+Pelagonia: Bitola, Demir Hisar, Dolneni, Krivogaštani, Kruševo, Mogila, Novaci, Prilep, Resen
+Polog: Bogonivje, Brvenica, Gostivar, Jegunovce, Mavrovo and Rostuša, Tearce, Tetovo, Vrapčište, Želino
+Northeast: Kratovo, Kriva Palanka, Kumanovo, Lipkovo, Rankovce, Staro Nagoričane
+Skopje: City of Skopje, Aračinovo, Čučer-Sandevo, Ilinden, Petrovec, Sopište, Studeničani, Zelenikovo";;;;;;;;;;;;;;;;
+Republic of North Macedonia;SOUTHWEST;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;3;"https://mics.ipums.org/mics-action/variables/220751#description_section
+
+Vardar: Čaška, Demir Kapija, Gradsko, Kavadarci, Lozovo, Negotino, Rosoman, Sveti Nikole, Veles
+East: Berovo, Češinovo-Obleševo, Delčevo, Karbinci, Kočani, Makedonska Kamenica, Pehčevo, Probištip, Štip, Vinica, Zrnovci
+Southwest: Centar Župa, Debar, Debarca, Kičevo, Makedonski Brod, Ohrid, Plasnica, Struga, Vevčani
+Southeast: Bogdanci, Bosilovo, Dojran, Gevgelija, Konče, Novo Selo, Radoviš, Strumica, Valandovo, Vasilevo
+Pelagonia: Bitola, Demir Hisar, Dolneni, Krivogaštani, Kruševo, Mogila, Novaci, Prilep, Resen
+Polog: Bogonivje, Brvenica, Gostivar, Jegunovce, Mavrovo and Rostuša, Tearce, Tetovo, Vrapčište, Želino
+Northeast: Kratovo, Kriva Palanka, Kumanovo, Lipkovo, Rankovce, Staro Nagoričane
+Skopje: City of Skopje, Aračinovo, Čučer-Sandevo, Ilinden, Petrovec, Sopište, Studeničani, Zelenikovo";;;;;;;;;;;;;;;;
+Republic of North Macedonia;SOUTHEAST;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;3;"https://mics.ipums.org/mics-action/variables/220751#description_section
+
+Vardar: Čaška, Demir Kapija, Gradsko, Kavadarci, Lozovo, Negotino, Rosoman, Sveti Nikole, Veles
+East: Berovo, Češinovo-Obleševo, Delčevo, Karbinci, Kočani, Makedonska Kamenica, Pehčevo, Probištip, Štip, Vinica, Zrnovci
+Southwest: Centar Župa, Debar, Debarca, Kičevo, Makedonski Brod, Ohrid, Plasnica, Struga, Vevčani
+Southeast: Bogdanci, Bosilovo, Dojran, Gevgelija, Konče, Novo Selo, Radoviš, Strumica, Valandovo, Vasilevo
+Pelagonia: Bitola, Demir Hisar, Dolneni, Krivogaštani, Kruševo, Mogila, Novaci, Prilep, Resen
+Polog: Bogonivje, Brvenica, Gostivar, Jegunovce, Mavrovo and Rostuša, Tearce, Tetovo, Vrapčište, Želino
+Northeast: Kratovo, Kriva Palanka, Kumanovo, Lipkovo, Rankovce, Staro Nagoričane
+Skopje: City of Skopje, Aračinovo, Čučer-Sandevo, Ilinden, Petrovec, Sopište, Studeničani, Zelenikovo";;;;;;;;;;;;;;;;
+Republic of North Macedonia;PELAGONIJA;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;3;"https://mics.ipums.org/mics-action/variables/220751#description_section
+
+Vardar: Čaška, Demir Kapija, Gradsko, Kavadarci, Lozovo, Negotino, Rosoman, Sveti Nikole, Veles
+East: Berovo, Češinovo-Obleševo, Delčevo, Karbinci, Kočani, Makedonska Kamenica, Pehčevo, Probištip, Štip, Vinica, Zrnovci
+Southwest: Centar Župa, Debar, Debarca, Kičevo, Makedonski Brod, Ohrid, Plasnica, Struga, Vevčani
+Southeast: Bogdanci, Bosilovo, Dojran, Gevgelija, Konče, Novo Selo, Radoviš, Strumica, Valandovo, Vasilevo
+Pelagonia: Bitola, Demir Hisar, Dolneni, Krivogaštani, Kruševo, Mogila, Novaci, Prilep, Resen
+Polog: Bogonivje, Brvenica, Gostivar, Jegunovce, Mavrovo and Rostuša, Tearce, Tetovo, Vrapčište, Želino
+Northeast: Kratovo, Kriva Palanka, Kumanovo, Lipkovo, Rankovce, Staro Nagoričane
+Skopje: City of Skopje, Aračinovo, Čučer-Sandevo, Ilinden, Petrovec, Sopište, Studeničani, Zelenikovo";;;;;;;;;;;;;;;;
+Republic of North Macedonia;POLOG;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;3;"https://mics.ipums.org/mics-action/variables/220751#description_section
+
+Vardar: Čaška, Demir Kapija, Gradsko, Kavadarci, Lozovo, Negotino, Rosoman, Sveti Nikole, Veles
+East: Berovo, Češinovo-Obleševo, Delčevo, Karbinci, Kočani, Makedonska Kamenica, Pehčevo, Probištip, Štip, Vinica, Zrnovci
+Southwest: Centar Župa, Debar, Debarca, Kičevo, Makedonski Brod, Ohrid, Plasnica, Struga, Vevčani
+Southeast: Bogdanci, Bosilovo, Dojran, Gevgelija, Konče, Novo Selo, Radoviš, Strumica, Valandovo, Vasilevo
+Pelagonia: Bitola, Demir Hisar, Dolneni, Krivogaštani, Kruševo, Mogila, Novaci, Prilep, Resen
+Polog: Bogonivje, Brvenica, Gostivar, Jegunovce, Mavrovo and Rostuša, Tearce, Tetovo, Vrapčište, Želino
+Northeast: Kratovo, Kriva Palanka, Kumanovo, Lipkovo, Rankovce, Staro Nagoričane
+Skopje: City of Skopje, Aračinovo, Čučer-Sandevo, Ilinden, Petrovec, Sopište, Studeničani, Zelenikovo";;;;;;;;;;;;;;;;
+Republic of North Macedonia;NORTHEAST;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;3;"https://mics.ipums.org/mics-action/variables/220751#description_section
+
+Vardar: Čaška, Demir Kapija, Gradsko, Kavadarci, Lozovo, Negotino, Rosoman, Sveti Nikole, Veles
+East: Berovo, Češinovo-Obleševo, Delčevo, Karbinci, Kočani, Makedonska Kamenica, Pehčevo, Probištip, Štip, Vinica, Zrnovci
+Southwest: Centar Župa, Debar, Debarca, Kičevo, Makedonski Brod, Ohrid, Plasnica, Struga, Vevčani
+Southeast: Bogdanci, Bosilovo, Dojran, Gevgelija, Konče, Novo Selo, Radoviš, Strumica, Valandovo, Vasilevo
+Pelagonia: Bitola, Demir Hisar, Dolneni, Krivogaštani, Kruševo, Mogila, Novaci, Prilep, Resen
+Polog: Bogonivje, Brvenica, Gostivar, Jegunovce, Mavrovo and Rostuša, Tearce, Tetovo, Vrapčište, Želino
+Northeast: Kratovo, Kriva Palanka, Kumanovo, Lipkovo, Rankovce, Staro Nagoričane
+Skopje: City of Skopje, Aračinovo, Čučer-Sandevo, Ilinden, Petrovec, Sopište, Studeničani, Zelenikovo";;;;;;;;;;;;;;;;
+Republic of North Macedonia;SKOPJE;NA;NA;NA;NA;NA;NA;NA;unmatched;NA;NA;checked;3;"https://mics.ipums.org/mics-action/variables/220751#description_section
+
+Vardar: Čaška, Demir Kapija, Gradsko, Kavadarci, Lozovo, Negotino, Rosoman, Sveti Nikole, Veles
+East: Berovo, Češinovo-Obleševo, Delčevo, Karbinci, Kočani, Makedonska Kamenica, Pehčevo, Probištip, Štip, Vinica, Zrnovci
+Southwest: Centar Župa, Debar, Debarca, Kičevo, Makedonski Brod, Ohrid, Plasnica, Struga, Vevčani
+Southeast: Bogdanci, Bosilovo, Dojran, Gevgelija, Konče, Novo Selo, Radoviš, Strumica, Valandovo, Vasilevo
+Pelagonia: Bitola, Demir Hisar, Dolneni, Krivogaštani, Kruševo, Mogila, Novaci, Prilep, Resen
+Polog: Bogonivje, Brvenica, Gostivar, Jegunovce, Mavrovo and Rostuša, Tearce, Tetovo, Vrapčište, Želino
+Northeast: Kratovo, Kriva Palanka, Kumanovo, Lipkovo, Rankovce, Staro Nagoričane
+Skopje: City of Skopje, Aračinovo, Čučer-Sandevo, Ilinden, Petrovec, Sopište, Studeničani, Zelenikovo";;;;;;;;;;;;;;;;
 Serbia;BELGRADE;NA;NA;NA;2;Bosilegrad;0.189285714;review_needed;fuzzy_review;2;Bosilegrad;checked;3;"https://en.wikipedia.org/wiki/Statistical_regions_of_Serbia
 
 
