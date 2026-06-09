@@ -11,12 +11,107 @@ library(Hmisc)
 library(readr)
 library(dplyr)
 library(tibble)
+library(tidyr)
 
 ```
+
 ```{r}
-features_pred_df <- read_csv("/Users/esthergreenwood/Documents/GitHub/mapping_sanitation_access_LMICs/outputs/03_sampled_features/worldbank_sampled_pred.csv")
+features_pred_df <- read_csv("/Users/esthergreenwood/Documents/GitHub/mapping_sanitation_access_LMICs/data/features/worldbank_sampled_pred_v1.0.csv")
+
+WGU_pred_df <- read_csv("/Users/esthergreenwood/Documents/GitHub/mapping_sanitation_access_LMICs/data/features/worldwide_governance_indicators_lmics.csv")
+
+country_key <- read_csv("/Users/esthergreenwood/Documents/GitHub/mapping_sanitation_access_LMICs/data/country_name_key_WB.csv")
 
 print(names(features_pred_df))
+print(names(WGU_pred_df))
+```
+```{r}
+
+# 1. Indicators to keep and new names
+indicator_map <- c(
+  "Government Effectiveness - Governance score (0-100)" = "governance_effectiveness",
+  "Control of Corruption - Governance score (0-100)"    = "control_of_corruption",
+  "Political Stability - Governance score (0-100)"      = "political_stability",
+  "Regulatory Quality - Governance score (0-100)"       = "regulatory_quality",
+  "Rule of Law - Governance score (0-100)"              = "rule_of_law",
+  "Voice and Accountability - Governance score (0-100)" = "voice_and_accountability"
+)
+
+# 2. Keep LMICs only from the key
+# LMIC = Low + Lower-middle + Upper-middle income
+country_key_lmic <- country_key %>%
+  filter(IncomeGroup2024 %in% c("L", "LM", "UM")) %>%
+  distinct(GADM_NAME_0, Country, Code, IncomeGroup2024)
+
+# 3. Attach standardized WGI / World Bank country names to features_pred_df
+features_pred_df2 <- features_pred_df %>%
+  left_join(
+    country_key_lmic %>%
+      select(GADM_NAME_0, Country, Code, IncomeGroup2024),
+    by = c("NAME_0" = "GADM_NAME_0")
+  ) %>%
+  rename(
+    NAME_0_join = Country,
+    wb_code = Code,
+    income_group_2024 = IncomeGroup2024
+  )
+
+# 4. Filter WGI data to LMIC countries only, and only the requested indicators
+WGU_2024_wide_lmic <- WGU_pred_df %>%
+  semi_join(country_key_lmic, by = c("Country Name" = "Country")) %>%
+  filter(`Series Name` %in% names(indicator_map)) %>%
+  select(`Country Name`, `Series Name`, `2024`) %>%
+  mutate(
+    indicator_short = recode(`Series Name`, !!!indicator_map),
+    value_2024 = as.numeric(gsub(",", "", `2024`))
+  ) %>%
+  select(`Country Name`, indicator_short, value_2024) %>%
+  distinct() %>%
+  pivot_wider(
+    names_from = indicator_short,
+    values_from = value_2024
+  )
+
+# 5. Join LMIC-only WGI indicators onto regional feature data
+features_pred_df_joined <- features_pred_df2 %>%
+  left_join(WGU_2024_wide_lmic, by = c("NAME_0_join" = "Country Name"))
+```
+
+```{r}
+unmatched_to_key <- features_pred_df %>%
+  distinct(NAME_0) %>%
+  anti_join(country_key_lmic, by = c("NAME_0" = "GADM_NAME_0"))
+
+cat("Countries in features_pred_df not found in LMIC key:\n")
+print(unmatched_to_key)
+```
+```{r}
+unmatched_to_WGI <- features_pred_df2 %>%
+  distinct(NAME_0, NAME_0_join) %>%
+  filter(!is.na(NAME_0_join)) %>%
+  anti_join(
+    WGU_2024_wide_lmic %>% distinct(`Country Name`),
+    by = c("NAME_0_join" = "Country Name")
+  )
+
+cat("\nCountries matched to key but not found in WGU_pred_df:\n")
+print(unmatched_to_WGI)
+```
+```{r}
+features_pred_df_joined <- features_pred_df_joined %>%
+  filter(NAME_0 != "South Korea")
+
+features_pred_df_joined %>%
+  filter(
+    is.na(governance_effectiveness) |
+    is.na(control_of_corruption) |
+    is.na(political_stability) |
+    is.na(regulatory_quality) |
+    is.na(rule_of_law) |
+    is.na(voice_and_accountability)
+  ) %>%
+  distinct(NAME_0) %>%
+  arrange(NAME_0)
 ```
 
 ## Pre-selected environmental varibales
@@ -110,14 +205,21 @@ bandNames <- c(
   "runoff_max_annualmax",
   "runoff_min_annualmin",
   "temperature_2m_max_annualmax",
-  "viirs_average"
+  "viirs_average",
   #"worldpop_sum"
+  
+  "governance_effectiveness",
+  "control_of_corruption",
+  "political_stability",
+  "regulatory_quality",
+  "rule_of_law",
+  "voice_and_accountability"
 )
 
 length(bandNames)
 ```
 ```{r}
-samples_lmics_df <- features_pred_df %>% select(all_of(bandNames))
+samples_lmics_df <- features_pred_df_joined %>% select(all_of(bandNames))
 #%>%
   #na.omit()
 
@@ -148,7 +250,7 @@ plot(hclust,type="index")
 ```{r}
 set.seed(123)
 
-k_values <- c(5,9,13,15,27,40, 50, 60)
+k_values <- c(5,7,12,17,25,45,60)
 
 for (k in k_values) {
   set.seed(123) 

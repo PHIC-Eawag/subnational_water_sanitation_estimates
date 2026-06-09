@@ -98,6 +98,8 @@ Thumbs.db
 .env.*
 *.pem
 *.key
+*.pdf
+
 
 # Local machine-specific config files
 config/local_paths.yml
@@ -108,22 +110,33 @@ config/local_*.yml
 # Raw and processed data stay local
 # =========================
 data/DHS_boundaries/*
+data/GADM36_boundaries/*
 data/MICS_boundaries/*
 data/PakistanWFP2024Boundaries_2/*
 data/processed/*
+data/features/*
 
 # Keep placeholder files
 !data/processed/.gitkeep
 !data/DHS_boundaries/.gitkeep
+!data/GADM36_boundaries/.gitkeep
 !data/MICS_boundaries/.gitkeep
 !data/PakistanWFP2024Boundaries_2/.gitkeep
+!data/features/.gitkeep
+
 
 
 # =========================
 # Outputs
 # =========================
-#outputs/*
-#!outputs/.gitkeep
+outputs/01_matching_regions*
+!outputs/01_matching_regions.gitkeep
+
+outputs/02_boundary_files*
+!outputs/02_boundary_files.gitkeep
+
+outputs/03_sampled_features*
+!outputs/03_sampled_features.gitkeep
 
 # =========================
 # Logs / temporary files

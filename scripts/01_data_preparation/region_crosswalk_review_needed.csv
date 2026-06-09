@@ -1,0 +1,62 @@
+HH7_region,country_wb,country_outcome,HH7_region_outcome,country_cov,HH7_region_cov,dist,match_type,n_best_candidates
+NA,Benin,Benin,COUFFO,Benin,Kouffo,0.11111111111111106,review_fuzzy,1
+NA,Benin,Benin,ATACORA,Benin,Atakora,0.09523809523809525,strong_fuzzy,1
+NA,Chad,Chad,Ouadda?,Chad,Ouaddaï,0.04761904761904765,strong_fuzzy,1
+NA,Chad,Chad,Barh El Gazal,Chad,Barh el Ghazel,0.07326007326007335,strong_fuzzy,1
+NA,"Congo, Dem. Rep.",DR Congo,Maindombe,Democratic Republic of the Congo,Maï-Ndombe,0.033333333333333416,strong_fuzzy,1
+NA,Georgia,Georgia,KHAKHETI,Georgia,Kakheti,0.11309523809523819,review_fuzzy,1
+NA,Georgia,Georgia,IMERETI,Georgia,"Imereti, Racha-Lechkhumi and Kvemo Svaneti",0.2764227642276423,weak_fuzzy,1
+NA,Guinea-Bissau,Guinea Bissau,Bolama/Bijagós,Guinea-Bissau,Bolama,0.19047619047619044,review_fuzzy,1
+NA,Iraq,Iraq,DUHOK,Iraq,Dihok,0.13333333333333336,review_fuzzy,1
+NA,Iraq,Iraq,ERBIL,Iraq,Arbil,0.13333333333333336,review_fuzzy,1
+NA,Iraq,Iraq,THIQAR,Iraq,Dhi-Qar,0.1507936507936509,review_fuzzy,1
+NA,Iraq,Iraq,NAINAWA,Iraq,Ninawa,0.18650793650793648,review_fuzzy,1
+NA,Iraq,Iraq,KARBALAH,Iraq,Karbala',0.04166666666666672,strong_fuzzy,1
+NA,Iraq,Iraq,DIALA,Iraq,Diyala,0.05555555555555556,strong_fuzzy,1
+NA,Iraq,Iraq,SALAHADDIN,Iraq,Sala ad-Din,0.09393939393939396,strong_fuzzy,1
+NA,Iraq,Iraq,ANBAR,Iraq,Al-Anbar,0.22499999999999998,weak_fuzzy,1
+NA,Iraq,Iraq,BASRAH,Iraq,Al-Basrah,0.25000000000000006,weak_fuzzy,1
+NA,Iraq,Iraq,QADISYAH,Iraq,Al-Qadisiyah,0.25694444444444453,weak_fuzzy,1
+NA,Iraq,Iraq,NAJAF,Iraq,An-Najaf,0.25833333333333336,weak_fuzzy,1
+NA,Iraq,Iraq,MISAN,Iraq,Maysan,0.2611111111111111,weak_fuzzy,1
+NA,Iraq,Iraq,SULAIMANIYA,Iraq,Al-Muthannia,0.26452020202020204,weak_fuzzy,1
+NA,Iraq,Iraq,MUTHANA,Iraq,Al-Muthannia,0.3055555555555555,weak_fuzzy,1
+NA,Kiribati,Kiribati,LINE AND PHOENIX GROUP,Kiribati,LINE_AND_PHOENIX,0.09090909090909088,strong_fuzzy,1
+NA,Lao PDR,Lao PDR,XAYSOMBOUN,Lao People's Democratic Republic,Xaysomboune,0.03030303030303033,strong_fuzzy,1
+NA,Lao PDR,Lao PDR,KHAMMUAN,Lao People's Democratic Republic,Khammua,0.04166666666666672,strong_fuzzy,1
+NA,Lesotho,Lesotho,MOHALES HOEK,Lesotho,Mohale's Hoek,0.05341880341880343,strong_fuzzy,1
+NA,Lesotho,Lesotho,QACHAS NEK,Lesotho,Qacha's Nek,0.06363636363636369,strong_fuzzy,1
+NA,Malawi,Malawi,North,Malawi,Ntcheu,0.3,weak_fuzzy,1
+NA,Malawi,Malawi,South,Malawi,Ntcheu,0.4222222222222222,weak_fuzzy,2
+NA,Malawi,Malawi,South,Malawi,Rumphi,0.4222222222222222,weak_fuzzy,2
+NA,Nepal,Nepal,Sudurpashchim,Nepal,Sudur Paschim,0.07905982905982913,strong_fuzzy,1
+NA,Pakistan,Pakistan Balochistan,Chaghi,Pakistan,Chagai,0.11111111111111106,review_fuzzy,1
+NA,Pakistan,Pakistan Balochistan,Kachhi (Bolan),Pakistan,Kachhi,0.1666666666666667,review_fuzzy,1
+NA,Pakistan,Pakistan Khyber Pakhtunkhwa,Bajor,Pakistan,Bajaur,0.17777777777777778,review_fuzzy,1
+NA,Pakistan,Pakistan Khyber Pakhtunkhwa,Laki Marwat,Pakistan,Lakki Marwat,0.02777777777777788,strong_fuzzy,1
+NA,Pakistan,Pakistan Khyber Pakhtunkhwa,Abbotabad,Pakistan,Abbottabad,0.033333333333333416,strong_fuzzy,1
+NA,Pakistan,Pakistan Khyber Pakhtunkhwa,Nowshehra,Pakistan,Nowshera,0.037037037037037104,strong_fuzzy,1
+NA,Pakistan,Pakistan Balochistan,Sheerani,Pakistan,Sherani,0.04166666666666672,strong_fuzzy,1
+NA,Pakistan,Pakistan Khyber Pakhtunkhwa,Hari Pur,Pakistan,Haripur,0.04166666666666672,strong_fuzzy,1
+NA,Pakistan,Pakistan Khyber Pakhtunkhwa,Torghar,Pakistan,Tor Ghar,0.04166666666666672,strong_fuzzy,1
+NA,Pakistan,Pakistan Khyber Pakhtunkhwa,Kuram,Pakistan,Kurram,0.05555555555555556,strong_fuzzy,1
+NA,Pakistan,Pakistan Balochistan,Sibbi,Pakistan,Sibi,0.06666666666666678,strong_fuzzy,1
+NA,Pakistan,Pakistan Khyber Pakhtunkhwa,Mohmind,Pakistan,Mohmand,0.09523809523809525,strong_fuzzy,1
+NA,Pakistan,Pakistan Balochistan,Kech (Turbat),Pakistan,Kech,0.21212121212121213,weak_fuzzy,1
+NA,Samoa,Samoa,Apia Urban Area,NA,NA,NA,no_region_candidate_within_threshold,1
+NA,Samoa,Samoa,North West Upolu,NA,NA,NA,no_region_candidate_within_threshold,1
+NA,Samoa,Samoa,Rest of Upolu,NA,NA,NA,no_region_candidate_within_threshold,1
+NA,Sao Tome and Principe,Sao Tome and Principe,DISTRITO DE MÉ-ZÓCHI,NA,NA,NA,no_region_candidate_within_threshold,1
+NA,Sao Tome and Principe,Sao Tome and Principe,DISTRITO DE ÁGUA GRANDE,São Tomé and Príncipe,REGIAO_SUL_ESTE,0.38401405357927104,weak_fuzzy,1
+NA,Sierra Leone,Sierra Leone,WEST,Sierra Leone,Western Area Rural,0.25925925925925924,weak_fuzzy,2
+NA,Sierra Leone,Sierra Leone,WEST,Sierra Leone,Western Area Urban,0.25925925925925924,weak_fuzzy,2
+NA,Sierra Leone,Sierra Leone,NORTH,Sierra Leone,Bonthe,0.2611111111111111,weak_fuzzy,1
+NA,Sierra Leone,Sierra Leone,SOUTH,Sierra Leone,Bonthe,0.3,weak_fuzzy,1
+NA,Sierra Leone,Sierra Leone,EAST,Sierra Leone,Western Area Rural,0.38425925925925924,weak_fuzzy,2
+NA,Sierra Leone,Sierra Leone,EAST,Sierra Leone,Western Area Urban,0.38425925925925924,weak_fuzzy,2
+NA,Togo,Togo,Golfe Urbain,NA,NA,NA,no_region_candidate_within_threshold,1
+NA,Togo,Togo,Lomé Commune,Togo,Lomé Commune/Golfe Urbain,0.1733333333333334,review_fuzzy,1
+NA,Tuvalu,Tuvalu,Nanumaga,Tuvalu,Nanumanga,0.037037037037037104,strong_fuzzy,1
+NA,Viet Nam,Vietnam,NORTH CENTRAL AND CENTRAL COASTAL,Vietnam,NORTH_CENTRAL_AND_COASTAL,0.10747474747474747,review_fuzzy,1
+NA,West Bank and Gaza,West Bank and Gaza,Qalqilia,Palestina,Qalqilya,0.08333333333333338,strong_fuzzy,1
+NA,West Bank and Gaza,West Bank and Gaza,Tubas & Northen Valley,Palestina,Tubas,0.263888888888889,weak_fuzzy,1

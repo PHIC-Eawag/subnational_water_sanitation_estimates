@@ -1,0 +1,309 @@
+"country_survey","region_survey","gadm_level","region_gadm","exact_status","fuzzy_gadm_level","fuzzy_region_gadm","dist","fuzzy_flag","final_status","matched_level","matched_name"
+"Algeria","NORD CENTRE",NA,NA,NA,2,"Bordj Menaiel",0.275058275058275,"weak_fuzzy_candidate","unmatched",NA,NA
+"Algeria","NORD EST",NA,NA,NA,2,"Bordj Sebbat",0.228174603174603,"weak_fuzzy_candidate","unmatched",NA,NA
+"Algeria","NORD OUEST",NA,NA,NA,2,"Oum Drou",0.272222222222222,"weak_fuzzy_candidate","unmatched",NA,NA
+"Algeria","HAUT PLATEAU CENTRE",NA,NA,NA,2,"Chabet El Ameur",0.314473684210526,"weak_fuzzy_candidate","unmatched",NA,NA
+"Algeria","HAUT PLATEAU EST",NA,NA,NA,2,"Kalaa",0.316666666666667,"weak_fuzzy_candidate","unmatched",NA,NA
+"Algeria","HAUT PLATEAU OUEST",NA,NA,NA,2,"Kalaa",0.325925925925926,"weak_fuzzy_candidate","unmatched",NA,NA
+"Algeria","SUD",NA,NA,NA,2,"Souidania",0.222222222222222,"weak_fuzzy_candidate","unmatched",NA,NA
+"Bangladesh","Barishal",NA,NA,NA,1,"Barisal",0.0416666666666667,"strong_fuzzy_candidate","fuzzy_review",1,"Barisal"
+"Bangladesh","Barishal",NA,NA,NA,2,"Barisal",0.0416666666666667,"strong_fuzzy_candidate","fuzzy_review",2,"Barisal"
+"Bangladesh","Barishal",NA,NA,NA,4,"Barisal",0.0416666666666667,"strong_fuzzy_candidate","fuzzy_review",4,"Barisal"
+"Bangladesh","Chattogram",NA,NA,NA,4,"Chatra",0.133333333333333,"review_needed","fuzzy_review",4,"Chatra"
+"Bangladesh","Dhaka",2,"Dhaka","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Dhaka"
+"Bangladesh","Khulna",2,"Khulna","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Khulna"
+"Bangladesh","Mymenshing",NA,NA,NA,2,"Mymensingh",0.0666666666666668,"strong_fuzzy_candidate","fuzzy_review",2,"Mymensingh"
+"Bangladesh","Rajshahi",2,"Rajshahi","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Rajshahi"
+"Bangladesh","Rangpur",4,"Rangpur","exact_unique",NA,NA,NA,NA,"exact_unique",4,"Rangpur"
+"Bangladesh","Sylhet",2,"Sylhet","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Sylhet"
+"Central African Republic","Région 1",NA,NA,NA,2,"Zémio",0.341666666666667,"weak_fuzzy_candidate","unmatched",NA,NA
+"Central African Republic","Région 2",NA,NA,NA,2,"Zémio",0.341666666666667,"weak_fuzzy_candidate","unmatched",NA,NA
+"Central African Republic","Région 3",NA,NA,NA,2,"Zémio",0.341666666666667,"weak_fuzzy_candidate","unmatched",NA,NA
+"Central African Republic","Région 4",NA,NA,NA,2,"Zémio",0.341666666666667,"weak_fuzzy_candidate","unmatched",NA,NA
+"Central African Republic","Région 5",NA,NA,NA,2,"Zémio",0.341666666666667,"weak_fuzzy_candidate","unmatched",NA,NA
+"Central African Republic","Région 6",NA,NA,NA,2,"Zémio",0.341666666666667,"weak_fuzzy_candidate","unmatched",NA,NA
+"Central African Republic","Région 7",NA,NA,NA,2,"Zémio",0.341666666666667,"weak_fuzzy_candidate","unmatched",NA,NA
+"Chad","Batha",1,"Batha","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Batha"
+"Chad","Borkou",3,"Borkou","exact_unique",NA,NA,NA,NA,"exact_unique",3,"Borkou"
+"Chad","Chari Baguirmi",1,"Chari-Baguirmi","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Chari-Baguirmi"
+"Chad","Guera",2,"Guéra","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Guéra"
+"Chad","Hadjer Lamis",1,"Hadjer-Lamis","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Hadjer-Lamis"
+"Chad","Kanem",2,"Kanem","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Kanem"
+"Chad","Lac",1,"Lac","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Lac"
+"Chad","Logone Occidental",1,"Logone Occidental","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Logone Occidental"
+"Chad","Logone Oriental",1,"Logone Oriental","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Logone Oriental"
+"Chad","Mandoul",1,"Mandoul","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Mandoul"
+"Chad","Mayo Kebbi Est",1,"Mayo-Kebbi Est","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Mayo-Kebbi Est"
+"Chad","Mayo Kebbi Ouest",1,"Mayo-Kebbi Ouest","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Mayo-Kebbi Ouest"
+"Chad","Moyen Chari",1,"Moyen-Chari","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Moyen-Chari"
+"Chad","Ouadda?",NA,NA,NA,1,"Ouaddaï",0.0476190476190477,"strong_fuzzy_candidate","fuzzy_review",1,"Ouaddaï"
+"Chad","Salamat",3,"Salamat","exact_unique",NA,NA,NA,NA,"exact_unique",3,"Salamat"
+"Chad","Tandjile",1,"Tandjilé","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Tandjilé"
+"Chad","Wadi Fira",1,"Wadi Fira","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Wadi Fira"
+"Chad","Ndjamena",3,"Ndjamena","exact_unique",NA,NA,NA,NA,"exact_unique",3,"Ndjamena"
+"Chad","Barh El Gazal",NA,NA,NA,2,"Barh El Gazel",0.0512820512820513,"strong_fuzzy_candidate","fuzzy_review",2,"Barh El Gazel"
+"Chad","Ennedi Ouest",3,"Ennedi Ouest","exact_unique",NA,NA,NA,NA,"exact_unique",3,"Ennedi Ouest"
+"Chad","Sila",2,"Sila","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Sila"
+"Chad","Ennedi Est",3,"Ennedi Est","exact_unique",NA,NA,NA,NA,"exact_unique",3,"Ennedi Est"
+"Gambia","Banjul",2,"Banjul","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Banjul"
+"Gambia","Kanifing",2,"Kanifing","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Kanifing"
+"Gambia","Brikama",NA,NA,NA,2,"Niamina East",0.365079365079365,"weak_fuzzy_candidate","unmatched",NA,NA
+"Gambia","Brikama",NA,NA,NA,2,"Niamina West",0.365079365079365,"weak_fuzzy_candidate","unmatched",NA,NA
+"Gambia","Brikama",NA,NA,NA,2,"Foni Kansala",0.365079365079365,"weak_fuzzy_candidate","unmatched",NA,NA
+"Gambia","Mansakonko",NA,NA,NA,2,"Foni Kansala",0.357936507936508,"weak_fuzzy_candidate","unmatched",NA,NA
+"Gambia","Kerewan",NA,NA,NA,1,"Western",0.380952380952381,"weak_fuzzy_candidate","unmatched",NA,NA
+"Gambia","Kuntaur",NA,NA,NA,2,"Kantora",0.257142857142857,"weak_fuzzy_candidate","unmatched",NA,NA
+"Gambia","Janjanbureh",2,"Janjanbureh","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Janjanbureh"
+"Gambia","Basse",NA,NA,NA,1,"Banjul",0.422222222222222,"weak_fuzzy_candidate","unmatched",NA,NA
+"Gambia","Basse",NA,NA,NA,2,"Banjul",0.422222222222222,"weak_fuzzy_candidate","unmatched",NA,NA
+"Georgia","KHAKHETI",NA,NA,NA,1,"Kakheti",0.113095238095238,"review_needed","fuzzy_review",1,"Kakheti"
+"Georgia","TBILISI",2,"Tbilisi","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Tbilisi"
+"Georgia","SHIDA KARTLI",1,"Shida Kartli","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Shida Kartli"
+"Georgia","KVEMO KARTLI",1,"Kvemo Kartli","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Kvemo Kartli"
+"Georgia","SAMTSKHE-JAVAKHETI",1,"Samtskhe-Javakheti","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Samtskhe-Javakheti"
+"Georgia","ADJARA A.R.",NA,NA,NA,1,"Ajaria",0.222222222222222,"weak_fuzzy_candidate","unmatched",NA,NA
+"Georgia","GURIA",1,"Guria","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Guria"
+"Georgia","SAMEGRELO-ZEMO SVANETI",1,"Samegrelo-Zemo Svaneti","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Samegrelo-Zemo Svaneti"
+"Georgia","IMERETI",1,"Imereti","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Imereti"
+"Georgia","MTKHETA-MTIANETI",NA,NA,NA,1,"Mtskheta-Mtianeti",0.0196078431372549,"strong_fuzzy_candidate","fuzzy_review",1,"Mtskheta-Mtianeti"
+"Ghana","WESTERN",1,"Western","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Western"
+"Ghana","CENTRAL",1,"Central","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Central"
+"Ghana","GREATER ACCRA",1,"Greater Accra","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Greater Accra"
+"Ghana","VOLTA",1,"Volta","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Volta"
+"Ghana","EASTERN",1,"Eastern","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Eastern"
+"Ghana","ASHANTI",1,"Ashanti","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Ashanti"
+"Ghana","BRONG AHAFO",1,"Brong Ahafo","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Brong Ahafo"
+"Ghana","NORTHERN",1,"Northern","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Northern"
+"Ghana","UPPER EAST",1,"Upper East","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Upper East"
+"Ghana","UPPER WEST",1,"Upper West","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Upper West"
+"Guinea Bissau","Tombali",1,"Tombali","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Tombali"
+"Guinea Bissau","Quinara",1,"Quinara","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Quinara"
+"Guinea Bissau","Oio",1,"Oio","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Oio"
+"Guinea Bissau","Biombo",1,"Biombo","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Biombo"
+"Guinea Bissau","Bolama/Bijagós",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Guinea Bissau","Bafatá",2,"Bafata","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Bafata"
+"Guinea Bissau","Gabú",2,"Gabu","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Gabu"
+"Guinea Bissau","Cacheu",2,"Cacheu","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Cacheu"
+"Guinea Bissau","SAB",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Guyana","BARIMA-WAINI",1,"Barima-Waini","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Barima-Waini"
+"Guyana","POMEROON-SUPENAAM",1,"Pomeroon-Supenaam","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Pomeroon-Supenaam"
+"Guyana","ESSEQUIBO ISLANDS-WEST DEMERARA",1,"Essequibo Islands-West Demerara","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Essequibo Islands-West Demerara"
+"Guyana","DEMERARA-MAHAICA",1,"Demerara-Mahaica","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Demerara-Mahaica"
+"Guyana","MAHAICA-BERBICE",1,"Mahaica-Berbice","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Mahaica-Berbice"
+"Guyana","EAST BERBICE-CORENTYNE",1,"East Berbice-Corentyne","exact_unique",NA,NA,NA,NA,"exact_unique",1,"East Berbice-Corentyne"
+"Guyana","CUYUNI-MAZARUNI",1,"Cuyuni-Mazaruni","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Cuyuni-Mazaruni"
+"Guyana","POTARO-SIPARUNI",1,"Potaro-Siparuni","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Potaro-Siparuni"
+"Guyana","UPPER TAKUTU-UPPER ESSEQUIBO",1,"Upper Takutu-Upper Essequibo","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Upper Takutu-Upper Essequibo"
+"Guyana","UPPER DEMERARA-BERBICE",1,"Upper Demerara-Berbice","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Upper Demerara-Berbice"
+"Iraq","DUHOK",NA,NA,NA,1,"Dihok",0.133333333333333,"review_needed","fuzzy_review",1,"Dihok"
+"Iraq","ERBIL",NA,NA,NA,1,"Arbil",0.133333333333333,"review_needed","fuzzy_review",1,"Arbil"
+"Iraq","ERBIL",NA,NA,NA,2,"Arbil",0.133333333333333,"review_needed","fuzzy_review",2,"Arbil"
+"Iraq","SULAIMANIYA",NA,NA,NA,2,"Sulaymaniya",0.127272727272727,"review_needed","fuzzy_review",2,"Sulaymaniya"
+"Iraq","NAINAWA",NA,NA,NA,1,"Ninawa",0.186507936507936,"review_needed","fuzzy_review",1,"Ninawa"
+"Iraq","KIRKUK",2,"Kirkuk","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Kirkuk"
+"Iraq","DIALA",NA,NA,NA,1,"Diyala",0.0555555555555556,"strong_fuzzy_candidate","fuzzy_review",1,"Diyala"
+"Iraq","ANBAR",NA,NA,NA,2,"Anah",0.216666666666667,"weak_fuzzy_candidate","unmatched",NA,NA
+"Iraq","BAGHDAD",1,"Baghdad","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Baghdad"
+"Iraq","BABIL",1,"Babil","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Babil"
+"Iraq","KARBALAH",NA,NA,NA,1,"Karbala'",0.0416666666666667,"strong_fuzzy_candidate","fuzzy_review",1,"Karbala'"
+"Iraq","KARBALAH",NA,NA,NA,2,"Karbala",0.0416666666666667,"strong_fuzzy_candidate","fuzzy_review",2,"Karbala"
+"Iraq","WASIT",1,"Wasit","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Wasit"
+"Iraq","SALAHADDIN",NA,NA,NA,1,"Sala ad-Din",0.093939393939394,"strong_fuzzy_candidate","fuzzy_review",1,"Sala ad-Din"
+"Iraq","NAJAF",2,"Najaf","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Najaf"
+"Iraq","QADISYAH",NA,NA,NA,1,"Al-Qadisiyah",0.256944444444445,"weak_fuzzy_candidate","unmatched",NA,NA
+"Iraq","MUTHANA",NA,NA,NA,2,"Rumaitha",0.26984126984127,"weak_fuzzy_candidate","unmatched",NA,NA
+"Iraq","THIQAR",NA,NA,NA,1,"Dhi-Qar",0.150793650793651,"review_needed","fuzzy_review",1,"Dhi-Qar"
+"Iraq","MISAN",NA,NA,NA,1,"Maysan",0.261111111111111,"weak_fuzzy_candidate","unmatched",NA,NA
+"Iraq","BASRAH",2,"Basrah","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Basrah"
+"Kiribati","NORTHERN GILBERT",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Kiribati","SOUTH TARAWA",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Kiribati","CENTRAL GILBERT",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Kiribati","SOUTHERN GILBERT",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Kiribati","LINE AND PHOENIX GROUP",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Kosovo","GJAKOVA",NA,NA,NA,1,"Đakovica",0.220238095238095,"weak_fuzzy_candidate","unmatched",NA,NA
+"Kosovo","GJAKOVA",NA,NA,NA,2,"Đakovica",0.220238095238095,"weak_fuzzy_candidate","unmatched",NA,NA
+"Kosovo","GJILAN",NA,NA,NA,1,"Gnjilane",0.0833333333333334,"strong_fuzzy_candidate","fuzzy_review",1,"Gnjilane"
+"Kosovo","GJILAN",NA,NA,NA,2,"Gnjilane",0.0833333333333334,"strong_fuzzy_candidate","fuzzy_review",2,"Gnjilane"
+"Kosovo","MITROVICA",NA,NA,NA,1,"Đakovica",0.273148148148148,"weak_fuzzy_candidate","unmatched",NA,NA
+"Kosovo","MITROVICA",NA,NA,NA,2,"Đakovica",0.273148148148148,"weak_fuzzy_candidate","unmatched",NA,NA
+"Kosovo","PEJA",NA,NA,NA,2,"Lipljan",0.273809523809524,"weak_fuzzy_candidate","unmatched",NA,NA
+"Kosovo","PRIZREN",2,"Prizren","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Prizren"
+"Kosovo","PRISHTINA",NA,NA,NA,1,"Pristina",0.0370370370370371,"strong_fuzzy_candidate","fuzzy_review",1,"Pristina"
+"Kosovo","PRISHTINA",NA,NA,NA,2,"Priština",0.0370370370370371,"strong_fuzzy_candidate","fuzzy_review",2,"Priština"
+"Kosovo","FERIZAJ",NA,NA,NA,2,"Srbica",0.357142857142857,"weak_fuzzy_candidate","unmatched",NA,NA
+"Lesotho","BOTHA-BOTHE",NA,NA,NA,1,"Butha-Buthe",0.121212121212121,"review_needed","fuzzy_review",1,"Butha-Buthe"
+"Lesotho","LERIBE",1,"Leribe","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Leribe"
+"Lesotho","BEREA",1,"Berea","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Berea"
+"Lesotho","MASERU",1,"Maseru","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Maseru"
+"Lesotho","MAFETENG",1,"Mafeteng","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Mafeteng"
+"Lesotho","MOHALES HOEK",NA,NA,NA,1,"Mohale's Hoek",0.0534188034188034,"strong_fuzzy_candidate","fuzzy_review",1,"Mohale's Hoek"
+"Lesotho","QUTHING",1,"Quthing","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Quthing"
+"Lesotho","QACHAS NEK",NA,NA,NA,1,"Qacha's Nek",0.0636363636363637,"strong_fuzzy_candidate","fuzzy_review",1,"Qacha's Nek"
+"Lesotho","MOKHOTLONG",1,"Mokhotlong","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Mokhotlong"
+"Lesotho","THABA-TSEKA",1,"Thaba-Tseka","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Thaba-Tseka"
+"Madagascar","ANALAMANGA",2,"Analamanga","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Analamanga"
+"Madagascar","VAKINANKARATRA",2,"Vakinankaratra","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Vakinankaratra"
+"Madagascar","ITASY",2,"Itasy","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Itasy"
+"Madagascar","BONGOLAVA",2,"Bongolava","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Bongolava"
+"Madagascar","HAUTE MATSIATRA",2,"Haute matsiatra","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Haute matsiatra"
+"Madagascar","AMORON'I MANIA",2,"Amoron'i mania","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Amoron'i mania"
+"Madagascar","VATOVAVY FITOVINANY",2,"Vatovavy Fitovinany","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Vatovavy Fitovinany"
+"Madagascar","IHOROMBE",4,"Ihorombe","exact_unique",NA,NA,NA,NA,"exact_unique",4,"Ihorombe"
+"Madagascar","ATSIMO ATSINANANA",NA,NA,NA,2,"Atsimo-Atsinana",0.0392156862745099,"strong_fuzzy_candidate","fuzzy_review",2,"Atsimo-Atsinana"
+"Madagascar","ATSINANANA",2,"Atsinanana","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Atsinanana"
+"Madagascar","ANALANJIROFO",2,"Analanjirofo","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Analanjirofo"
+"Madagascar","ALAOTRA MANGORO",2,"Alaotra-Mangoro","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Alaotra-Mangoro"
+"Madagascar","BOENY",2,"Boeny","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Boeny"
+"Madagascar","SOFIA",2,"Sofia","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Sofia"
+"Madagascar","BETSIBOKA",2,"Betsiboka","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Betsiboka"
+"Madagascar","MELAKY",2,"Melaky","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Melaky"
+"Madagascar","ATSIMO ANDREFANA",2,"Atsimo-Andrefana","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Atsimo-Andrefana"
+"Madagascar","ANDROY",4,"Androy","exact_unique",NA,NA,NA,NA,"exact_unique",4,"Androy"
+"Madagascar","ANOSY",4,"Anosy","exact_unique",NA,NA,NA,NA,"exact_unique",4,"Anosy"
+"Madagascar","MENABE",2,"Menabe","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Menabe"
+"Madagascar","DIANA",2,"Diana","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Diana"
+"Madagascar","SAVA",2,"Sava","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Sava"
+"Mongolia","Central",NA,NA,NA,2,"Tarialan",0.30952380952381,"weak_fuzzy_candidate","unmatched",NA,NA
+"Mongolia","Western",NA,NA,NA,2,"Tsenkher",0.26984126984127,"weak_fuzzy_candidate","unmatched",NA,NA
+"Mongolia","Eastern",NA,NA,NA,2,"Tsenkher",0.26984126984127,"weak_fuzzy_candidate","unmatched",NA,NA
+"Mongolia","Khangai",2,"Khangai","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Khangai"
+"Mongolia","Ulaanbaatar",1,"Ulaanbaatar","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Ulaanbaatar"
+"Nigeria","Abia",1,"Abia","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Abia"
+"Nigeria","Adamawa",1,"Adamawa","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Adamawa"
+"Nigeria","Akwa Ibom",1,"Akwa Ibom","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Akwa Ibom"
+"Nigeria","Anambra",1,"Anambra","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Anambra"
+"Nigeria","Bauchi",2,"Bauchi","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Bauchi"
+"Nigeria","Bayelsa",1,"Bayelsa","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Bayelsa"
+"Nigeria","Benue",1,"Benue","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Benue"
+"Nigeria","Borno",1,"Borno","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Borno"
+"Nigeria","Cross River",1,"Cross River","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Cross River"
+"Nigeria","Delta",1,"Delta","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Delta"
+"Nigeria","Ebonyi",2,"Ebonyi","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Ebonyi"
+"Nigeria","Edo",1,"Edo","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Edo"
+"Nigeria","Ekiti",2,"Ekiti","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Ekiti"
+"Nigeria","Enugu",1,"Enugu","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Enugu"
+"Nigeria","Gombe",2,"Gombe","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Gombe"
+"Nigeria","Imo",1,"Imo","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Imo"
+"Nigeria","Jigawa",1,"Jigawa","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Jigawa"
+"Nigeria","Kaduna",1,"Kaduna","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Kaduna"
+"Nigeria","Kano",2,"Kano","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Kano"
+"Nigeria","Katsina",1,"Katsina","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Katsina"
+"Nigeria","Kebbi",1,"Kebbi","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Kebbi"
+"Nigeria","Kogi",1,"Kogi","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Kogi"
+"Nigeria","Kwara",1,"Kwara","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Kwara"
+"Nigeria","Lagos",1,"Lagos","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Lagos"
+"Nigeria","Nasarawa",2,"Nasarawa","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Nasarawa"
+"Nigeria","Niger",1,"Niger","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Niger"
+"Nigeria","Ogun",1,"Ogun","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Ogun"
+"Nigeria","Ondo",1,"Ondo","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Ondo"
+"Nigeria","Osun",1,"Osun","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Osun"
+"Nigeria","Oyo",1,"Oyo","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Oyo"
+"Nigeria","Plateau",1,"Plateau","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Plateau"
+"Nigeria","Rivers",1,"Rivers","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Rivers"
+"Nigeria","Sokoto",1,"Sokoto","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Sokoto"
+"Nigeria","Taraba",1,"Taraba","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Taraba"
+"Nigeria","Yobe",1,"Yobe","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Yobe"
+"Nigeria","Zamfara",1,"Zamfara","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Zamfara"
+"Nigeria","FCT Abuja",NA,NA,NA,2,"Ikot-Aba",0.273148148148148,"weak_fuzzy_candidate","unmatched",NA,NA
+"Pakistan Punjab","Bahawalpur",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Pakistan Punjab","Bahawalnagar",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Pakistan Punjab","RY Khan",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Pakistan Punjab","DG Khan",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Pakistan Punjab","Layyah",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Pakistan Punjab","Muzaffargarh",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Pakistan Punjab","Rajanpur",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Pakistan Punjab","Faisalabad",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Pakistan Punjab","Chiniot",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Pakistan Punjab","Jhang",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Pakistan Punjab","TT Singh",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Pakistan Punjab","Gujranwala",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Pakistan Punjab","Gujrat",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Pakistan Punjab","Hafizabad",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Pakistan Punjab","Mandi Bahauddin",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Pakistan Punjab","Narowal",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Pakistan Punjab","Sialkot",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Pakistan Punjab","Lahore",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Pakistan Punjab","Kasur",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Pakistan Punjab","Nankana Sahib",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Pakistan Punjab","Sheikhupura",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Pakistan Punjab","Rawalpindi",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Pakistan Punjab","Attock",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Pakistan Punjab","Chakwal",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Pakistan Punjab","Jhelum",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Pakistan Punjab","Sahiwal",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Pakistan Punjab","Okara",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Pakistan Punjab","Pakpattan",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Pakistan Punjab","Multan",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Pakistan Punjab","Khanewal",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Pakistan Punjab","Lodhran",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Pakistan Punjab","Vehari",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Pakistan Punjab","Sargodha",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Pakistan Punjab","Bhakkar",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Pakistan Punjab","Khushab",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Pakistan Punjab","Mianwali",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Paraguay","Asunción",2,"Asunción","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Asunción"
+"Paraguay","Resto",NA,NA,NA,2,"Loreto",0.177777777777778,"review_needed","fuzzy_review",2,"Loreto"
+"Paraguay","San Pedro",1,"San Pedro","exact_unique",NA,NA,NA,NA,"exact_unique",1,"San Pedro"
+"Paraguay","Caaguazú",2,"Caaguazú","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Caaguazú"
+"Paraguay","Itapúa",1,"Itapúa","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Itapúa"
+"Paraguay","Alto Paraná",1,"Alto Paraná","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Alto Paraná"
+"Paraguay","Central",1,"Central","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Central"
+"Paraguay","Alto Paraguay",1,"Alto Paraguay","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Alto Paraguay"
+"Paraguay","Boquerón",1,"Boquerón","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Boquerón"
+"Sao Tome and Principe","REGIÃO NORTE OESTE",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Sao Tome and Principe","DISTRITO DE MÉ-ZÓCHI",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Sao Tome and Principe","DISTRITO DE ÁGUA GRANDE",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Sao Tome and Principe","REGIÃO SUL ESTE",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Sao Tome and Principe","REGIÃO AUTÓNOMA DO PRÍNCIPE",NA,NA,NA,NA,NA,NA,NA,"unmatched",NA,NA
+"Sierra Leone","EAST",NA,NA,NA,1,"Eastern",0.142857142857143,"review_needed","fuzzy_review",1,"Eastern"
+"Sierra Leone","NORTH",NA,NA,NA,1,"Northern",0.125,"review_needed","fuzzy_review",1,"Northern"
+"Sierra Leone","SOUTH",NA,NA,NA,1,"Southern",0.125,"review_needed","fuzzy_review",1,"Southern"
+"Sierra Leone","WEST",NA,NA,NA,1,"Western",0.142857142857143,"review_needed","fuzzy_review",1,"Western"
+"Suriname","PARAMARIBO",1,"Paramaribo","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Paramaribo"
+"Suriname","WANICA",1,"Wanica","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Wanica"
+"Suriname","NICKERIE",1,"Nickerie","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Nickerie"
+"Suriname","CORONIE",1,"Coronie","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Coronie"
+"Suriname","SARAMACCA",1,"Saramacca","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Saramacca"
+"Suriname","COMMEWIJNE",1,"Commewijne","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Commewijne"
+"Suriname","MAROWIJNE",1,"Marowijne","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Marowijne"
+"Suriname","PARA",1,"Para","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Para"
+"Suriname","BROKOPONDO",1,"Brokopondo","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Brokopondo"
+"Suriname","SIPALIWINI",1,"Sipaliwini","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Sipaliwini"
+"Togo","Maritime",1,"Maritime","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Maritime"
+"Togo","Plateaux",1,"Plateaux","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Plateaux"
+"Togo","Centrale",NA,NA,NA,1,"Centre",0.0833333333333334,"strong_fuzzy_candidate","fuzzy_review",1,"Centre"
+"Togo","Kara",1,"Kara","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Kara"
+"Togo","Savanes",1,"Savanes","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Savanes"
+"Togo","Lomé Commune",NA,NA,NA,2,"Golfe (incl Lomé)",0.327777777777778,"weak_fuzzy_candidate","unmatched",NA,NA
+"Togo","Golfe Urbain",NA,NA,NA,2,"Golfe (incl Lomé)",0.266666666666667,"weak_fuzzy_candidate","unmatched",NA,NA
+"Tonga","TONGATAPU",1,"Tongatapu","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Tongatapu"
+"Tonga","VAVA'U",1,"Vava'u","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Vava'u"
+"Tonga","HA'APAI",1,"Ha'apai","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Ha'apai"
+"Tonga","'EUA",1,"'Eua","exact_unique",NA,NA,NA,NA,"exact_unique",1,"'Eua"
+"Tonga","ONGO NIUA",NA,NA,NA,1,"Tongatapu",0.362962962962963,"weak_fuzzy_candidate","unmatched",NA,NA
+"Palestina","Jenin",2,"Jenin","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Jenin"
+"Palestina","Tubas & Northen Valley",NA,NA,NA,2,"Tubas",0.263888888888889,"weak_fuzzy_candidate","unmatched",NA,NA
+"Palestina","Tulkarm",2,"Tulkarm","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Tulkarm"
+"Palestina","Nablus",2,"Nablus","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Nablus"
+"Palestina","Qalqilia",NA,NA,NA,2,"Qalqilya",0.0833333333333334,"strong_fuzzy_candidate","fuzzy_review",2,"Qalqilya"
+"Palestina","Salfit",2,"Salfit","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Salfit"
+"Palestina","Ramallah & Al bireh",2,"Ramallah and Al-Bireh","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Ramallah and Al-Bireh"
+"Palestina","Ariha & Al Aghwar",NA,NA,NA,2,"Ramallah and Al-Bireh",0.332080200501253,"weak_fuzzy_candidate","unmatched",NA,NA
+"Palestina","Jerusalem",2,"Jerusalem","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Jerusalem"
+"Palestina","Bethlehem",2,"Bethlehem","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Bethlehem"
+"Palestina","Hebron",2,"Hebron","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Hebron"
+"Palestina","North Gaza",NA,NA,NA,2,"Deir Al-Balah",0.430769230769231,"weak_fuzzy_candidate","unmatched",NA,NA
+"Palestina","Gaza",2,"Gaza","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Gaza"
+"Palestina","Deir Al-balah",2,"Deir Al-Balah","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Deir Al-Balah"
+"Palestina","Khan Yunis",2,"Khan Yunis","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Khan Yunis"
+"Palestina","Rafah",2,"Rafah","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Rafah"
+"Zimbabwe","Bulawayo",2,"Bulawayo","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Bulawayo"
+"Zimbabwe","Manicaland",1,"Manicaland","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Manicaland"
+"Zimbabwe","Mashonaland Central",1,"Mashonaland Central","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Mashonaland Central"
+"Zimbabwe","Mashonaland East",1,"Mashonaland East","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Mashonaland East"
+"Zimbabwe","Mashonaland West",1,"Mashonaland West","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Mashonaland West"
+"Zimbabwe","Matabeleland North",1,"Matabeleland North","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Matabeleland North"
+"Zimbabwe","Matabeleland South",1,"Matabeleland South","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Matabeleland South"
+"Zimbabwe","Midlands",1,"Midlands","exact_unique",NA,NA,NA,NA,"exact_unique",1,"Midlands"
+"Zimbabwe","Masvingo",2,"Masvingo","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Masvingo"
+"Zimbabwe","Harare",2,"Harare","exact_unique",NA,NA,NA,NA,"exact_unique",2,"Harare"

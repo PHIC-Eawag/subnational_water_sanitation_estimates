@@ -1,4 +1,4 @@
-#title: "Compiling and Labeling Multiple Indicator Cluster Survey Data for Testing Set"
+#title: "Compiling and Labeling Multiple Indicator Cluster Survey Data"
 
 
 library(foreign)
@@ -17,9 +17,12 @@ PATH_TO_SURVEYS_old_SMDW <- "~/switchdrive/Eawag/WorldBankProject/HH_surveys/HH_
 PATH_TO_SURVEYS_new_SMDW <- "~/switchdrive/Eawag/WorldBankProject/HH_surveys/HH_survey_data/HH_MICS_new_SMDW/"
 PATH_TO_SURVEYS_new_other <- "~/switchdrive/Eawag/WorldBankProject/HH_surveys/HH_survey_data/HH_MICS_new_other/"
 
+
+
 loadSurveys(PATH_TO_SURVEYS_old_SMDW)
 loadSurveys(PATH_TO_SURVEYS_new_SMDW)
 loadSurveys(PATH_TO_SURVEYS_new_other)
+
 
 #Creating Variable with country name (previously matched for Greenwood et al. 2024)
 hh_Algeria$country <- "Algeria"
@@ -80,7 +83,7 @@ hh_Kazakhstan$country <- "Kazakhstan"
 hh_Kyrgyzstan$country <- "Kyrgyzstan"
 hh_Montenegro$country <- "Montenegro"
 hh_Nauru$country <- "Nauru"
-hh_Nepal$country <- "Nepal"
+hh_Nigeria_new$country <- "Nigeria"
 hh_Pakistan_Sindh$country <- "Pakistan Sindh"
 hh_Qatar$country <- "Qatar"
 hh_Republic_of_North_Macedonia$country <- "Republic of North Macedonia"
@@ -143,6 +146,7 @@ hh_Kazakhstan_Variables <- extractOtherStandardSurveyVariables_Stratum(hh_Kazakh
 hh_Kyrgyzstan_Variables <- extractOtherStandardSurveyVariables(hh_Kyrgyzstan)
 hh_Montenegro_Variables <- extractOtherStandardSurveyVariables_psu(hh_Montenegro)
 hh_Nauru_Variables <- extractOtherStandardSurveyVariables_withoutHH6(hh_Nauru)
+hh_Nigeria_new_Variables <- extractOtherStandardSurveyVariables(hh_Nigeria_new)
 hh_Pakistan_Sindh_Variables <- extractOtherStandardSurveyVariables_psu(hh_Pakistan_Sindh)
 hh_Republic_of_North_Macedonia_Variables <- extractOtherStandardSurveyVariables(hh_Republic_of_North_Macedonia)
 hh_Serbia_Variables <- extractOtherStandardSurveyVariables(hh_Serbia)
@@ -222,6 +226,7 @@ other_surveys <- c(
 "Kyrgyzstan",
 "Montenegro",
 "Nauru",
+"Nigeria_new",
 "Pakistan_Sindh",
 "Republic_of_North_Macedonia",
 "Serbia",
@@ -234,8 +239,8 @@ other_surveys <- c(
 
 
 # check which extracted survey files are missing variables needed for relabeling
-variables_to_check_WQ <- c("WS1", "WS2", "WS3", "WS4", "WS7", "WS8", "WQ27", "HH5D", "HH5M", "HH5Y", "stratum", "PSU")
-other_variables_to_check <- c("WS1", "WS2", "WS3", "WS4", "WS7", "WS8", "HH5D", "HH5M", "HH5Y", "stratum", "PSU")
+variables_to_check_WQ <- c("WS1", "WS2", "WS3", "WS4", "WS7", "WS8", "WQ27", "HH5D", "HH5M", "HH5Y", "stratum", "PSU", "HH7")
+other_variables_to_check <- c("WS1", "WS2", "WS3", "WS4", "WS7", "WS8", "HH5D", "HH5M", "HH5Y", "stratum", "PSU", "HH/")
 
 for (survey_name in SMDW_surveys) {
   smdw_data <- get(paste0("hh_", survey_name, "_SMDW"))
@@ -301,7 +306,7 @@ for (survey_name in other_surveys) {
 }
 
 # convert factor variables to character to avoid generation of NAs
-for (survey_name in all_surveys) {
+for (survey_name in SMDW_surveys) {
   hh_data <- get(paste0("hh_", survey_name, "_SMDW"))
   hh_data <- VariablesWhichWereFactorsAsCharacterToAvoidGenerationOfNA(hh_data)
   assign(paste0("hh_", survey_name, "_SMDW"), hh_data)
@@ -342,7 +347,7 @@ df.MICS.SMDW_old_Labeled <- relabelingSurveyQuestionResponses(
   df.MICS.SMDW_old, WS1, WS2, WS3, WS4, WS7, WS8, WQ27
 )
 
-write.csv(df.MICS.SMDW_old_Labeled, "~/switchdrive/Eawag/WorldBankProject/HH_surveys/HH_survey_data/df_SMDW_oldMICS.csv", 
+write.csv(df.MICS.SMDW_old_Labeled, "~/switchdrive/Eawag/WorldBankProject/HH_surveys/HH_survey_data/df_SMDW_oldMICS_v1.csv", 
           fileEncoding = "UTF-8", row.names = F)
 
 df.MICS.SMDW_new <- rbind(
@@ -354,7 +359,6 @@ hh_Eswatini_SMDW,
 hh_Fiji_SMDW,
 hh_Honduras_SMDW, 
 hh_LaoPDR_2023_SMDW, 
-hh_Malawi_SMDW,
 hh_Nepal_SMDW,
 hh_PakistanKhyberPakhtunkhwa_SMDW, 
 hh_PakistanBalochistan_SMDW, 
@@ -371,7 +375,7 @@ df.MICS.SMDW_new_Labeled <- relabelingSurveyQuestionResponses(
   df.MICS.SMDW_new, WS1, WS2, WS3, WS4, WS7, WS8, WQ27
 )
 
-write.csv(df.MICS.SMDW_new_Labeled, "~/switchdrive/Eawag/WorldBankProject/HH_surveys/HH_survey_data/df_SMDW_newMICS.csv", 
+write.csv(df.MICS.SMDW_new_Labeled, "~/switchdrive/Eawag/WorldBankProject/HH_surveys/HH_survey_data/df_SMDW_newMICS_v1.csv", 
           fileEncoding = "UTF-8", row.names = F)
 
 
@@ -387,6 +391,7 @@ other_surveys <- c(
   "hh_Kyrgyzstan_Variables",
   "hh_Montenegro_Variables",
   "hh_Nauru_Variables",
+  "hh_Nigeria_Variables",
   "hh_Pakistan_Sindh_Variables",
   "hh_Republic_of_North_Macedonia_Variables",
   "hh_Serbia_Variables",
@@ -425,6 +430,7 @@ df.MICS.other <- rbind(
   hh_Kyrgyzstan_Variables,
   hh_Montenegro_Variables,
   hh_Nauru_Variables,
+  hh_Nigeria_Variables,
   hh_Pakistan_Sindh_Variables,
   hh_Republic_of_North_Macedonia_Variables,
   hh_Serbia_Variables,

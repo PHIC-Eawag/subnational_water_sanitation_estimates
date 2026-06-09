@@ -1,0 +1,131 @@
+﻿Code,Country,IncomeGroup2024,Downloaded,GADM_NAME_0
+AFG,Afghanistan,L,1,Afghanistan
+AGO,Angola,LM,1,Angola
+ALB,Albania,UM,1,Albania
+ARG,Argentina,UM,1,Argentina
+ARM,Armenia,UM,1,Armenia
+AZE,Azerbaijan,UM,1,Azerbaijan
+BDI,Burundi,L,1,Burundi
+BEN,Benin,LM,1,Benin
+BFA,Burkina Faso,L,1,Burkina Faso
+BGD,Bangladesh,LM,1,Bangladesh
+BIH,Bosnia and Herzegovina,UM,1,Bosnia and Herzegovina
+BLR,Belarus,UM,1,Belarus
+BLZ,Belize,UM,1,Belize
+BOL,Bolivia,LM,1,Bolivia
+BRA,Brazil,UM,1,Brazil
+BTN,Bhutan,LM,1,Bhutan
+BWA,Botswana,UM,1,Botswana
+CAF,Central African Republic,L,1,Central African Republic
+CHN,China,UM,1,China
+CIV,Cote d'Ivoire,LM,1,Côte d'Ivoire
+CMR,Cameroon,LM,1,Cameroon
+COD,"Congo, Dem. Rep.",L,1,Democratic Republic of the Congo
+COG,"Congo, Rep.",LM,1,Republic of Congo
+COL,Colombia,UM,1,Colombia
+COM,Comoros,LM,1,Comoros
+CPV,Cabo Verde,UM,1,Cape Verde
+CUB,Cuba,UM,1,Cuba
+DJI,Djibouti,LM,1,Djibouti
+DMA,Dominica,UM,1,Dominica
+DOM,Dominican Republic,UM,1,Dominican Republic
+DZA,Algeria,UM,1,Algeria
+ECU,Ecuador,UM,1,Ecuador
+EGY,"Egypt, Arab Rep.",LM,1,Egypt
+ERI,Eritrea,L,1,Eritrea
+ETH,Ethiopia,L,1,Ethiopia
+FJI,Fiji,UM,1,Fiji
+FSM,"Micronesia, Fed. Sts.",LM,1,Micronesia
+GAB,Gabon,UM,1,Gabon
+GEO,Georgia,UM,1,Georgia
+GHA,Ghana,LM,1,Ghana
+GIN,Guinea,LM,1,Guinea
+GMB,"Gambia, The",L,1,Gambia
+GNB,Guinea-Bissau,L,1,Guinea-Bissau
+GNQ,Equatorial Guinea,UM,1,Equatorial Guinea
+GRD,Grenada,UM,1,Grenada
+GTM,Guatemala,UM,1,Guatemala
+HND,Honduras,LM,1,Honduras
+HTI,Haiti,LM,1,Haiti
+IDN,Indonesia,UM,1,Indonesia
+IND,India,LM,1,India
+IRN,"Iran, Islamic Rep.",UM,1,Iran
+IRQ,Iraq,UM,1,Iraq
+JAM,Jamaica,UM,1,Jamaica
+JOR,Jordan,LM,1,Jordan
+KAZ,Kazakhstan,UM,1,Kazakhstan
+KEN,Kenya,LM,1,Kenya
+KGZ,Kyrgyz Republic,LM,1,Kyrgyzstan
+KHM,Cambodia,LM,1,Cambodia
+KIR,Kiribati,LM,1,Kiribati
+LAO,Lao PDR,LM,1,Laos
+LBN,Lebanon,LM,1,Lebanon
+LBR,Liberia,L,1,Liberia
+LBY,Libya,UM,1,Libya
+LCA,St. Lucia,UM,1,Saint Lucia
+LKA,Sri Lanka,LM,1,Sri Lanka
+LSO,Lesotho,LM,1,Lesotho
+MAR,Morocco,LM,1,Morocco
+MDA,Moldova,UM,1,Moldova
+MDG,Madagascar,L,1,Madagascar
+MDV,Maldives,UM,1,Maldives
+MEX,Mexico,UM,1,Mexico
+MHL,Marshall Islands,UM,1,Marshall Islands
+MKD,North Macedonia,UM,1,Macedonia
+MLI,Mali,L,1,Mali
+MMR,Myanmar,LM,1,Myanmar
+MNE,Montenegro,UM,1,Montenegro
+MNG,Mongolia,UM,1,Mongolia
+MOZ,Mozambique,L,1,Mozambique
+MRT,Mauritania,LM,1,Mauritania
+MUS,Mauritius,UM,1,Mauritius
+MWI,Malawi,L,1,Malawi
+MYS,Malaysia,UM,1,Malaysia
+NAM,Namibia,LM,1,Namibia
+NER,Niger,L,1,Niger
+NGA,Nigeria,LM,1,Nigeria
+NIC,Nicaragua,LM,1,Nicaragua
+NPL,Nepal,LM,1,Nepal
+PAK,Pakistan,LM,1,Pakistan
+PER,Peru,UM,1,Peru
+PHL,Philippines,LM,1,Philippines
+PNG,Papua New Guinea,LM,1,Papua New Guinea
+PRK,"Korea, Dem. Rep.",L,1,North Korea
+PRY,Paraguay,UM,1,Paraguay
+PSE,West Bank and Gaza,LM,1,Palestina
+RWA,Rwanda,L,1,Rwanda
+SDN,Sudan,L,1,Sudan
+SEN,Senegal,LM,1,Senegal
+SLB,Solomon Islands,LM,1,Solomon Islands
+SLE,Sierra Leone,L,1,Sierra Leone
+SLV,El Salvador,UM,1,El Salvador
+SOM,"Somalia, Fed. Rep.",L,1,Somalia
+SRB,Serbia,UM,1,Serbia
+SSD,South Sudan,L,1,South Sudan
+STP,Sao Tome and Principe,LM,1,São Tomé and Príncipe
+SUR,Suriname,UM,1,Suriname
+SWZ,Eswatini,LM,1,Swaziland
+SYR,Syrian Arab Republic,L,1,Syria
+TCD,Chad,L,1,Chad
+TGO,Togo,L,1,Togo
+THA,Thailand,UM,1,Thailand
+TJK,Tajikistan,LM,1,Tajikistan
+TKM,Turkmenistan,UM,1,Turkmenistan
+TLS,Timor-Leste,LM,1,Timor-Leste
+TON,Tonga,UM,1,Tonga
+TUN,Tunisia,LM,1,Tunisia
+TUR,Turkiye,UM,1,Turkey
+TUV,Tuvalu,UM,1,Tuvalu
+TZA,Tanzania,LM,1,Tanzania
+UGA,Uganda,L,1,Uganda
+UKR,Ukraine,UM,1,Ukraine
+UZB,Uzbekistan,LM,1,Uzbekistan
+VCT,St. Vincent and the Grenadines,UM,1,Saint Vincent and the Grenadines
+VNM,Viet Nam,LM,1,Vietnam
+VUT,Vanuatu,LM,1,Vanuatu
+WSM,Samoa,UM,1,Samoa
+XKX,Kosovo,UM,1,Kosovo
+YEM,"Yemen, Rep.",L,1,Yemen
+ZAF,South Africa,UM,1,South Africa
+ZMB,Zambia,LM,1,Zambia
+ZWE,Zimbabwe,LM,1,Zimbabwe
