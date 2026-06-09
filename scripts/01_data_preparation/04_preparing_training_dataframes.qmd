@@ -358,6 +358,10 @@ manual_analysis_year_fixes_ecoli <- tibble::tribble(
 # Create outcomes
 # ============================================================
 
+SMDW_outcome <- make_smdw_regional_outcome(
+  df_hh_water_quality_for_ecoli
+)
+
 ecoli_outcome <- make_ecoli_regional_outcome(
   df_hh_water_quality_for_ecoli
 )
@@ -394,6 +398,11 @@ other_year_lookup <- make_year_lookup_from_raw_household_data(
 # ------------------------------------------------------------
 # Add n_PSU weights to outcome tables
 # ------------------------------------------------------------
+SMDW_outcome <- add_n_psu_weight(
+  hh_df = df_hh_water_quality_for_ecoli,
+  outcome_df = SMDW_outcome,
+  year_lookup = ecoli_year_lookup
+)
 
 ecoli_outcome <- add_n_psu_weight(
   hh_df = df_hh_water_quality_for_ecoli,
@@ -425,6 +434,7 @@ accessibility_outcome <- add_n_psu_weight(
 # ------------------------------------------------------------
 
 n_psu_check <- dplyr::bind_rows(
+  SMDW_outcome %>% dplyr::mutate(check_outcome = "smdw"),
   ecoli_outcome %>% dplyr::mutate(check_outcome = "ecoli_free"),
   improved_source_outcome %>% dplyr::mutate(check_outcome = "improved_source"),
   availability_outcome %>% dplyr::mutate(check_outcome = "availability"),
@@ -447,6 +457,12 @@ print(n_psu_check)
 # ============================================================
 # Filter covariates to the country-year pairs in each outcome
 # ============================================================
+
+df_covariates_SMDW <- filter_covariates_to_outcome_years(
+  outcome_df = SMDW_outcome,
+  df_training_covariates = df_training_covariates_wq,
+  country_name_key_WB = country_name_key_WB
+)
 
 df_covariates_ecoli <- filter_covariates_to_outcome_years(
   outcome_df = ecoli_outcome,
@@ -491,6 +507,13 @@ check_duplicate_covariate_join_keys(df_covariates_accessibility)
 # You should manually inspect the *_review_needed.csv files,
 # especially for the three outcomes using the new other-survey data.
 
+crosswalk_SMDW <- build_crosswalk_for_one_outcome(
+  outcome_name = "smdw",
+  outcome_df = SMDW_outcome,
+  df_training_covariates = df_covariates_SMDW,
+  country_name_key_WB = country_name_key_WB
+)
+
 crosswalk_ecoli <- build_crosswalk_for_one_outcome(
   outcome_name = "ecoli_free",
   outcome_df = ecoli_outcome,
@@ -527,7 +550,7 @@ crosswalk_accessibility$regions_to_review
 ```
 
 ```{r}
-covariate_region_names <- df_training_covariates_all %>%
+covariate_region_names <- df_training_covariates_other %>%
   dplyr::distinct(
     country,
     analysis_year,
@@ -844,6 +867,11 @@ print(country_year_filtering_issues)
 # ============================================================
 # Apply manual fixes
 # ============================================================
+SMDW_crosswalk_final <- apply_manual_fixes_for_one_outcome(
+  outcome_name = "smdw",
+  crosswalk_results = crosswalk_SMDW,
+  manual_region_fixes = manual_fixes_other_subcomponents
+)
 
 ecoli_crosswalk_final <- apply_manual_fixes_for_one_outcome(
   outcome_name = "ecoli_free",
@@ -874,6 +902,13 @@ accessibility_crosswalk_final <- apply_manual_fixes_for_one_outcome(
 # ============================================================
 # Join each outcome to covariates and write training CSV files
 # ============================================================
+SMDW_training_output <- join_and_save_one_training_dataset(
+  outcome_name = "smdw",
+  outcome_df = SMDW_outcome,
+  df_training_covariates = df_covariates_SMDW,
+  region_crosswalk_final = SMDW_crosswalk_final
+)
+
 
 ecoli_training_output <- join_and_save_one_training_dataset(
   outcome_name = "ecoli_free",
@@ -904,6 +939,7 @@ accessibility_training_output <- join_and_save_one_training_dataset(
 )
 
 # Final model-ready objects in R.
+SMDW_training_with_covariates <- SMDW_training_output$training_with_covariates
 ecoli_training_with_covariates <- ecoli_training_output$training_with_covariates
 improved_source_training_with_covariates <- improved_source_training_output$training_with_covariates
 availability_training_with_covariates <- availability_training_output$training_with_covariates
@@ -1049,6 +1085,10 @@ add_country_year_covariates <- function(training_df) {
 # ------------------------------------------------------------
 # 7. Add GDP and education to all SMDW outcome datasets
 # ------------------------------------------------------------
+
+SMDW_training_with_covariates <- add_country_year_covariates(
+  SMDW_training_with_covariates
+)
 
 ecoli_training_with_covariates <- add_country_year_covariates(
   ecoli_training_with_covariates
@@ -1227,6 +1267,10 @@ add_ww_country_covariates <- function(training_df) {
 # 5. Add wastewater covariates to all SMDW training datasets
 # ------------------------------------------------------------
 
+SMDW_training_with_covariates <- add_ww_country_covariates(
+  SMDW_training_with_covariates
+)
+
 ecoli_training_with_covariates <- add_ww_country_covariates(
   ecoli_training_with_covariates
 )
@@ -1290,6 +1334,7 @@ fix_ww_region_manual <- function(training_df) {
     )
 }
 
+SMDW_training_with_covariates <- fix_ww_region_manual(SMDW_training_with_covariates)
 ecoli_training_with_covariates <- fix_ww_region_manual(ecoli_training_with_covariates)
 improved_source_training_with_covariates <- fix_ww_region_manual(improved_source_training_with_covariates)
 availability_training_with_covariates <- fix_ww_region_manual(availability_training_with_covariates)
@@ -1435,6 +1480,10 @@ add_wgi_covariates <- function(training_df) {
 # 6. Add WGI indicators to all SMDW training datasets
 # ------------------------------------------------------------
 
+SMDW_training_with_covariates <- add_wgi_covariates(
+  SMDW_training_with_covariates
+)
+
 ecoli_training_with_covariates <- add_wgi_covariates(
   ecoli_training_with_covariates
 )
@@ -1504,6 +1553,11 @@ dir.create(
   path = output_dir,
   recursive = TRUE,
   showWarnings = FALSE
+)
+
+readr::write_csv(
+  SMDW_training_with_covariates,
+  file.path(output_dir, "smdw_training_with_covariates.csv")
 )
 
 readr::write_csv(
