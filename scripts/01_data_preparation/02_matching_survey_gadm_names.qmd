@@ -275,6 +275,7 @@ The outputs can be written to file for later review.
 
 ```{r}
 write.csv(final_match_status, "final_match_status_oldMICS_SMDW.csv", row.names = FALSE, fileEncoding = "UTF-8")
+#write.csv(final_match_status_otherMICS.csv, "final_match_status_otherMICS.csv", row.names = FALSE, fileEncoding = "UTF-8")
 #write.csv(unmatched_regions, "unmatched_regions.csv", row.names = FALSE, fileEncoding = "UTF-8")
 #write.csv(fuzzy_best, "fuzzy_best.csv", row.names = FALSE, fileEncoding = "UTF-8")
 #write.csv(survey_name_variants, "survey_name_variants.csv", row.names = FALSE, fileEncoding = "UTF-8")
