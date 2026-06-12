@@ -1,406 +1,802 @@
 # -------------------------------------------------------
-#
-# Minimal example to use TabPFN for Classification and Regression
-#
-# April  7, 2026 -- Andreas Scheidegger
+# Household-weighted leave-one-country-out modelling
+# Outcome: E. coli-free drinking water proportion
+# Models: TabPFN, Random Forest, XGBoost
 # -------------------------------------------------------
 
-from tabpfn import TabPFNClassifier
+import os
+import inspect
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
 from tabpfn import TabPFNRegressor
 from xgboost import XGBRegressor
 
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, r2_score, mean_squared_error
-
-# for comparison we can use RandomForest models
-from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
-
-
-
-# -----------
-# 1) Classification example
-# See docs for more details: https://docs.priorlabs.ai/capabilities/classification
-
-# -- load data
-from sklearn.datasets import load_breast_cancer
-
-X, y = load_breast_cancer(return_X_y = True)
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
-
-# -- build models
-model = TabPFNClassifier()
-model.fit(X_train, y_train)
-
-modRF = RandomForestClassifier()
-modRF.fit(X_train, y_train)
-
-# -- use model
-# Predict class labels
-preds = model.predict(X_test)
-print("Accuracy tabPFN:", accuracy_score(y_test, preds))
-
-predsRF = modRF.predict(X_test)
-print("Accuracy RandomForest:", accuracy_score(y_test, predsRF))
-
-# Get class probabilities
-model.predict_proba(X_test)
-
-
-
-# -----------
-# 2) Regression example
-# See docs for more details: https://docs.priorlabs.ai/capabilities/regression
-
-# -- load data
-from sklearn.datasets import load_diabetes
-
-X, y = load_diabetes(return_X_y=True)
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
-
-# -- build models
-model = TabPFNRegressor()
-model.fit(X_train, y_train)
-
-modRF = RandomForestRegressor()
-modRF.fit(X_train, y_train)
-
-# Predict
-preds = model.predict(X_test)
-predsRF = modRF.predict(X_test)
-
-# Evaluate
-print("MSE tabPFN:", mean_squared_error(y_test, preds))
-print("MSE RandomForest:", mean_squared_error(y_test, predsRF))
-print("R² tabPFN:", r2_score(y_test, preds))
-print("R² RandomForest:", r2_score(y_test, predsRF))
-
-
-# Predict different quantiles
-preds = model.predict(X_test,
-                      output_type="quantiles",
-                      quantiles=[0.05, 0.1, 0.5, 0.9, 0.95])
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import LeaveOneGroupOut
+from sklearn.metrics import mean_absolute_error, r2_score
 
 
 # -------------------------------------------------------
-# Using data on safe drinking water
+# 1. Settings
 # -------------------------------------------------------
 
-import pandas as pd
+data_path = "data/training_subcomponents/ecoli_free_training_with_covariates_exact_only.csv"
+output_dir = "outputs/04_model_performance"
 
-training_wq = pd.read_csv("outputs/03_sampled_features/training_set.csv")
+os.makedirs(output_dir, exist_ok=True)
 
-target_col = "No_EcoliAtRegionalLevel"
+target_col = "outcome_value"
+country_col = "country_outcome"
+region_col = "HH7_region_outcome"
+year_col = "analysis_year"
+
+
+# -------------------------------------------------------
+# 2. Load data
+# -------------------------------------------------------
+
+training_wq = pd.read_csv(data_path)
+
+
+# -------------------------------------------------------
+# 3. Define covariates
+# -------------------------------------------------------
+
 feature_cols = [
-  "CGIAR_Aridity_Index",
-  "CGIAR_PET",
-  "CHELSA_BIO_Annual_Mean_Temperature",
-  "CHELSA_BIO_Annual_Precipitation",
-  "CHELSA_BIO_Precipitation_Seasonality",
-  "CHELSA_BIO_Precipitation_of_Coldest_Quarter",
-  "CHELSA_BIO_Precipitation_of_Driest_Month",
-  "CHELSA_BIO_Precipitation_of_Driest_Quarter",
-  "CHELSA_BIO_Precipitation_of_Warmest_Quarter",
-  "CHELSA_BIO_Precipitation_of_Wettest_Month",
-  "CHELSA_BIO_Precipitation_of_Wettest_Quarter",
-  "CHELSA_BIO_Temperature_Annual_Range",
-  "CHELSA_BIO_Temperature_Seasonality",
-  "CIFOR_TropicalPeatlandExtent",
-  "CSP_Global_Human_Modification",
-  "ConsensusLandCoverClass_Barren",
-  "ConsensusLandCoverClass_Cultivated_and_Managed_Vegetation",
-  "ConsensusLandCoverClass_Deciduous_Broadleaf_Trees",
-  "ConsensusLandCoverClass_Evergreen_Broadleaf_Trees",
-  "ConsensusLandCoverClass_Evergreen_Deciduous_Needleleaf_Trees",
-  "ConsensusLandCoverClass_Herbaceous_Vegetation",
-  "ConsensusLandCoverClass_Mixed_Other_Trees",
-  "ConsensusLandCoverClass_Open_Water",
-  "ConsensusLandCoverClass_Regularly_Flooded_Vegetation",
-  "ConsensusLandCoverClass_Shrubs",
-  "ConsensusLandCoverClass_Snow_Ice",
-  "ConsensusLandCoverClass_Urban_Builtup",
-  "ConsensusLandCover_Human_Development_Percentage",
-  
-  
-  "EarthEnvTopoMed_TerrainRuggednessIndex",
-  "EarthEnvTopoMed_TopoPositionIndex",
-  "EsaCci_BurntAreasProbability",
-  "FanEtAl_Depth_to_Water_Table_AnnualMean",
-  "FanEtAl_Depth_to_Water_Table_AnnualSD",
-  "GHS_Population_Density",
-  "GPWv4_Population_Density",
-  "GiriEtAl_MangrovesExtent",
-  "GLW3_RuminantsDistribution_downsampled10km",
-  "MODIS_EVI",
-  "MODIS_NDVI",
-  "MODIS_NPP",
-  "PelletierEtAl_SoilAndSedimentaryDepositThicknesses",
-  "SG_Absolute_depth_to_bedrock",
-  "SG_Bulk_density_015cm",
-  "SG_Depth_to_bedrock",
-  "SG_H2O_Capacity_015cm",
-  "SG_Saturated_H2O_Content_015cm",
-  "TootchiEtAl_WetlandsRegularlyFlooded",
-  "WCS_Human_Footprint_2009",
-  "map_friction",
+    "CGIAR_Aridity_Index",
+    "CGIAR_PET",
+    "CHELSA_BIO_Annual_Mean_Temperature",
+    "CHELSA_BIO_Annual_Precipitation",
+    "CHELSA_BIO_Precipitation_Seasonality",
+    "CHELSA_BIO_Precipitation_of_Coldest_Quarter",
+    "CHELSA_BIO_Precipitation_of_Driest_Month",
+    "CHELSA_BIO_Precipitation_of_Driest_Quarter",
+    "CHELSA_BIO_Precipitation_of_Warmest_Quarter",
+    "CHELSA_BIO_Precipitation_of_Wettest_Month",
+    "CHELSA_BIO_Precipitation_of_Wettest_Quarter",
+    "CHELSA_BIO_Temperature_Annual_Range",
+    "CHELSA_BIO_Temperature_Seasonality",
+    "CIFOR_TropicalPeatlandExtent",
+    "CSP_Global_Human_Modification",
+    "ConsensusLandCoverClass_Barren",
+    "ConsensusLandCoverClass_Cultivated_and_Managed_Vegetation",
+    "ConsensusLandCoverClass_Deciduous_Broadleaf_Trees",
+    "ConsensusLandCoverClass_Evergreen_Broadleaf_Trees",
+    "ConsensusLandCoverClass_Evergreen_Deciduous_Needleleaf_Trees",
+    "ConsensusLandCoverClass_Herbaceous_Vegetation",
+    "ConsensusLandCoverClass_Mixed_Other_Trees",
+    "ConsensusLandCoverClass_Open_Water",
+    "ConsensusLandCoverClass_Regularly_Flooded_Vegetation",
+    "ConsensusLandCoverClass_Shrubs",
+    "ConsensusLandCoverClass_Snow_Ice",
+    "ConsensusLandCoverClass_Urban_Builtup",
+    "ConsensusLandCover_Human_Development_Percentage",
+    "EarthEnvTopoMed_TerrainRuggednessIndex",
+    "EarthEnvTopoMed_TopoPositionIndex",
+    "EsaCci_BurntAreasProbability",
+    "FanEtAl_Depth_to_Water_Table_AnnualMean",
+    "FanEtAl_Depth_to_Water_Table_AnnualSD",
+    "GHS_Population_Density",
+    "GPWv4_Population_Density",
+    "GiriEtAl_MangrovesExtent",
+    "GLW3_RuminantsDistribution_downsampled10km",
+    "MODIS_EVI",
+    "MODIS_NDVI",
+    "MODIS_NPP",
+    "PelletierEtAl_SoilAndSedimentaryDepositThicknesses",
+    "SG_Absolute_depth_to_bedrock",
+    "SG_Bulk_density_015cm",
+    "SG_Depth_to_bedrock",
+    "SG_H2O_Capacity_015cm",
+    "SG_Saturated_H2O_Content_015cm",
+    "TootchiEtAl_WetlandsRegularlyFlooded",
+    "WCS_Human_Footprint_2009",
+    "map_friction",
+    "chirps_annual_precipitation",
+    "era5_temperature_2m",
+    "ghsl_built_surface",
+    "ghsl_population",
+    "ghsl_population_sum",
+    "ghsl_urban_frac",
+    "jrc_building_height",
+    "modis_evi",
+    "modis_ndvi",
+    "runoff_max_annualmax",
+    "runoff_min_annualmin",
+    "temperature_2m_max_annualmax",
+    "viirs_average",
+    "worldpop_sum",
+    
 
-  # sampled for specific year
-  "chirps_annual_precipitation",
-  "era5_temperature_2m",
-  "ghsl_built_surface",
-  "ghsl_population",
-  "ghsl_population_sum",
-  "ghsl_urban_frac",
-  "jrc_building_height",
-  "modis_evi",
-  "modis_ndvi",
-  "runoff_max_annualmax",
-  "runoff_min_annualmin",
-  "temperature_2m_max_annualmax",
-  "viirs_average",
-  #"worldpop_sum"
-  
+    "gdp_per_capita_constant_2015_usd",
+    "secondary_education_duration_years",
+    "ww_collection_percent",
+    "ww_treatment_percent",
+    "ww_reuse_percent",
+    "control_of_corruption",
+    "governance_effectiveness",
+    "political_stability",
+    "regulatory_quality",
+    "rule_of_law",
+    "voice_and_accountability"
 ]
 
 
-import numpy as np
-from sklearn.ensemble import RandomForestRegressor
+# -------------------------------------------------------
+# 4. Identify household weight column
+# -------------------------------------------------------
 
-# load separate training and test files
-training_wq = pd.read_csv("outputs/03_sampled_features/training_set.csv")
-test_wq = pd.read_csv("outputs/03_sampled_features/test_set.csv")
+possible_weight_cols = [
+    "n_households",
+    "n_housholds",
+    "HouseholdsInRegion.Freq.x"
+]
 
-# create one shared mapping from country name to numeric id
-all_countries = pd.concat([training_wq["country.x"], test_wq["country.x"]], ignore_index=True)
-country_codes, country_names = pd.factorize(all_countries)
+weight_col = next(
+    (col for col in possible_weight_cols if col in training_wq.columns),
+    None
+)
 
-country_lookup = pd.DataFrame({
-    "country.x": country_names,
-    "country_fold": np.arange(1, len(country_names) + 1)
-})
+if weight_col is None:
+    raise ValueError(
+        "Could not find a household weight column. "
+        f"Looked for: {possible_weight_cols}"
+    )
 
-training_wq = training_wq.merge(country_lookup, on="country.x", how="left")
-test_wq = test_wq.merge(country_lookup, on="country.x", how="left")
-
-# keep only needed columns
-needed_cols = feature_cols + [target_col, "country.x", "country_fold"]
-
-train_df = training_wq[needed_cols].dropna().copy()
-test_df = test_wq[needed_cols].dropna().copy()
-
-# build train/test matrices
-X_train = train_df[feature_cols]
-y_train = train_df[target_col]
-
-X_test = test_df[feature_cols]
-y_test = test_df[target_col]
-
-print(X_train.shape, y_train.shape)
-print(X_test.shape, y_test.shape)
-
-# fit models
-model = TabPFNRegressor()
-model.fit(X_train, y_train)
-
-modRF = RandomForestRegressor(random_state=42)
-modRF.fit(X_train, y_train)
-
-modXGB = XGBRegressor(random_state=42)
-modXGB.fit(X_train, y_train)
+print(f"Using household weight column: {weight_col}")
 
 
-# predict
-preds = model.predict(X_test)
-predsRF = modRF.predict(X_test)
-predsXGB = modXGB.predict(X_test)
+# -------------------------------------------------------
+# 5. Remove Pakistan rows
+# -------------------------------------------------------
+# This removes Pakistan, Pakistan Punjab, Pakistan Balochistan,
+# Pakistan Khyber Pakhtunkhwa, and any other country name starting with Pakistan.
 
-# Evaluate
-print("MSE tabPFN:", mean_squared_error(y_test, preds))
-print("MSE RandomForest:", mean_squared_error(y_test, predsRF))
-print("R² tabPFN:", r2_score(y_test, preds))
-print("R² RandomForest:", r2_score(y_test, predsRF))
+training_wq = training_wq[
+    ~training_wq[country_col].astype(str).str.startswith("Pakistan", na=False)
+].copy()
 
-from sklearn.model_selection import LeaveOneGroupOut
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
-# -----------------------------
-# Leave-one-country-out CV on the training set only
-# row-weighted metrics via out-of-fold predictions
-# -----------------------------
-logo = LeaveOneGroupOut()
+# -------------------------------------------------------
+# 6. Prepare modelling dataframe
+# -------------------------------------------------------
 
-cv_X = train_df[feature_cols]
-cv_y = train_df[target_col]
-cv_groups = train_df["country_fold"]
+def prepare_model_data(
+    df,
+    feature_cols,
+    target_col,
+    country_col,
+    region_col,
+    year_col,
+    weight_col
+):
+    needed_cols = feature_cols + [
+        target_col,
+        country_col,
+        region_col,
+        year_col,
+        weight_col
+    ]
 
-# store one out-of-fold prediction for each training row
-oof_preds_tabpfn = np.full(len(train_df), np.nan)
-oof_preds_rf = np.full(len(train_df), np.nan)
+    missing_cols = [col for col in needed_cols if col not in df.columns]
 
-cv_results = []
+    if missing_cols:
+        raise ValueError(f"Missing required columns: {missing_cols}")
 
-for fold, (cv_train_idx, cv_val_idx) in enumerate(logo.split(cv_X, cv_y, groups=cv_groups), start=1):
-    held_out_country = cv_groups.iloc[cv_val_idx].iloc[0]
+    model_df = df[needed_cols].copy()
 
-    X_tr = cv_X.iloc[cv_train_idx]
-    y_tr = cv_y.iloc[cv_train_idx]
+    # Convert covariates, outcome, and weights to numeric
+    for col in feature_cols + [target_col, weight_col]:
+        model_df[col] = pd.to_numeric(model_df[col], errors="coerce")
 
-    X_val = cv_X.iloc[cv_val_idx]
-    y_val = cv_y.iloc[cv_val_idx]
+    # Drop rows with missing values needed for modelling
+    model_df = model_df.dropna(
+        subset=feature_cols + [
+            target_col,
+            country_col,
+            region_col,
+            year_col,
+            weight_col
+        ]
+    ).copy()
 
-    # TabPFN
-    model_cv = TabPFNRegressor()
-    model_cv.fit(X_tr, y_tr)
-    preds_val = model_cv.predict(X_val)
+    # Keep only positive household weights
+    model_df = model_df[model_df[weight_col] > 0].copy()
 
-    # Random Forest
-    modRF_cv = RandomForestRegressor(random_state=42)
-    modRF_cv.fit(X_tr, y_tr)
-    predsRF_val = modRF_cv.predict(X_val)
+    # Keep one row per country-year-region-outcome
+    model_df = model_df.drop_duplicates(
+        subset=[
+            country_col,
+            year_col,
+            region_col,
+            target_col
+        ]
+    ).copy()
 
-    # save predictions back to the original positions in train_df
-    oof_preds_tabpfn[cv_val_idx] = preds_val
-    oof_preds_rf[cv_val_idx] = predsRF_val
+    # Create country fold ID for leave-one-country-out CV
+    country_lookup = (
+        model_df[[country_col]]
+        .drop_duplicates()
+        .sort_values(country_col)
+        .reset_index(drop=True)
+    )
 
-    # optional: keep per-country metrics too
-    r2_tabpfn = r2_score(y_val, preds_val) if len(y_val) > 1 and y_val.nunique() > 1 else float("nan")
-    r2_rf = r2_score(y_val, predsRF_val) if len(y_val) > 1 and y_val.nunique() > 1 else float("nan")
+    country_lookup["country_fold"] = np.arange(
+        1,
+        len(country_lookup) + 1
+    )
 
-    cv_results.append({
-        "fold": fold,
-        "held_out_country": held_out_country,
-        "n_val_rows": len(cv_val_idx),
-        "mae_tabPFN": mean_absolute_error(y_val, preds_val),
-        "mse_tabPFN": mean_squared_error(y_val, preds_val),
-        "rmse_tabPFN": mean_squared_error(y_val, preds_val) ** 0.5,
-        "r2_tabPFN": r2_tabpfn,
-        "mae_RF": mean_absolute_error(y_val, predsRF_val),
-        "mse_RF": mean_squared_error(y_val, predsRF_val),
-        "rmse_RF": mean_squared_error(y_val, predsRF_val) ** 0.5,
-        "r2_RF": r2_rf,
-    })
+    model_df = model_df.merge(
+        country_lookup,
+        on=country_col,
+        how="left"
+    )
 
-cv_results_df = pd.DataFrame(cv_results)
+    if model_df[country_col].nunique() < 2:
+        raise ValueError("Need at least two countries for leave-one-country-out CV.")
 
-print("\nLeave-one-country-out CV results by country:")
-print(cv_results_df)
+    return model_df
 
-# overall row-weighted CV metrics:
-# every row in train_df contributes once
-print("\nOverall row-weighted CV metrics on training set:")
-print("MAE tabPFN:", mean_absolute_error(cv_y, oof_preds_tabpfn))
-print("MSE tabPFN:", mean_squared_error(cv_y, oof_preds_tabpfn))
-print("RMSE tabPFN:", mean_squared_error(cv_y, oof_preds_tabpfn) ** 0.5)
-print("R² tabPFN:", r2_score(cv_y, oof_preds_tabpfn))
 
-print("MAE RandomForest:", mean_absolute_error(cv_y, oof_preds_rf))
-print("MSE RandomForest:", mean_squared_error(cv_y, oof_preds_rf))
-print("RMSE RandomForest:", mean_squared_error(cv_y, oof_preds_rf) ** 0.5)
-print("R² RandomForest:", r2_score(cv_y, oof_preds_rf))
+model_df = prepare_model_data(
+    df=training_wq,
+    feature_cols=feature_cols,
+    target_col=target_col,
+    country_col=country_col,
+    region_col=region_col,
+    year_col=year_col,
+    weight_col=weight_col
+)
 
-import numpy as np
-import matplotlib.pyplot as plt
-from sklearn.metrics import mean_squared_error, r2_score
+print("Final modelling data shape:", model_df.shape)
+print("Number of countries:", model_df[country_col].nunique())
+print("Number of regions:", model_df[[country_col, region_col]].drop_duplicates().shape[0])
+print("Total household weight:", model_df[weight_col].sum())
 
-cv_y = train_df[target_col].to_numpy() 
 
-from sklearn.model_selection import LeaveOneGroupOut
-from sklearn.metrics import mean_squared_error, r2_score
-from tabpfn import TabPFNRegressor
-from sklearn.ensemble import RandomForestRegressor
+# -------------------------------------------------------
+# 7. Define models
+# -------------------------------------------------------
 
-# -----------------------------
-# Safety checks
-# -----------------------------
-required_cols = feature_cols + [target_col, "country_fold"]
-missing_cols = [c for c in required_cols if c not in train_df.columns]
-if missing_cols:
-    raise ValueError(f"train_df is missing these columns: {missing_cols}")
+def make_tabpfn():
+    return TabPFNRegressor()
 
-if len(train_df) == 0:
-    raise ValueError("train_df is empty.")
 
-if train_df["country_fold"].nunique() < 2:
-    raise ValueError("Need at least 2 countries in train_df for leave-one-country-out CV.")
+def make_random_forest():
+    return RandomForestRegressor(
+        n_estimators=500,
+        random_state=42,
+        n_jobs=-1
+    )
 
-# -----------------------------
-# Recompute CV predictions so nothing is undefined
-# -----------------------------
-cv_X = train_df[feature_cols]
-cv_y = train_df[target_col].to_numpy()
-cv_groups = train_df["country_fold"]
 
-logo = LeaveOneGroupOut()
+def make_xgboost():
+    return XGBRegressor(
+        n_estimators=500,
+        learning_rate=0.03,
+        max_depth=4,
+        subsample=0.9,
+        colsample_bytree=0.9,
+        objective="reg:squarederror",
+        random_state=42,
+        n_jobs=-1
+    )
 
-oof_preds_tabpfn = np.full(len(train_df), np.nan)
-oof_preds_rf = np.full(len(train_df), np.nan)
 
-for cv_train_idx, cv_val_idx in logo.split(cv_X, cv_y, groups=cv_groups):
-    X_tr = cv_X.iloc[cv_train_idx]
-    y_tr = cv_y[cv_train_idx]
-
-    X_val = cv_X.iloc[cv_val_idx]
-
-    model_cv = TabPFNRegressor()
-    model_cv.fit(X_tr, y_tr)
-    oof_preds_tabpfn[cv_val_idx] = model_cv.predict(X_val)
-
-    modRF_cv = RandomForestRegressor(random_state=42)
-    modRF_cv.fit(X_tr, y_tr)
-    oof_preds_rf[cv_val_idx] = modRF_cv.predict(X_val)
-
-# Final check that every training row got a CV prediction
-if np.isnan(oof_preds_tabpfn).any():
-    raise ValueError("Some TabPFN CV predictions are missing.")
-if np.isnan(oof_preds_rf).any():
-    raise ValueError("Some Random Forest CV predictions are missing.")
-
-# -----------------------------
-# Compute overall metrics
-# -----------------------------
-cv_metrics_tabpfn = {
-    "MSE": mean_squared_error(cv_y, oof_preds_tabpfn),
-    "R2": r2_score(cv_y, oof_preds_tabpfn),
-}
-cv_metrics_rf = {
-    "MSE": mean_squared_error(cv_y, oof_preds_rf),
-    "R2": r2_score(cv_y, oof_preds_rf),
+models = {
+    "TabPFN": make_tabpfn,
+    "Random Forest": make_random_forest,
+    "XGBoost": make_xgboost
 }
 
-test_metrics_tabpfn = {
-    "MSE": mean_squared_error(y_test, preds),
-    "R2": r2_score(y_test, preds),
-}
-test_metrics_rf = {
-    "MSE": mean_squared_error(y_test, predsRF),
-    "R2": r2_score(y_test, predsRF),
+
+# -------------------------------------------------------
+# 8. Helper: fit with household sample weights where supported
+# -------------------------------------------------------
+
+def fit_with_optional_sample_weight(model, X_train, y_train, sample_weight):
+    try:
+        fit_signature = inspect.signature(model.fit)
+        fit_params = fit_signature.parameters
+
+        supports_sample_weight = (
+            "sample_weight" in fit_params
+            or any(
+                param.kind == inspect.Parameter.VAR_KEYWORD
+                for param in fit_params.values()
+            )
+        )
+
+    except (TypeError, ValueError):
+        supports_sample_weight = False
+
+    if supports_sample_weight:
+        try:
+            model.fit(
+                X_train,
+                y_train,
+                sample_weight=sample_weight
+            )
+            return model, True
+        except TypeError:
+            pass
+
+    model.fit(X_train, y_train)
+    return model, False
+
+
+# -------------------------------------------------------
+# 9. Run household-weighted leave-one-country-out CV
+# -------------------------------------------------------
+
+def run_weighted_loco_cv(
+    model_df,
+    models,
+    feature_cols,
+    target_col,
+    country_col,
+    region_col,
+    year_col,
+    weight_col
+):
+    X = model_df[feature_cols]
+    y = model_df[target_col].to_numpy()
+    groups = model_df["country_fold"]
+    weights = model_df[weight_col].to_numpy()
+
+    logo = LeaveOneGroupOut()
+
+    oof_predictions = {
+        model_name: np.full(len(model_df), np.nan)
+        for model_name in models.keys()
+    }
+
+    used_training_weights = {
+        model_name: []
+        for model_name in models.keys()
+    }
+
+    fold_results = []
+
+    for fold, (train_idx, val_idx) in enumerate(
+        logo.split(X, y, groups=groups),
+        start=1
+    ):
+        held_out_country = model_df.iloc[val_idx][country_col].iloc[0]
+
+        X_train = X.iloc[train_idx]
+        y_train = y[train_idx]
+
+        X_val = X.iloc[val_idx]
+        y_val = y[val_idx]
+
+        w_train = weights[train_idx]
+        w_val = weights[val_idx]
+
+        # Normalise training weights to mean 1.
+        # This keeps relative household weighting but avoids huge weight scales.
+        w_train_norm = w_train / np.mean(w_train)
+
+        fold_row = {
+            "fold": fold,
+            "held_out_country": held_out_country,
+            "n_train_rows": len(train_idx),
+            "n_val_rows": len(val_idx),
+            "sum_household_weight_val": float(np.sum(w_val))
+        }
+
+        print(f"Running fold {fold}: held-out country = {held_out_country}")
+
+        for model_name, model_builder in models.items():
+            model = model_builder()
+
+            model, used_weights = fit_with_optional_sample_weight(
+                model=model,
+                X_train=X_train,
+                y_train=y_train,
+                sample_weight=w_train_norm
+            )
+
+            used_training_weights[model_name].append(used_weights)
+
+            preds = np.asarray(model.predict(X_val)).reshape(-1)
+
+            oof_predictions[model_name][val_idx] = preds
+
+            fold_row[f"weighted_mae_{model_name}"] = mean_absolute_error(
+                y_val,
+                preds,
+                sample_weight=w_val
+            )
+
+            fold_row[f"unweighted_mae_{model_name}"] = mean_absolute_error(
+                y_val,
+                preds
+            )
+
+            if len(y_val) > 1 and len(np.unique(y_val)) > 1:
+                fold_row[f"weighted_r2_{model_name}"] = r2_score(
+                    y_val,
+                    preds,
+                    sample_weight=w_val
+                )
+
+                fold_row[f"unweighted_r2_{model_name}"] = r2_score(
+                    y_val,
+                    preds
+                )
+            else:
+                fold_row[f"weighted_r2_{model_name}"] = np.nan
+                fold_row[f"unweighted_r2_{model_name}"] = np.nan
+
+        fold_results.append(fold_row)
+
+    fold_results_df = pd.DataFrame(fold_results)
+
+    overall_results = []
+
+    for model_name, preds in oof_predictions.items():
+        if np.isnan(preds).any():
+            n_missing = np.isnan(preds).sum()
+            raise ValueError(
+                f"{model_name} has {n_missing} missing out-of-fold predictions."
+            )
+
+        overall_results.append({
+            "model": model_name,
+            "used_training_weights": all(used_training_weights[model_name]),
+            "weighted_mae": mean_absolute_error(
+                y,
+                preds,
+                sample_weight=weights
+            ),
+            "weighted_r2": r2_score(
+                y,
+                preds,
+                sample_weight=weights
+            ),
+            "unweighted_mae": mean_absolute_error(
+                y,
+                preds
+            ),
+            "unweighted_r2": r2_score(
+                y,
+                preds
+            ),
+            "n_rows": len(y),
+            "n_countries": model_df[country_col].nunique(),
+            "sum_household_weight": float(np.sum(weights))
+        })
+
+    overall_results_df = (
+        pd.DataFrame(overall_results)
+        .sort_values("weighted_mae")
+    )
+
+    oof_df = model_df[
+        [
+            country_col,
+            region_col,
+            year_col,
+            target_col,
+            weight_col,
+            "country_fold"
+        ]
+    ].copy()
+
+    for model_name, preds in oof_predictions.items():
+        clean_name = model_name.lower().replace(" ", "_")
+
+        oof_df[f"pred_{clean_name}"] = preds
+        oof_df[f"error_{clean_name}"] = oof_df[target_col] - preds
+        oof_df[f"abs_error_{clean_name}"] = np.abs(
+            oof_df[target_col] - preds
+        )
+
+    return fold_results_df, overall_results_df, oof_df, oof_predictions
+
+
+fold_results_df, overall_results_df, oof_df, oof_predictions = run_weighted_loco_cv(
+    model_df=model_df,
+    models=models,
+    feature_cols=feature_cols,
+    target_col=target_col,
+    country_col=country_col,
+    region_col=region_col,
+    year_col=year_col,
+    weight_col=weight_col
+)
+
+
+print("\nOverall household-weighted leave-one-country-out CV results:")
+print(overall_results_df)
+
+print("\nPer-country household-weighted leave-one-country-out CV results:")
+print(fold_results_df)
+
+
+# -------------------------------------------------------
+# 10. Save household-weighted model results
+# -------------------------------------------------------
+
+fold_results_df.to_csv(
+    os.path.join(output_dir, "ecoli_loco_cv_by_country_household_weighted.csv"),
+    index=False
+)
+
+overall_results_df.to_csv(
+    os.path.join(output_dir, "ecoli_loco_cv_overall_model_comparison_household_weighted.csv"),
+    index=False
+)
+
+oof_df.to_csv(
+    os.path.join(output_dir, "ecoli_loco_cv_oof_predictions_household_weighted.csv"),
+    index=False
+)
+
+
+# -------------------------------------------------------
+# 11. TabPFN q10-q90 prediction interval with LOCO-CV
+# -------------------------------------------------------
+# This uses the same cleaned household-weighted model_df.
+# If TabPFN supports sample_weight, it will use household weights during training.
+# If not, it will still be evaluated against household-weighted errors.
+
+quantiles = [0.10, 0.90]
+
+quantile_colnames = {
+    0.10: "tabpfn_q10",
+    0.90: "tabpfn_q90"
 }
 
-# -----------------------------
-# Plot 1: Overall CV metrics
-# -----------------------------
-metrics = ["MSE", "R2"]
-x = np.arange(len(metrics))
-width = 0.35
 
-plt.figure(figsize=(7, 5))
-plt.bar(x - width/2, [cv_metrics_tabpfn[m] for m in metrics], width, label="TabPFN")
-plt.bar(x + width/2, [cv_metrics_rf[m] for m in metrics], width, label="Random Forest")
-plt.xticks(x, metrics)
-plt.ylabel("Value")
-plt.title("Overall Cross-Validation Metrics")
-plt.legend()
+def standardise_quantile_output(preds_quantile, n_rows, n_quantiles):
+    arr = np.asarray(preds_quantile)
+
+    if arr.shape == (n_rows, n_quantiles):
+        return arr
+
+    if arr.shape == (n_quantiles, n_rows):
+        return arr.T
+
+    raise ValueError(
+        f"Unexpected TabPFN quantile output shape: {arr.shape}. "
+        f"Expected ({n_rows}, {n_quantiles}) or ({n_quantiles}, {n_rows})."
+    )
+
+
+X_quant = model_df[feature_cols]
+y_quant = model_df[target_col].to_numpy()
+groups_quant = model_df["country_fold"]
+weights_quant = model_df[weight_col].to_numpy()
+
+logo_quant = LeaveOneGroupOut()
+
+tabpfn_q10_q90_oof_rows = []
+
+for fold, (train_idx, val_idx) in enumerate(
+    logo_quant.split(X_quant, y_quant, groups=groups_quant),
+    start=1
+):
+    held_out_country = model_df.iloc[val_idx][country_col].iloc[0]
+    print(f"Running TabPFN q10-q90 fold {fold}: held-out country = {held_out_country}")
+
+    X_train = X_quant.iloc[train_idx]
+    y_train = y_quant[train_idx]
+
+    X_val = X_quant.iloc[val_idx]
+    y_val = y_quant[val_idx]
+
+    w_train = weights_quant[train_idx]
+    w_val = weights_quant[val_idx]
+
+    w_train_norm = w_train / np.mean(w_train)
+
+    model_quant = TabPFNRegressor()
+
+    model_quant, tabpfn_used_weights = fit_with_optional_sample_weight(
+        model=model_quant,
+        X_train=X_train,
+        y_train=y_train,
+        sample_weight=w_train_norm
+    )
+
+    preds_point = np.asarray(
+        model_quant.predict(X_val)
+    ).reshape(-1)
+
+    preds_quantile = model_quant.predict(
+        X_val,
+        output_type="quantiles",
+        quantiles=quantiles
+    )
+
+    preds_quantile = standardise_quantile_output(
+        preds_quantile,
+        n_rows=len(X_val),
+        n_quantiles=len(quantiles)
+    )
+
+    fold_df = model_df.iloc[val_idx][
+        [
+            country_col,
+            region_col,
+            year_col,
+            target_col,
+            weight_col,
+            "country_fold"
+        ]
+    ].copy()
+
+    fold_df["tabpfn_pred_point"] = preds_point
+
+    for i, q in enumerate(quantiles):
+        fold_df[quantile_colnames[q]] = preds_quantile[:, i]
+
+    q_sorted = np.sort(
+        fold_df[["tabpfn_q10", "tabpfn_q90"]].to_numpy(),
+        axis=1
+    )
+
+    fold_df["tabpfn_q10_ordered"] = q_sorted[:, 0]
+    fold_df["tabpfn_q90_ordered"] = q_sorted[:, 1]
+
+    fold_df["pred_minus_observed"] = (
+        fold_df["tabpfn_pred_point"] - fold_df[target_col]
+    )
+
+    fold_df["abs_error"] = np.abs(
+        fold_df["pred_minus_observed"]
+    )
+
+    fold_df["tabpfn_q90_q10_range"] = (
+        fold_df["tabpfn_q90_ordered"] - fold_df["tabpfn_q10_ordered"]
+    )
+
+    fold_df["tabpfn_used_training_weights"] = tabpfn_used_weights
+
+    fold_df["weighted_abs_error"] = (
+        fold_df["abs_error"] * fold_df[weight_col]
+    )
+
+    tabpfn_q10_q90_oof_rows.append(fold_df)
+
+
+tabpfn_q10_q90_oof_df = pd.concat(
+    tabpfn_q10_q90_oof_rows,
+    ignore_index=True
+)
+
+
+tabpfn_q10_q90_oof_df.to_csv(
+    os.path.join(output_dir, "ecoli_tabpfn_loco_q10_q90_predictions_household_weighted.csv"),
+    index=False
+)
+
+
+# -------------------------------------------------------
+# 12. Plot q90-q10 range against absolute prediction error
+# -------------------------------------------------------
+
+plot_x = tabpfn_q10_q90_oof_df["abs_error"].to_numpy()
+plot_y = tabpfn_q10_q90_oof_df["tabpfn_q90_q10_range"].to_numpy()
+
+valid = np.isfinite(plot_x) & np.isfinite(plot_y)
+
+plot_x = plot_x[valid]
+plot_y = plot_y[valid]
+
+if len(plot_x) > 1:
+    slope, intercept = np.polyfit(plot_x, plot_y, 1)
+
+    x_line = np.linspace(
+        0,
+        max(plot_x.max(), plot_y.max()),
+        100
+    )
+
+    y_line = intercept + slope * x_line
+
+    plt.figure(figsize=(8, 6))
+
+    plt.scatter(
+        plot_x,
+        plot_y,
+        alpha=0.7
+    )
+
+    plt.plot(
+        x_line,
+        x_line,
+        linestyle="--",
+        label="1:1 line"
+    )
+
+    plt.plot(
+        x_line,
+        y_line,
+        linestyle="-",
+        label=f"Linear fit: y = {slope:.2f}x + {intercept:.2f}"
+    )
+
+    plt.xlabel("Absolute prediction error: |TabPFN point prediction - observed|")
+    plt.ylabel("Predicted q90 - q10 interval width")
+    plt.title("TabPFN LOCO-CV uncertainty range vs prediction error")
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
+
+# -------------------------------------------------------
+# 13. Plot observed vs predicted with q10-q90 interval
+# -------------------------------------------------------
+
+plot_df = tabpfn_q10_q90_oof_df.copy()
+
+hh = pd.to_numeric(plot_df[weight_col], errors="coerce")
+
+if hh.notna().any() and hh.max() > 0:
+    point_size = 20 + 180 * (hh / hh.max())
+else:
+    point_size = 50
+
+xerr_lower = np.maximum(
+    plot_df["tabpfn_pred_point"] - plot_df["tabpfn_q10_ordered"],
+    0
+)
+
+xerr_upper = np.maximum(
+    plot_df["tabpfn_q90_ordered"] - plot_df["tabpfn_pred_point"],
+    0
+)
+
+plt.figure(figsize=(7, 7))
+
+plt.errorbar(
+    x=plot_df["tabpfn_pred_point"],
+    y=plot_df[target_col],
+    xerr=[xerr_lower, xerr_upper],
+    fmt="none",
+    alpha=0.35,
+    linewidth=1
+)
+
+plt.scatter(
+    plot_df["tabpfn_pred_point"],
+    plot_df[target_col],
+    s=point_size,
+    facecolors="none",
+    edgecolors="black",
+    alpha=0.8
+)
+
+plt.plot(
+    [0, 1],
+    [0, 1],
+    linestyle="--",
+    color="black",
+    linewidth=1
+)
+
+plt.xlim(0, 1)
+plt.ylim(0, 1)
+
+plt.xlabel(
+    "TabPFN predicted proportion with E. coli-free drinking water\n"
+    "point = standard prediction, line = q10-q90"
+)
+plt.ylabel("Observed proportion with E. coli-free drinking water")
+plt.title("Observed vs TabPFN LOCO-CV prediction with q10-q90 range")
+
 plt.tight_layout()
 plt.show()
 
-# -----------------------------
-# Plot 2: Test metrics
-# -----------------------------
-plt.figure(figsize=(7, 5))
-plt.bar(x - width/2, [test_metrics_tabpfn[m] for m in metrics], width, label="TabPFN")
-plt.bar(x + width/2, [test_metrics_rf[m] for m in metrics], width, label="Random Forest")
-plt.xticks(x, metrics)
-plt.ylabel("Value")
-plt.title("Test Set Metrics")
-plt.legend()
-plt.tight_layout()
-plt.show()
+
+# -------------------------------------------------------
+# 14. Display final model comparison
+# -------------------------------------------------------
+
+overall_results_df
