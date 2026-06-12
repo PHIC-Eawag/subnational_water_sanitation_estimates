@@ -25,6 +25,7 @@ source("~/Documents/GitHub/mapping_sanitation_access_LMICs/functions/extract_lab
 # Paths
 # ============================================================
 PATH_TO_SURVEYS_DHS_other <- "~/switchdrive/Eawag/WorldBankProject/HH_surveys/HH_survey_data/HH_DHS_other/"
+PATH_TO_SURVEYS_MIS <- "~/switchdrive/Eawag/WorldBankProject/HH_surveys/HH_survey_data/HH_DHS_MIS/"
 
 country_name_key_WB <- readr::read_csv(
   here::here("data/country_name_key_WB.csv"),
@@ -93,22 +94,23 @@ if (nrow(missing_country_names) > 0) {
 # (minimal set — only what is needed for sanitation)
 # ============================================================
 dhs_sanitation_vars_to_read <- c(
-  "HV000",   # country/phase code
-  "HV001",   # cluster (→ HH1 / PSU)
-  "HV002",   # household number (→ HH2)
-  "HV205",   # toilet type (→ WS11)
-  "HV225",   # shared toilet (→ WS15)
-  "HV024",   # region (→ HH7)
-  "SHDISTRICT", # district — preferred region variable in some surveys
-  "HV025",   # urban/rural (→ HH6)
-  "HV009",   # household members (→ HH48)
-  "HV005",   # household weight (→ hhweight)
-  "HV016",   # day of interview (→ HH5D)
-  "HV006",   # month of interview (→ HH5M)
-  "HV007",   # year of interview (→ HH5Y)
-  "HV021",   # primary sampling unit (→ PSU)
-  "HV022",   # sample stratum (→ stratum)
-  "HV023"    # stratum (alternative)
+  "HV000",
+  "HV001",
+  "HV002",
+  "HV205",
+  "HV225",
+  "HV024",
+  "SHDISTRICT",
+  "SHSTATE",
+  "HV025",
+  "HV009",
+  "HV005",
+  "HV016",
+  "HV006",
+  "HV007",
+  "HV021",
+  "HV022",
+  "HV023"
 )
 
 dhs_sanitation_vars_to_read <- unique(c(
@@ -130,28 +132,44 @@ read_dhs_sanitation_minimal <- function(file_path) {
 # ============================================================
 # List DHS files and match to country names
 # ============================================================
-dhs_files <- list.files(
+dhs_files_other <- list.files(
   path       = PATH_TO_SURVEYS_DHS_other,
   pattern    = "\\.sav$",
-  full.names  = TRUE,
+  full.names = TRUE,
   ignore.case = TRUE
 )
 
-DHS_sanitation_index <- tibble::tibble(
-  file_path  = dhs_files,
-  file_name  = basename(dhs_files),
-  survey_id  = toupper(tools::file_path_sans_ext(basename(dhs_files))),
-  dhs_prefix = stringr::str_sub(survey_id, 1, 2)
+dhs_files_mis <- list.files(
+  path       = PATH_TO_SURVEYS_MIS,
+  pattern    = "\\.sav$",
+  full.names = TRUE,
+  ignore.case = TRUE
+)
+
+DHS_sanitation_index <- dplyr::bind_rows(
+  tibble::tibble(file_path = dhs_files_other, survey_type = "DHS"),
+  tibble::tibble(file_path = dhs_files_mis,   survey_type = "MIS")
 ) %>%
+  dplyr::mutate(
+    file_name  = basename(file_path),
+    survey_id  = toupper(tools::file_path_sans_ext(basename(file_path))),
+    dhs_prefix = stringr::str_sub(survey_id, 1, 2)
+  ) %>%
   dplyr::left_join(dhs_country_lookup, by = "dhs_prefix") %>%
-  dplyr::filter(!is.na(country))
+  dplyr::filter(!is.na(country)) %>%
+  # Where both DHS and MIS exist for a country, keep MIS only
+  dplyr::group_by(country) %>%
+  dplyr::filter(
+    dplyr::n_distinct(survey_type) == 1 | survey_type == "MIS"
+  ) %>%
+  dplyr::ungroup()
 
 if (nrow(DHS_sanitation_index) == 0) {
   stop("No DHS files matched dhs_country_lookup. Check DHS file prefixes and sampled_iso2_codes.")
 }
 
 message("DHS sanitation files that will be processed:")
-print(DHS_sanitation_index %>% dplyr::select(file_name, survey_id, dhs_prefix, country))
+print(DHS_sanitation_index %>% dplyr::select(file_name, survey_id, dhs_prefix, country, survey_type))
 
 # ============================================================
 # Process one DHS file
@@ -162,11 +180,11 @@ process_one_dhs_sanitation_file <- function(file_path, survey_id, country_name) 
 
   dhs_raw <- read_dhs_sanitation_minimal(file_path)
 
-  area_candidates <- if (country_name == "Cambodia") {
-    c("HV024", "SHDISTRICT")
-  } else {
-    c("SHDISTRICT", "HV024")
-  }
+  area_candidates <- dplyr::case_when(
+    country_name %in% c("Cambodia", "Gambia") ~ list(c("HV024", "SHDISTRICT")),
+    country_name == "Nigeria"                  ~ list(c("SHSTATE", "SHDISTRICT", "HV024")),
+    TRUE                                       ~ list(c("SHDISTRICT", "HV024"))
+  ) %>% .[[1]]
 
   # Extract
   dhs_san <- extractDHSSanitationSurveyVariables(
