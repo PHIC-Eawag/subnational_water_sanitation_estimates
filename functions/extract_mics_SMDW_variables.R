@@ -1,4 +1,4 @@
-#title: "Functions for extracting Variables from Survey data"
+#title: "Functions for extracting Variables from MICS data"
 
 
 loadSurveys <- function(pathToSurveys){
@@ -115,7 +115,8 @@ extractVariablesFromCongo <- function(hh_Congo){
 extractVariablesFromSierraLeone <- function(hh_SierraLeone){
   hh_SierraLeone_SMDW <- hh_SierraLeone %>%  
     mutate(PSU = HH1) %>%
-    select("HH1","HH2","WQ27","WS7", "WS3","HH7","HH6","WS1","WS4","WS2", "wqsweight","hhweight","WS8","HH48","country","HH5D","HH5M","HH5Y", "PSU","stratum")
+    select("HH1","HH2","WQ27","WS7", "WS3","HH7A","HH6","WS1","WS4","WS2", "wqsweight","hhweight","WS8","HH48","country","HH5D","HH5M","HH5Y", "PSU","stratum")
+    names(hh_SierraLeone_SMDW)[names(hh_SierraLeone_SMDW) == 'HH7A'] <- 'HH7'
   return(hh_SierraLeone_SMDW)
 }
 
@@ -151,6 +152,12 @@ extractVariablesFromNigeria <- function(hh_Nigeria){
   return(hh_Nigeria_SMDW)
 }
 
+extractVariablesFromMalawi <- function(hh_Survey){
+  hh_Survey <- hh_Survey %>% 
+    select("HH1","HH2","WQ27","WS7", "WS3","HH7A","HH6","WS1","WS4","WS2", "wqsweight","hhweight","WS8","HH48","country","HH5D","HH5M","HH5Y", "PSU","stratum")
+  names(hh_Survey)[names(hh_Survey) == 'HH7A'] <- 'HH7'
+  return(hh_Survey)
+}
 extractVariablesFromParaguay <- function(hh_Paraguay){
   hh_Paraguay_SMDW <- hh_Paraguay %>% 
     mutate(psu = HH1) %>%
