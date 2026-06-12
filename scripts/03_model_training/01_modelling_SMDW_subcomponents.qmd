@@ -1,0 +1,1090 @@
+---
+title: "01_modelling_SMDW_outcomes"
+format: html
+editor: visual
+---
+
+## Modelling SMDW outcomes
+
+```{r}
+# ============================================================
+# Random forest modelling for SMDW outcomes
+# Reads final training datasets, adds country-level covariates,
+# and uses PSU-based weights instead of household-count weights
+# ============================================================
+
+library(dplyr)
+library(readr)
+library(tidyr)
+library(stringr)
+library(purrr)
+library(ggplot2)
+library(h2o)
+library(here)
+```
+
+### 1. Prepare training datasets
+
+```{r}
+#1. Read final training datasets
+training_dir <- here::here("./data/training_subcomponents")
+
+smdw_training_with_covariates <- readr::read_csv(
+  file.path(training_dir, "smdw_training_with_covariates.csv"),
+  show_col_types = FALSE
+)
+
+ecoli_training_with_covariates <- readr::read_csv(
+  file.path(training_dir, "ecoli_training_with_covariates.csv"),
+  show_col_types = FALSE
+)
+
+improved_source_training_with_covariates <- readr::read_csv(
+  file.path(training_dir, "improved_source_training_with_covariates.csv"),
+  show_col_types = FALSE
+)
+
+availability_training_with_covariates <- readr::read_csv(
+  file.path(training_dir, "availability_training_with_covariates.csv"),
+  show_col_types = FALSE
+)
+
+accessibility_training_with_covariates <- readr::read_csv(
+  file.path(training_dir, "accessibility_training_with_covariates.csv"),
+  show_col_types = FALSE
+)
+```
+
+```{r}
+# ============================================================
+# 2. Define predictor variables
+# ============================================================
+
+all_EO_features <- c(
+  "CGIAR_Aridity_Index", "CGIAR_PET",
+  "CHELSA_BIO_Annual_Mean_Temperature",
+  "CHELSA_BIO_Annual_Precipitation",
+  "CHELSA_BIO_Precipitation_Seasonality",
+  "CHELSA_BIO_Precipitation_of_Coldest_Quarter",
+  "CHELSA_BIO_Precipitation_of_Driest_Month",
+  "CHELSA_BIO_Precipitation_of_Driest_Quarter",
+  "CHELSA_BIO_Precipitation_of_Warmest_Quarter",
+  "CHELSA_BIO_Precipitation_of_Wettest_Month",
+  "CHELSA_BIO_Precipitation_of_Wettest_Quarter",
+  "CHELSA_BIO_Temperature_Annual_Range",
+  "CHELSA_BIO_Temperature_Seasonality",
+  "CIFOR_TropicalPeatlandExtent",
+  "CSP_Global_Human_Modification",
+  "ConsensusLandCoverClass_Barren",
+  "ConsensusLandCoverClass_Cultivated_and_Managed_Vegetation",
+  "ConsensusLandCoverClass_Deciduous_Broadleaf_Trees",
+  "ConsensusLandCoverClass_Evergreen_Broadleaf_Trees",
+  "ConsensusLandCoverClass_Evergreen_Deciduous_Needleleaf_Trees",
+  "ConsensusLandCoverClass_Herbaceous_Vegetation",
+  "ConsensusLandCoverClass_Mixed_Other_Trees",
+  "ConsensusLandCoverClass_Open_Water",
+  "ConsensusLandCoverClass_Regularly_Flooded_Vegetation",
+  "ConsensusLandCoverClass_Shrubs",
+  "ConsensusLandCoverClass_Snow_Ice",
+  "ConsensusLandCoverClass_Urban_Builtup",
+  "ConsensusLandCover_Human_Development_Percentage",
+  "CrowtherLab_Tree_Density",
+  "EarthEnvCloudCover_CloudForestPrediction",
+  "EarthEnvTexture_CoOfVar_EVI",
+  "EarthEnvTexture_Contrast_EVI",
+  "EarthEnvTexture_Correlation_EVI",
+  "EarthEnvTexture_Dissimilarity_EVI",
+  "EarthEnvTexture_Entropy_EVI",
+  "EarthEnvTexture_Evenness_EVI",
+  "EarthEnvTexture_Homogeneity_EVI",
+  "EarthEnvTexture_Maximum_EVI",
+  "EarthEnvTexture_Range_EVI",
+  "EarthEnvTexture_Shannon_Index",
+  "EarthEnvTexture_Simpson_Index",
+  "EarthEnvTexture_Std_EVI",
+  "EarthEnvTexture_Uniformity_EVI",
+  "EarthEnvTexture_Variance_EVI",
+  "EarthEnvTopoMed_1stOrderPartialDerivEW",
+  "EarthEnvTopoMed_1stOrderPartialDerivNS",
+  "EarthEnvTopoMed_Eastness",
+  "EarthEnvTopoMed_Elevation",
+  "EarthEnvTopoMed_Roughness",
+  "EarthEnvTopoMed_Slope",
+  "EarthEnvTopoMed_TerrainRuggednessIndex",
+  "EarthEnvTopoMed_TopoPositionIndex",
+  "EsaCci_BurntAreasProbability",
+  "FanEtAl_Depth_to_Water_Table_AnnualMean",
+  "FanEtAl_Depth_to_Water_Table_AnnualSD",
+  "GHS_Population_Density",
+  "GLW3_RuminantsDistribution_downsampled10km",
+  "GPWv4_Population_Density",
+  "GiriEtAl_MangrovesExtent",
+  "MODIS_EVI", "MODIS_NDVI", "MODIS_NPP",
+  "PelletierEtAl_SoilAndSedimentaryDepositThicknesses",
+  "SG_Absolute_depth_to_bedrock",
+  "SG_Bulk_density_015cm",
+  "SG_Depth_to_bedrock",
+  "SG_H2O_Capacity_015cm",
+  "SG_Saturated_H2O_Content_015cm",
+  "TootchiEtAl_WetlandsRegularlyFlooded",
+  "WCS_Human_Footprint_2009",
+  "chirps_annual_precipitation",
+  "era5_temperature_2m",
+  "ghsl_built_surface",
+  "ghsl_population",
+  "ghsl_urban_frac",
+  "jrc_building_height",
+  "map_friction",
+  "modis_evi",
+  "modis_ndvi",
+  "runoff_max_annualmax",
+  "runoff_min_annualmin",
+  "temperature_2m_max_annualmax",
+  "viirs_average",
+  "worldpop",
+  "worldpop_sum",
+  "ghsl_population_sum"
+)
+
+country_level_numeric_features <- c(
+  "gdp_per_capita_constant_2015_usd",
+  "secondary_education_duration_years",
+  "ww_collection_percent",
+  "ww_treatment_percent",
+  "ww_reuse_percent",
+  "control_of_corruption",
+  "governance_effectiveness",
+  "political_stability",
+  "regulatory_quality",
+  "rule_of_law",
+  "voice_and_accountability"
+)
+
+
+all_predictor_features <- c(
+  all_EO_features,
+  country_level_numeric_features
+)
+```
+
+```{r}
+# ============================================================
+# 3. Setup model columns
+# ============================================================
+
+outcome_col <- "outcome_value"
+weight_col  <- "n_psu_weight_scaled"
+country_col <- "country_cov"
+
+```
+
+### 2. Modelling SMDW subcomponents
+
+```{r}
+# ============================================================
+# 4. Helper to create RF input data
+# ============================================================
+
+create_rf_training_data <- function(training_df, outcome_name) {
+  
+  
+  model_features <- intersect(all_predictor_features, names(training_df))
+  
+  train_data <- training_df %>%
+    dplyr::mutate(
+      model_name = outcome_name,
+      country_eval = as.character(.data[[country_col]]),
+      country_fold = as.factor(as.integer(factor(country_eval))),
+      model_weight = as.numeric(.data[[weight_col]])
+    ) %>%
+    dplyr::select(
+      dplyr::all_of(model_features),
+      dplyr::all_of(outcome_col),
+      model_weight,
+      country_eval,
+      country_fold,
+      country_outcome,
+      HH7_region_outcome,
+      analysis_year
+    ) %>%
+    tidyr::drop_na(
+      dplyr::all_of(outcome_col),
+      model_weight,
+      country_eval,
+      country_fold
+    )
+  
+  list(
+    data = train_data,
+    features = model_features,
+    outcome_name = outcome_name
+  )
+}
+```
+
+```{r}
+# ============================================================
+# Remove Pakistan from all training datasets before modelling
+# ============================================================
+
+remove_pakistan <- function(df) {
+  df %>%
+    dplyr::filter(
+      !stringr::str_detect(
+        stringr::str_to_lower(country_outcome),
+        "^pakistan"
+      )
+    )
+}
+
+smdw_training_with_covariates <- remove_pakistan(
+  smdw_training_with_covariates
+)
+
+ecoli_training_with_covariates <- remove_pakistan(
+  ecoli_training_with_covariates
+)
+
+improved_source_training_with_covariates <- remove_pakistan(
+  improved_source_training_with_covariates
+)
+
+availability_training_with_covariates <- remove_pakistan(
+  availability_training_with_covariates
+)
+
+accessibility_training_with_covariates <- remove_pakistan(
+  accessibility_training_with_covariates
+)
+```
+
+```{r}
+# ============================================================
+# 5. Create model-ready data for all four outcomes
+# ============================================================
+rf_input_smdw <- create_rf_training_data(
+  training_df = smdw_training_with_covariates,
+  outcome_name = "smdw"
+)
+
+rf_input_ecoli <- create_rf_training_data(
+  training_df = ecoli_training_with_covariates,
+  outcome_name = "ecoli_free"
+)
+
+rf_input_improved_source <- create_rf_training_data(
+  training_df = improved_source_training_with_covariates,
+  outcome_name = "improved_source"
+)
+
+rf_input_availability <- create_rf_training_data(
+  training_df = availability_training_with_covariates,
+  outcome_name = "availability"
+)
+
+rf_input_accessibility <- create_rf_training_data(
+  training_df = accessibility_training_with_covariates,
+  outcome_name = "accessibility"
+)
+
+
+# ------------------------------------------------------------
+# Check number of observations and features per model
+# ------------------------------------------------------------
+
+rf_input_summary <- tibble::tibble(
+  outcome = c(
+    "ecoli_free",
+    "improved_source",
+    "availability",
+    "accessibility"
+  ),
+  n_observations = c(
+    nrow(rf_input_ecoli$data),
+    nrow(rf_input_improved_source$data),
+    nrow(rf_input_availability$data),
+    nrow(rf_input_accessibility$data)
+  ),
+  n_features = c(
+    length(rf_input_ecoli$features),
+    length(rf_input_improved_source$features),
+    length(rf_input_availability$features),
+    length(rf_input_accessibility$features)
+  ),
+  n_countries = c(
+    dplyr::n_distinct(rf_input_ecoli$data$country_eval),
+    dplyr::n_distinct(rf_input_improved_source$data$country_eval),
+    dplyr::n_distinct(rf_input_availability$data$country_eval),
+    dplyr::n_distinct(rf_input_accessibility$data$country_eval)
+  )
+)
+
+print(rf_input_summary)
+
+
+# ------------------------------------------------------------
+# Optional: inspect observations per country/fold
+# ------------------------------------------------------------
+
+rf_country_fold_summary <- dplyr::bind_rows(
+  rf_input_ecoli$data %>%
+    dplyr::mutate(outcome = "ecoli_free"),
+  rf_input_improved_source$data %>%
+    dplyr::mutate(outcome = "improved_source"),
+  rf_input_availability$data %>%
+    dplyr::mutate(outcome = "availability"),
+  rf_input_accessibility$data %>%
+    dplyr::mutate(outcome = "accessibility")
+) %>%
+  dplyr::count(
+    outcome,
+    country_eval,
+    country_fold,
+    name = "n_observations"
+  ) %>%
+  dplyr::arrange(outcome, country_eval)
+
+print(rf_country_fold_summary)
+```
+
+```{r}
+# ============================================================
+#Start H2O
+# ============================================================
+
+
+h2o::h2o.init(
+  nthreads = -1,
+  max_mem_size = "12G"
+)
+
+h2o::h2o.no_progress()
+```
+
+```{r}
+# ============================================================
+# 7. Helper to run RF with leave-one-country-out CV
+# ============================================================
+
+run_rf_loco <- function(rf_input, ntrees = 500, seed = 123) {
+  
+  train_data <- rf_input$data
+  model_features <- rf_input$features
+  outcome_name <- rf_input$outcome_name
+  
+  train_h2o <- h2o::as.h2o(
+    train_data,
+    destination_frame = paste0("train_", outcome_name)
+  )
+  
+  rf_model <- h2o::h2o.randomForest(
+    x = model_features,
+    y = outcome_col,
+    training_frame = train_h2o,
+    ntrees = ntrees,
+    mtries = -1,
+    sample_rate = 0.632,
+    fold_column = "country_fold",
+    weights_column = "model_weight",
+    seed = seed,
+    keep_cross_validation_predictions = TRUE,
+    keep_cross_validation_fold_assignment = TRUE
+  )
+  
+  cv_predictions <- h2o::h2o.getFrame(
+    rf_model@model$cross_validation_holdout_predictions_frame_id$name
+  ) %>%
+    as.data.frame()
+  
+  cv_eval <- train_data %>%
+    dplyr::mutate(
+      predicted = cv_predictions$predict,
+      observed = .data[[outcome_col]]
+    )
+  
+  metrics <- tibble::tibble(
+    outcome_name = outcome_name,
+    n_rows = nrow(train_data),
+    n_countries = dplyr::n_distinct(train_data$country_eval),
+    n_features = length(model_features),
+    xval_r2 = as.numeric(h2o::h2o.r2(rf_model, xval = TRUE)),
+    xval_mae = as.numeric(h2o::h2o.mae(rf_model, xval = TRUE)),
+    xval_rmse = as.numeric(h2o::h2o.rmse(rf_model, xval = TRUE))
+  )
+  
+  variable_importance <- h2o::h2o.varimp(rf_model) %>%
+    as.data.frame() %>%
+    dplyr::mutate(outcome_name = outcome_name)
+  
+  list(
+    model = rf_model,
+    cv_eval = cv_eval,
+    metrics = metrics,
+    variable_importance = variable_importance,
+    features = model_features
+  )
+}
+```
+
+```{r}
+# ============================================================
+# 8. Run RF models for all four outcomes
+# ============================================================
+rf_smdw <- run_rf_loco(rf_input_smdw)
+rf_ecoli <- run_rf_loco(rf_input_ecoli)
+rf_improved_source <- run_rf_loco(rf_input_improved_source)
+rf_availability <- run_rf_loco(rf_input_availability)
+rf_accessibility <- run_rf_loco(rf_input_accessibility)
+
+rf_results <- list(
+  ecoli_free = rf_ecoli,
+  improved_source = rf_improved_source,
+  availability = rf_availability,
+  accessibility = rf_accessibility
+)
+```
+
+```{r}
+
+# ============================================================
+# Compare model performance
+# ============================================================
+
+rf_metrics <- dplyr::bind_rows(
+  rf_ecoli$metrics,
+  rf_improved_source$metrics,
+  rf_availability$metrics,
+  rf_accessibility$metrics
+)
+
+print(rf_metrics)
+
+rf_smdw$metrics
+```
+
+```{r}
+# ============================================================
+# Plot CV predictions coloured by ww_region without rerunning RF
+# ============================================================
+
+plot_rf_cv_by_ww_region <- function(rf_result, training_df, plot_title) {
+  
+  ww_region_lookup <- training_df %>%
+    dplyr::distinct(
+      country_outcome,
+      HH7_region_outcome,
+      analysis_year,
+      ww_region
+    )
+  
+  plot_data_cv <- rf_result$cv_eval %>%
+    dplyr::left_join(
+      ww_region_lookup,
+      by = c(
+        "country_outcome",
+        "HH7_region_outcome",
+        "analysis_year"
+      )
+    ) %>%
+    dplyr::mutate(
+      ww_region = dplyr::if_else(
+        is.na(ww_region),
+        "Missing ww_region",
+        as.character(ww_region)
+      )
+    )
+  
+  ggplot2::ggplot(
+    plot_data_cv,
+    ggplot2::aes(
+      x = predicted,
+      y = observed,
+      size = model_weight,
+      colour = ww_region
+    )
+  ) +
+    ggplot2::geom_point(shape = 1, alpha = 0.8) +
+    ggplot2::coord_cartesian(xlim = c(0, 1), ylim = c(0, 1)) +
+    ggplot2::geom_abline(
+      slope = 1,
+      intercept = 0,
+      linetype = "dashed"
+    ) +
+    ggplot2::stat_smooth(
+      se = TRUE,
+      colour = "black",
+      linewidth = 0.5,
+      method = "lm"
+    ) +
+    ggplot2::labs(
+      title = plot_title,
+      x = "Predicted outcome proportion",
+      y = "Observed outcome proportion",
+      size = "PSU weight",
+      colour = "Wastewater region"
+    ) +
+    ggplot2::theme_minimal(base_size = 9)
+}
+```
+
+```{r}
+# ============================================================
+# Prediction-observation plots coloured by wastewater region
+# ============================================================
+
+plot_rf_cv_by_ww_region <- function(rf_result, training_df, plot_title) {
+  
+  ww_region_lookup <- training_df %>%
+    dplyr::distinct(
+      country_outcome,
+      HH7_region_outcome,
+      analysis_year,
+      ww_region
+    )
+  
+  plot_data_cv <- rf_result$cv_eval %>%
+    dplyr::left_join(
+      ww_region_lookup,
+      by = c(
+        "country_outcome",
+        "HH7_region_outcome",
+        "analysis_year"
+      )
+    ) %>%
+    dplyr::mutate(
+      ww_region = dplyr::if_else(
+        is.na(ww_region),
+        "Missing ww_region",
+        as.character(ww_region)
+      )
+    )
+  
+  ggplot2::ggplot(
+    plot_data_cv,
+    ggplot2::aes(
+      x = predicted,
+      y = observed,
+      size = model_weight,
+      colour = ww_region
+    )
+  ) +
+    ggplot2::geom_point(shape = 1, alpha = 0.8) +
+    ggplot2::coord_cartesian(xlim = c(0, 1), ylim = c(0, 1)) +
+    ggplot2::geom_abline(
+      slope = 1,
+      intercept = 0,
+      linetype = "dashed"
+    ) +
+    ggplot2::stat_smooth(
+      se = TRUE,
+      colour = "black",
+      linewidth = 0.5,
+      method = "lm"
+    ) +
+    ggplot2::labs(
+      title = plot_title,
+      x = "Predicted outcome proportion",
+      y = "Observed outcome proportion",
+      size = "PSU weight",
+      colour = "Wastewater region"
+    ) +
+    ggplot2::theme_minimal(base_size = 9)
+}
+```
+
+```{r}
+# ============================================================
+# Create prediction-observation plots for all four outcomes
+# ============================================================
+
+plotPredObs_smdw_cv <- plot_rf_cv_by_ww_region(
+  rf_result = rf_smdw,
+  training_df = smdw_training_with_covariates,
+  plot_title = "SMDW"
+)
+
+plotPredObs_ecoli_cv <- plot_rf_cv_by_ww_region(
+  rf_result = rf_ecoli,
+  training_df = ecoli_training_with_covariates,
+  plot_title = "E. coli-free drinking water"
+)
+
+plotPredObs_improved_source_cv <- plot_rf_cv_by_ww_region(
+  rf_result = rf_improved_source,
+  training_df = improved_source_training_with_covariates,
+  plot_title = "Improved drinking water source"
+)
+
+plotPredObs_availability_cv <- plot_rf_cv_by_ww_region(
+  rf_result = rf_availability,
+  training_df = availability_training_with_covariates,
+  plot_title = "Drinking water availability"
+)
+
+plotPredObs_accessibility_cv <- plot_rf_cv_by_ww_region(
+  rf_result = rf_accessibility,
+  training_df = accessibility_training_with_covariates,
+  plot_title = "Drinking water accessibility"
+)
+
+
+plotPredObs_smdw_cv
+plotPredObs_ecoli_cv
+plotPredObs_improved_source_cv
+plotPredObs_availability_cv
+plotPredObs_accessibility_cv
+```
+
+```{r}
+# ============================================================
+# Helper: print and save ggplot objects as SVG
+# ============================================================
+
+
+if (!requireNamespace("svglite", quietly = TRUE)) {
+  stop("Please install the svglite package first: install.packages('svglite')")
+}
+
+plot_output_dir <- here::here("./outputs/04_model_performance/figures")
+
+dir.create(
+  plot_output_dir,
+  recursive = TRUE,
+  showWarnings = FALSE
+)
+
+print_and_save_svg <- function(plot_obj, filename, width = 8, height = 6) {
+  
+  print(plot_obj)
+  
+  ggplot2::ggsave(
+    filename = file.path(plot_output_dir, filename),
+    plot = plot_obj,
+    device = svglite::svglite,
+    width = width,
+    height = height,
+    units = "in"
+  )
+}
+```
+
+```{r}
+# ============================================================
+# Create, print, and save model performance plots
+# ============================================================
+
+plotPredObs_smdw_cv <- plot_rf_cv_by_ww_region(
+  rf_result = rf_smdw,
+  training_df = SMDW_training_with_covariates,
+  plot_title = "SMDW"
+)
+
+plotPredObs_ecoli_cv <- plot_rf_cv_by_ww_region(
+  rf_result = rf_ecoli,
+  training_df = ecoli_training_with_covariates,
+  plot_title = "E. coli-free drinking water"
+)
+
+plotPredObs_improved_source_cv <- plot_rf_cv_by_ww_region(
+  rf_result = rf_improved_source,
+  training_df = improved_source_training_with_covariates,
+  plot_title = "Improved drinking water source"
+)
+
+plotPredObs_availability_cv <- plot_rf_cv_by_ww_region(
+  rf_result = rf_availability,
+  training_df = availability_training_with_covariates,
+  plot_title = "Drinking water availability"
+)
+
+plotPredObs_accessibility_cv <- plot_rf_cv_by_ww_region(
+  rf_result = rf_accessibility,
+  training_df = accessibility_training_with_covariates,
+  plot_title = "Drinking water accessibility"
+)
+
+print_and_save_svg(
+  plotPredObs_smdw_cv,
+  "performance_pred_obs_SMDW_noPAK.svg",
+  width = 7,
+  height = 5
+)
+
+print_and_save_svg(
+  plotPredObs_ecoli_cv,
+  "performance_pred_obs_ecoli_free_noPAK.svg",
+  width = 7,
+  height = 5
+)
+
+print_and_save_svg(
+  plotPredObs_improved_source_cv,
+  "performance_pred_obs_improved_source_noPAK.svg",
+  width = 7,
+  height = 5
+)
+
+print_and_save_svg(
+  plotPredObs_availability_cv,
+  "performance_pred_obs_availability_noPAK.svg",
+  width = 7,
+  height = 5
+)
+
+print_and_save_svg(
+  plotPredObs_accessibility_cv,
+  "performance_pred_obs_accessibility_noPAK.svg",
+  width = 7,
+  height = 5
+)
+```
+
+```{r}
+names(rf_improved_source$cv_eval)
+```
+
+```{r}
+# ============================================================
+# Human-readable feature labels for plots
+# ============================================================
+
+feature_label_map <- c(
+  # Population / settlement
+  "worldpop" = "WorldPop population density",
+  "worldpop_sum" = "WorldPop population sum",
+  "ghsl_population" = "GHSL population density",
+  "ghsl_population_sum" = "GHSL population sum",
+  "GHS_Population_Density" = "GHS population density",
+  "GPWv4_Population_Density" = "GPWv4 population density (LTA)",
+  "ghsl_built_surface" = "Built surface fraction",
+  "ghsl_urban_frac" = "Urban fraction",
+  "jrc_building_height" = "Building height",
+  "viirs_average" = "Night-time lights mean",
+  
+  # Socioeconomic / governance
+  "gdp_per_capita_constant_2015_usd" = "GDP per capita",
+  "secondary_education_duration_years" = "Secondary education duration",
+  "ww_collection_percent" = "Wastewater collection",
+  "ww_treatment_percent" = "Wastewater treatment",
+  "ww_reuse_percent" = "Wastewater reuse",
+  "control_of_corruption" = "Control of corruption",
+  "governance_effectiveness" = "Government effectiveness",
+  "political_stability" = "Political stability",
+  "regulatory_quality" = "Regulatory quality",
+  "rule_of_law" = "Rule of law",
+  "voice_and_accountability" = "Voice and accountability",
+  
+  # Climate
+  "CGIAR_Aridity_Index" = "Aridity index",
+  "CGIAR_PET" = "Potential evapotranspiration",
+  "CHELSA_BIO_Annual_Mean_Temperature" = "Annual mean temperature",
+  "CHELSA_BIO_Annual_Precipitation" = "Annual precipitation",
+  "CHELSA_BIO_Precipitation_Seasonality" = "Precipitation seasonality",
+  "CHELSA_BIO_Precipitation_of_Coldest_Quarter" = "Precipitation, coldest quarter",
+  "CHELSA_BIO_Precipitation_of_Driest_Month" = "Precipitation, driest month",
+  "CHELSA_BIO_Precipitation_of_Driest_Quarter" = "Precipitation, driest quarter",
+  "CHELSA_BIO_Precipitation_of_Warmest_Quarter" = "Precipitation, warmest quarter",
+  "CHELSA_BIO_Precipitation_of_Wettest_Month" = "Precipitation, wettest month",
+  "CHELSA_BIO_Precipitation_of_Wettest_Quarter" = "Precipitation, wettest quarter",
+  "CHELSA_BIO_Temperature_Annual_Range" = "Temperature annual range",
+  "CHELSA_BIO_Temperature_Seasonality" = "Temperature seasonality",
+  "era5_temperature_2m" = "Mean air temperature",
+  "temperature_2m_max_annualmax" = "Maximum air temperature",
+  "chirps_annual_precipitation" = "Annual precipitation",
+  
+  # Accessibility / terrain
+  "map_friction" = "Travel friction",
+  "EarthEnvTopoMed_Elevation" = "Elevation",
+  "EarthEnvTopoMed_Slope" = "Slope",
+  "EarthEnvTopoMed_Roughness" = "Terrain roughness",
+  "EarthEnvTopoMed_TerrainRuggednessIndex" = "Terrain ruggedness",
+  "EarthEnvTopoMed_TopoPositionIndex" = "Topographic position",
+  "EarthEnvTopoMed_Eastness" = "Eastness",
+  "EarthEnvTopoMed_1stOrderPartialDerivEW" = "East-west terrain gradient",
+  "EarthEnvTopoMed_1stOrderPartialDerivNS" = "North-south terrain gradient",
+  
+  # Soil / groundwater
+  "FanEtAl_Depth_to_Water_Table_AnnualMean" = "Depth to water table",
+  "FanEtAl_Depth_to_Water_Table_AnnualSD" = "Water table seasonality",
+  "SG_Absolute_depth_to_bedrock" = "Depth to bedrock",
+  "SG_Depth_to_bedrock" = "Soil depth to bedrock",
+  "SG_Bulk_density_015cm" = "Soil bulk density",
+  "SG_H2O_Capacity_015cm" = "Soil water capacity",
+  "SG_Saturated_H2O_Content_015cm" = "Soil saturated water content",
+  
+  # Vegetation / land cover
+  "ConsensusLandCoverClass_Urban_Builtup" = "Urban built-up land",
+  "ConsensusLandCoverClass_Cultivated_and_Managed_Vegetation" = "Cultivated land",
+  "ConsensusLandCoverClass_Deciduous_Broadleaf_Trees" = "Deciduous broadleaf trees",
+  "ConsensusLandCoverClass_Evergreen_Broadleaf_Trees" = "Evergreen broadleaf trees",
+  "ConsensusLandCoverClass_Evergreen_Deciduous_Needleleaf_Trees" = "Needleleaf trees",
+  "ConsensusLandCoverClass_Herbaceous_Vegetation" = "Herbaceous vegetation",
+  "ConsensusLandCoverClass_Mixed_Other_Trees" = "Mixed/other trees",
+  "ConsensusLandCoverClass_Open_Water" = "Open water",
+  "ConsensusLandCoverClass_Regularly_Flooded_Vegetation" = "Flooded vegetation",
+  "ConsensusLandCoverClass_Shrubs" = "Shrub cover",
+  "ConsensusLandCoverClass_Snow_Ice" = "Snow and ice",
+  "ConsensusLandCover_Human_Development_Percentage" = "Human development land cover",
+  "CIFOR_TropicalPeatlandExtent" = "Tropical peatland extent",
+  "GiriEtAl_MangrovesExtent" = "Mangrove extent",
+  "TootchiEtAl_WetlandsRegularlyFlooded" = "Regularly flooded wetlands",
+  "EsaCci_BurntAreasProbability" = "Burnt area probability",
+  "WCS_Human_Footprint_2009" = "Human footprint",
+  "CSP_Global_Human_Modification" = "Human modification",
+  
+  # Remote sensing vegetation
+  "MODIS_EVI" = "MODIS EVI",
+  "MODIS_NDVI" = "MODIS NDVI",
+  "MODIS_NPP" = "MODIS NPP",
+  "modis_evi" = "MODIS EVI",
+  "modis_ndvi" = "MODIS NDVI",
+  
+  # Texture metrics
+  "EarthEnvTexture_CoOfVar_EVI" = "EVI coefficient of variation",
+  "EarthEnvTexture_Contrast_EVI" = "EVI contrast",
+  "EarthEnvTexture_Correlation_EVI" = "EVI correlation",
+  "EarthEnvTexture_Dissimilarity_EVI" = "EVI dissimilarity",
+  "EarthEnvTexture_Entropy_EVI" = "EVI entropy",
+  "EarthEnvTexture_Evenness_EVI" = "EVI evenness",
+  "EarthEnvTexture_Homogeneity_EVI" = "EVI homogeneity",
+  "EarthEnvTexture_Maximum_EVI" = "EVI maximum",
+  "EarthEnvTexture_Range_EVI" = "EVI range",
+  "EarthEnvTexture_Shannon_Index" = "EVI Shannon index",
+  "EarthEnvTexture_Simpson_Index" = "EVI Simpson index",
+  "EarthEnvTexture_Std_EVI" = "EVI standard deviation",
+  "EarthEnvTexture_Uniformity_EVI" = "EVI uniformity",
+  "EarthEnvTexture_Variance_EVI" = "EVI variance",
+  
+  # Other
+  "CrowtherLab_Tree_Density" = "Tree density",
+  "EarthEnvCloudCover_CloudForestPrediction" = "Cloud forest probability",
+  "GLW3_RuminantsDistribution_downsampled10km" = "Ruminant density",
+  "runoff_max_annualmax" = "Maximum annual runoff",
+  "runoff_min_annualmin" = "Minimum annual runoff"
+)
+
+
+auto_label_feature <- function(x) {
+  x %>%
+    as.character() %>%
+    stringr::str_replace_all("_", " ") %>%
+    stringr::str_squish()
+}
+
+
+label_model_features <- function(x) {
+  x <- as.character(x)
+  
+  mapped <- dplyr::recode(
+    x,
+    !!!feature_label_map,
+    .default = NA_character_
+  )
+  
+  dplyr::if_else(
+    is.na(mapped),
+    auto_label_feature(x),
+    mapped
+  )
+}
+```
+
+```{r}
+# ============================================================
+# 13. SHAP summary plots for all four RF models
+# ============================================================
+
+library(viridis)
+library(forcats)
+
+# ------------------------------------------------------------
+# Helper: create SHAP plot from an existing RF result
+# ------------------------------------------------------------
+
+make_shap_summary_plot <- function(
+    rf_result,
+    outcome_name,
+    y_lab,
+    sample_n = 2000
+) {
+  
+  # Use the model-ready data already stored in rf_result$cv_eval.
+  # No model rerun is needed.
+  shap_df <- rf_result$cv_eval %>%
+    dplyr::select(dplyr::all_of(rf_result$features))
+  
+  # Optional sampling to keep SHAP calculation faster
+  if (nrow(shap_df) > sample_n) {
+    set.seed(123)
+    shap_df <- shap_df %>%
+      dplyr::slice_sample(n = sample_n)
+  }
+  
+  shap_h2o <- h2o::as.h2o(
+    shap_df,
+    destination_frame = paste0("shap_data_", outcome_name)
+  )
+  
+  shap_summary_plot_h2o <- h2o::h2o.shap_summary_plot(
+    rf_result$model,
+    shap_h2o
+  )
+  
+  shap_summary_plot_data <- shap_summary_plot_h2o[["data"]] %>%
+  dplyr::mutate(
+    feature_raw = as.character(feature),
+    feature = label_model_features(feature_raw)
+  )
+  
+  
+  shap_summary_plot_data <- shap_summary_plot_data %>%
+    dplyr::group_by(feature) %>%
+    dplyr::mutate(
+      mean_abs_shap = mean(abs(contribution), na.rm = TRUE)
+    ) %>%
+    dplyr::ungroup()
+  
+  shap_plot <- shap_summary_plot_data %>%
+    dplyr::mutate(
+      feature = forcats::fct_reorder(feature, mean_abs_shap)
+    ) %>%
+    ggplot2::ggplot(
+      ggplot2::aes(
+        x = feature,
+        y = contribution,
+        colour = normalized_value
+      )
+    ) +
+    ggplot2::geom_hline(
+      yintercept = 0,
+      linetype = "dashed"
+    ) +
+    ggplot2::geom_point(
+      position = h2o:::position_jitter_density(),
+      alpha = 0.5,
+      size = 1.2
+    ) +
+    ggplot2::scale_colour_gradientn(
+      colours = viridis::viridis_pal()(9),
+      breaks = c(0, 1),
+      labels = c("low", "high"),
+      limits = c(0, 1)
+    ) +
+    ggplot2::coord_flip() +
+    ggplot2::labs(
+      title = paste("SHAP summary:", outcome_name),
+      y = y_lab,
+      x = "",
+      colour = "Normalized\nfeature value"
+    ) +
+    ggplot2::theme_bw(base_size = 9)
+  
+  list(
+    plot = shap_plot,
+    data = shap_summary_plot_data,
+    h2o_plot = shap_summary_plot_h2o
+  )
+}
+```
+
+```{r}
+# ============================================================
+# 14. Create SHAP plots for all four outcomes
+# ============================================================
+
+shap_SMDW <- make_shap_summary_plot(
+  rf_result = rf_smdw,
+  outcome_name = "SMDW",
+  y_lab = "SHAP contribution to SMDW prediction",
+  sample_n = 2000
+)
+
+shap_ecoli <- make_shap_summary_plot(
+  rf_result = rf_ecoli,
+  outcome_name = "ecoli_free",
+  y_lab = "SHAP contribution to E. coli-free drinking water prediction",
+  sample_n = 2000
+)
+
+shap_improved_source <- make_shap_summary_plot(
+  rf_result = rf_improved_source,
+  outcome_name = "improved_source",
+  y_lab = "SHAP contribution to improved source prediction",
+  sample_n = 2000
+)
+
+shap_availability <- make_shap_summary_plot(
+  rf_result = rf_availability,
+  outcome_name = "availability",
+  y_lab = "SHAP contribution to drinking water availability prediction",
+  sample_n = 2000
+)
+
+shap_accessibility <- make_shap_summary_plot(
+  rf_result = rf_accessibility,
+  outcome_name = "accessibility",
+  y_lab = "SHAP contribution to drinking water accessibility prediction",
+  sample_n = 2000
+)
+```
+
+```{r}
+# ============================================================
+# Print SHAP plots
+# ============================================================
+
+shap_SMDW$plot
+shap_ecoli$plot
+shap_improved_source$plot
+shap_availability$plot
+shap_accessibility$plot
+```
+
+```{r}
+# ============================================================
+# Print and save SHAP plots
+# ============================================================
+
+shap_plots <- list(
+  smdw = shap_SMDW$plot,
+  ecoli_free = shap_ecoli$plot,
+  improved_source = shap_improved_source$plot,
+  availability = shap_availability$plot,
+  accessibility = shap_accessibility$plot
+)
+
+print_and_save_svg(
+  shap_plots$smdw,
+  "shap_summary_SMDW_noPAK.svg",
+  width = 9,
+  height = 6
+)
+
+print_and_save_svg(
+  shap_plots$ecoli_free,
+  "shap_summary_ecoli_free_noPAK.svg",
+  width = 9,
+  height = 6
+)
+
+print_and_save_svg(
+  shap_plots$improved_source,
+  "shap_summary_improved_source_noPAK.svg",
+  width = 9,
+  height = 6
+)
+
+print_and_save_svg(
+  shap_plots$availability,
+  "shap_summary_availability_noPAK.svg",
+  width = 9,
+  height = 6
+)
+
+print_and_save_svg(
+  shap_plots$accessibility,
+  "shap_summary_accessibility_noPAK.svg",
+  width = 9,
+  height = 6
+)
+```
