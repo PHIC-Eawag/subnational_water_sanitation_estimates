@@ -12,19 +12,60 @@ library(readr)
 library(dplyr)
 library(tibble)
 library(tidyr)
+library(here)
+
 
 ```
 
 ```{r}
-features_pred_df <- read_csv("/Users/esthergreenwood/Documents/GitHub/mapping_sanitation_access_LMICs/data/features/worldbank_sampled_pred_v1.0.csv")
+features_pred_df <- read_csv(here::here("./data/features/worldbank_sampled_pred_v1.0.csv"))
 
-WGU_pred_df <- read_csv("/Users/esthergreenwood/Documents/GitHub/mapping_sanitation_access_LMICs/data/features/worldwide_governance_indicators_lmics.csv")
+WGU_pred_df <- read_csv(here::here("./data/features/worldwide_governance_indicators_lmics.csv"))
 
-country_key <- read_csv("/Users/esthergreenwood/Documents/GitHub/mapping_sanitation_access_LMICs/data/country_name_key_WB.csv")
+country_key <- read_csv(here::here("./data/country_name_key_WB.csv"))
 
+
+# folder containing the csv files
+folder_path_worldpop_sums <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/pop_sums_prediction"
+
+# list all csv files in the folder
+file_list <- list.files(
+  path = folder_path_worldpop_sums,
+  pattern = "\\.csv$",
+  full.names = TRUE
+)
+
+# read and merge all files
+pop_sums_prediction <- file_list %>%
+  map_dfr(read_csv, show_col_types = FALSE)
+
+dplyr::n_distinct(pop_sums_prediction$NAME_0, na.rm = TRUE)
+
+write_csv(pop_sums_prediction, here::here("data", "pop_sums_prediction.csv"))
+
+# inspect result
+print(names(pop_sums_prediction))
 print(names(features_pred_df))
 print(names(WGU_pred_df))
+
+
 ```
+```{r}
+# Check using GADM country names against NAME_0
+missing_countries <- country_key %>%
+  dplyr::distinct(GADM_NAME_0) %>%
+  dplyr::rename(country = GADM_NAME_0) %>%
+  dplyr::anti_join(
+    pop_sums_prediction %>%
+      dplyr::distinct(NAME_0) %>%
+      dplyr::rename(country = NAME_0),
+    by = "country"
+  )
+
+missing_countries
+```
+
+
 ```{r}
 
 # 1. Indicators to keep and new names
