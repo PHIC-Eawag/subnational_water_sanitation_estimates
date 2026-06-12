@@ -17,26 +17,17 @@ library(haven)
 library(surveytoolbox)
 library(survey)
 
-source("~/Documents/GitHub/mapping_sanitation_access_LMICs/functions/label_mics_sanitation_variables.R")
-source("~/Documents/GitHub/mapping_sanitation_access_LMICs/functions/extract_mics_sanitation_variables.R")
+source(here::here("functions/label_mics_sanitation_variables.R"))
+source(here::here("functions/extract_mics_sanitation_variables.R"))
+source(here::here("configuration/paths.R"))
 
-# =============================================================================
+
 # 1. LOAD RAW SURVEYS
-# =============================================================================
-PATH_TO_SURVEYS_old_SMDW <- "~/switchdrive/Eawag/WorldBankProject/HH_surveys/HH_survey_data/HH_MICS_old_SMDW"
-PATH_TO_SURVEYS_new_SMDW <- "~/switchdrive/Eawag/WorldBankProject/HH_surveys/HH_survey_data/HH_MICS_new_SMDW/"
-PATH_TO_SURVEYS_new_other <- "~/switchdrive/Eawag/WorldBankProject/HH_surveys/HH_survey_data/HH_MICS_new_other/"
-
-
-
 loadSurveys(PATH_TO_SURVEYS_old_SMDW)
 loadSurveys(PATH_TO_SURVEYS_new_SMDW)
 loadSurveys(PATH_TO_SURVEYS_new_other)
 
-
-# =============================================================================
 # 2. ASSIGN COUNTRY NAMES
-# =============================================================================
 hh_Afghanistan$country               <- "Afghanistan"
 hh_Algeria$country                   <- "Algeria"
 hh_Argentina$country                 <- "Argentina"

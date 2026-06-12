@@ -8,7 +8,6 @@
 # directly in 00_prepare_sanitation_training_data.R.
 #
 # Surveys:  Same DHS HR files as used for SMDW other subcomponents.
-# Path:     PATH_TO_SURVEYS_DHS_other
 # Countries: Same sampled_iso2_codes as SMDW
 #
 # Output:
@@ -18,23 +17,17 @@ library(tidyverse)
 library(haven)
 library(here)
 
-source("~/Documents/GitHub/mapping_sanitation_access_LMICs/functions/extract_label_dhs_variables.R")
-source("~/Documents/GitHub/mapping_sanitation_access_LMICs/functions/extract_label_dhs_sanitation_variables.R")
+source(here::here("functions/extract_label_dhs_variables.R"))
+source(here::here("functions/extract_label_dhs_sanitation_variables.R"))
+source(here::here("configuration/paths.R"))
 
-# ============================================================
-# Paths
-# ============================================================
-PATH_TO_SURVEYS_DHS_other <- "~/switchdrive/Eawag/WorldBankProject/HH_surveys/HH_survey_data/HH_DHS_other/"
-PATH_TO_SURVEYS_MIS <- "~/switchdrive/Eawag/WorldBankProject/HH_surveys/HH_survey_data/HH_DHS_MIS/"
 
 country_name_key_WB <- readr::read_csv(
   here::here("data/country_name_key_WB.csv"),
   show_col_types = FALSE
 )
 
-# ============================================================
 # Country lookup — same as SMDW other
-# ============================================================
 sampled_iso2_codes <- c(
   "AF", "AL", "AM", "AO", "BD", "BF", "BJ", "BO", "BU",
   "CD", "CF", "CI", "CM", "CO", "DR", "EG", "ET", "GA",
@@ -269,5 +262,5 @@ if (nrow(all_na_check) > 0) {
 # ============================================================
 readr::write_csv(
   df.DHS.sanitation_Labeled,
-  "~/switchdrive/Eawag/WorldBankProject/HH_surveys/HH_survey_data/df_sanitation_DHS.csv"
+  here::here("outputs/00_raw_household_data/df_sanitation_DHS.csv"
 )
