@@ -109,12 +109,16 @@ config/local_*.yml
 # Project data
 # Raw and processed data stay local
 # =========================
+data/*.csv
 data/DHS_boundaries/*
 data/GADM36_boundaries/*
 data/MICS_boundaries/*
+data/other_boundaries/*
 data/PakistanWFP2024Boundaries_2/*
 data/processed/*
 data/features/*
+data/crosswalk_review/*
+data/training_subcomponents/*
 
 # Keep placeholder files
 !data/processed/.gitkeep
@@ -138,6 +142,9 @@ outputs/02_boundary_files*
 outputs/03_sampled_features*
 !outputs/03_sampled_features.gitkeep
 
+outputs/04_model_performance*
+!outputs/04_sampled_features.gitkeep
+
 # =========================
 # Logs / temporary files
 # =========================
@@ -145,3 +152,7 @@ outputs/03_sampled_features*
 *.tmp
 *.temp
 *~
+.RDataTmp*
+.DS_Store
+**/.DS_Store
+.DS_Store
