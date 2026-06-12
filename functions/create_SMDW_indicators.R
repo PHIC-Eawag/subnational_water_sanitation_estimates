@@ -179,8 +179,33 @@ createIndicatorForRegionalSMDWCoverage <- function(df.MICS_HH_SMDW) {
 
 createDataFrameWithEcoliIndicator <- function(df){
   df <- renameVariables(df)
-  df <- df %>% select("country","HH7_region","HH48","wqsweight","WQ27_sourcewaterBIN") %>% na.omit()
+  df <- df %>% select("country","HH7_region","HH48","wqsweight","WQ27_sourcewaterBIN","HH5Y") %>% na.omit()
   return(df)
+}
+
+createDataFrameWithEcoliIndicator_design <- function(df) {
+  df <- renameVariables(df)
+  
+  df %>%
+    dplyr::select(
+      country,
+      HH7_region,
+      HH48,
+      wqsweight,
+      WQ27_sourcewaterBIN,
+      HH5Y,
+      HH1,     # PSU / cluster
+      HH6      # stratum; remove this line if not available
+    ) %>%
+    tidyr::drop_na(
+      country,
+      HH7_region,
+      HH48,
+      wqsweight,
+      WQ27_sourcewaterBIN,
+      HH5Y,
+      HH1
+    )
 }
 
 createDataFrameWithmainWaterSourceType <- function(df){
@@ -234,10 +259,11 @@ creatingColumnWithWeightedHouseholdMemberUsing_hhweight <- function(df){
   return(df)
 }
 
-createColumnWithNumberOfTotalRegionalHouseholds <-function(df){
-    df <- transform(df, HouseholdsInRegion = table(HH7_region)[HH7_region])
-    df <- df %>% select(-"HouseholdsInRegion.HH7_region")
-    return(df)
+createColumnWithNumberOfTotalRegionalHouseholds <- function(df) {
+  df %>%
+    dplyr::group_by(country, HH7_region) %>%
+    dplyr::mutate(HouseholdsInRegion = dplyr::n()) %>%
+    dplyr::ungroup()
 }
 
 createColumnWithNumberOfTotalCountryHouseholds <-function(df){
@@ -247,12 +273,13 @@ createColumnWithNumberOfTotalCountryHouseholds <-function(df){
 }
 
 
-countWeightedHHMembersByRegion<- function(df){
-  #detach("package:plyr")
-  df <- df %>%
-    dplyr::group_by(HH7_region) %>%
-    mutate(HouseholdMembersInRegion = sum(HH48_wqsweight))
-  return(df)
+countWeightedHHMembersByRegion <- function(df) {
+  df %>%
+    dplyr::group_by(country, HH7_region) %>%
+    dplyr::mutate(
+      HouseholdMembersInRegion = sum(HH48_wqsweight, na.rm = TRUE)
+    ) %>%
+    dplyr::ungroup()
 }
 
 count_wqsWeightedHHMembersByCountry<- function(df){
@@ -286,14 +313,15 @@ count_regionsByCountry<- function(df){
   return(df)
 }
 
-FilterForSMDWandCountWeightedHHMembers <-function(df){
-  df <- df %>%
-    filter(SMDW == "1") %>%
-    dplyr::group_by(HH7_region) %>%
-    mutate(HHmembers_withSMDW = sum(HH48_wqsweight)) %>%
-    distinct(HH7_region, .keep_all = TRUE)
-  
-return(df)
+FilterForSMDWandCountWeightedHHMembers <- function(df) {
+  df %>%
+    dplyr::filter(SMDW == "1") %>%
+    dplyr::group_by(country, HH7_region) %>%
+    dplyr::mutate(
+      HHmembers_withSMDW = sum(HH48_wqsweight, na.rm = TRUE)
+    ) %>%
+    dplyr::ungroup() %>%
+    dplyr::distinct(country, HH7_region, .keep_all = TRUE)
 }
 
 FilterForSMDWandCountWeightedHHMembersInCountry <-function(df){
@@ -306,14 +334,15 @@ FilterForSMDWandCountWeightedHHMembersInCountry <-function(df){
   return(df)
 }
 
-FilterForFreeOfEcoliAndCountWeightedHHMembers <-function(df){
-  df <- df %>%
-    filter(WQ27_sourcewaterBIN == "0") %>%
-    dplyr::group_by(HH7_region) %>%
-    mutate(HHmembers_NoEcoli = sum(HH48_wqsweight)) %>%
-    distinct(HH7_region, .keep_all = TRUE)
-  
-  return(df)
+FilterForFreeOfEcoliAndCountWeightedHHMembers <- function(df) {
+  df %>%
+    dplyr::filter(WQ27_sourcewaterBIN == "0" | WQ27_sourcewaterBIN == 0) %>%
+    dplyr::group_by(country, HH7_region) %>%
+    dplyr::mutate(
+      HHmembers_NoEcoli = sum(HH48_wqsweight, na.rm = TRUE)
+    ) %>%
+    dplyr::ungroup() %>%
+    dplyr::distinct(country, HH7_region, .keep_all = TRUE)
 }
 
 FilterForFreeOfEcoliAndCountWeightedHHMembersInCountry <-function(df){
@@ -443,13 +472,16 @@ creatingCountryProportionOfPopulationWithImprovedSource<- function(df){
 }
 
 
-creatingUnweightedPercentageOfSMDWHousholdCoverage<- function(df){
-  df <-df %>%
-  group_by(HH7_region) %>%
-  mutate(pct.SMDWHH = mean(SMDW == "1")) %>%
-  distinct(HH7_region, .keep_all = TRUE)
-  return(df)
+creatingUnweightedPercentageOfSMDWHousholdCoverage <- function(df) {
+  df %>%
+    dplyr::group_by(country, HH7_region) %>%
+    dplyr::mutate(
+      pct.SMDWHH = mean(SMDW == "1", na.rm = TRUE)
+    ) %>%
+    dplyr::ungroup() %>%
+    dplyr::distinct(country, HH7_region, .keep_all = TRUE)
 }
+
 
 creatingUnweightedCountryPercentageOfSMDW<- function(df){
   df <-df %>%
@@ -459,12 +491,14 @@ creatingUnweightedCountryPercentageOfSMDW<- function(df){
   return(df)
 }
 
-creatingUnweightedPercentageOfEcoliHousholdCoverage<- function(df){
-  df <-df %>%
-    group_by(HH7_region) %>%
-    mutate(pct.No_Ecoli = mean(WQ27_sourcewaterBIN == "0")) %>%
-    distinct(HH7_region, .keep_all = TRUE)
-  return(df)
+creatingUnweightedPercentageOfEcoliHousholdCoverage <- function(df) {
+  df %>%
+    dplyr::group_by(country, HH7_region) %>%
+    dplyr::mutate(
+      pct.No_Ecoli = mean(WQ27_sourcewaterBIN == "0" | WQ27_sourcewaterBIN == 0, na.rm = TRUE)
+    ) %>%
+    dplyr::ungroup() %>%
+    dplyr::distinct(country, HH7_region, .keep_all = TRUE)
 }
 
 creatingUnweightedCountrydPercentageOfEcoliFree<- function(df){
@@ -529,26 +563,63 @@ creatingUnweightedCountryPercentageOfImprovedSource<- function(df){
 
 
 createIndicatorForRegionalSMDWCoverage <- function(df.MICS_HH_SMDW) { 
-  df.MICS_HH_SMDW <- renameDuplicateHH7RegionNamesFromDifferentCountries(df.MICS_HH_SMDW)
   
-  df.MICS_HH_SMDW <-creatingColumnWithWeightedHouseholdMemberUsingSourceWaterSampleWeight(df.MICS_HH_SMDW)
-
-df.MICS_HH_SMDW <-createColumnWithNumberOfTotalRegionalHouseholds(df.MICS_HH_SMDW)
-
-df.MICS_HH_SMDW <-countWeightedHHMembersByRegion(df.MICS_HH_SMDW)
-
-df.MICS_HH_SMDW_FilteredForSMDW <- FilterForSMDWandCountWeightedHHMembers(df.MICS_HH_SMDW)
-
-df.MICS_HH_SMDW_FilteredForSMDW$SMDWcoverageAtRegionalLevel <- creatingRegionalProportionOfPopulationWithSMDWIndicator(df.MICS_HH_SMDW_FilteredForSMDW)
-
-df.MICS_HH_SMDWwithSMDWHouldholdCoverage <-creatingUnweightedPercentageOfSMDWHousholdCoverage(df.MICS_HH_SMDW)
-
-SMDW_RegionalCoverage <- df.MICS_HH_SMDWwithSMDWHouldholdCoverage  %>% 
-  left_join(df.MICS_HH_SMDW_FilteredForSMDW, by = c("HH7_region"="HH7_region")) %>%
-  select(all_of("SMDWcoverageAtRegionalLevel"),all_of("HH7_region"),all_of("country.x"), all_of("HouseholdsInRegion.Freq.x")) 
-
-SMDW_RegionalCoverage$SMDWcoverageAtRegionalLevel[is.na(SMDW_RegionalCoverage$SMDWcoverageAtRegionalLevel)] <- 0
-return(SMDW_RegionalCoverage)
+  df.MICS_HH_SMDW <- renameDuplicateHH7RegionNamesFromDifferentCountries(
+    df.MICS_HH_SMDW
+  )
+  
+  df.MICS_HH_SMDW <- creatingColumnWithWeightedHouseholdMemberUsingSourceWaterSampleWeight(
+    df.MICS_HH_SMDW
+  )
+  
+  df.MICS_HH_SMDW <- createColumnWithNumberOfTotalRegionalHouseholds(
+    df.MICS_HH_SMDW
+  )
+  
+  df.MICS_HH_SMDW <- countWeightedHHMembersByRegion(
+    df.MICS_HH_SMDW
+  )
+  
+  df.MICS_HH_SMDW_FilteredForSMDW <- FilterForSMDWandCountWeightedHHMembers(
+    df.MICS_HH_SMDW
+  )
+  
+  df.MICS_HH_SMDW_FilteredForSMDW$SMDWcoverageAtRegionalLevel <- 
+    creatingRegionalProportionOfPopulationWithSMDWIndicator(
+      df.MICS_HH_SMDW_FilteredForSMDW
+    )
+  
+  df.MICS_SMDW_RegionalProportion <- creatingUnweightedPercentageOfSMDWHousholdCoverage(
+    df.MICS_HH_SMDW
+  )
+  
+  SMDW_RegionalCoverage <- df.MICS_SMDW_RegionalProportion %>%
+    dplyr::left_join(
+      df.MICS_HH_SMDW_FilteredForSMDW %>%
+        dplyr::select(
+          country,
+          HH7_region,
+          SMDWcoverageAtRegionalLevel
+        ),
+      by = c("country", "HH7_region")
+    ) %>%
+    dplyr::select(
+      SMDWcoverageAtRegionalLevel,
+      HH7_region,
+      country,
+      HouseholdsInRegion,
+      pct.SMDWHH
+    ) %>%
+    dplyr::rename(
+      country.x = country,
+      HouseholdsInRegion.Freq.x = HouseholdsInRegion
+    )
+  
+  SMDW_RegionalCoverage$SMDWcoverageAtRegionalLevel[
+    is.na(SMDW_RegionalCoverage$SMDWcoverageAtRegionalLevel)
+  ] <- 0
+  
+  return(SMDW_RegionalCoverage)
 }
 
 createIndicatorForCountrySMDWCoverage <- function(df.MICS_HH_SMDW) { 
@@ -576,23 +647,42 @@ createIndicatorForCountrySMDWCoverage <- function(df.MICS_HH_SMDW) {
 
 
 createIndicatorForRegionalProportionFreeOfEcoli <- function(df.MICS_Ecoli) { 
-  df.MICS_Ecoli <-creatingColumnWithWeightedHouseholdMemberUsingSourceWaterSampleWeight(df.MICS_Ecoli)
   
-  df.MICS_Ecoli  <-createColumnWithNumberOfTotalRegionalHouseholds(df.MICS_Ecoli)
+  df.MICS_Ecoli <- creatingColumnWithWeightedHouseholdMemberUsingSourceWaterSampleWeight(df.MICS_Ecoli)
   
-  df.MICS_Ecoli  <- countWeightedHHMembersByRegion(df.MICS_Ecoli)
+  df.MICS_Ecoli <- createColumnWithNumberOfTotalRegionalHouseholds(df.MICS_Ecoli)
+  
+  df.MICS_Ecoli <- countWeightedHHMembersByRegion(df.MICS_Ecoli)
   
   df.MICS_Ecoli_FilteredForEcoli <- FilterForFreeOfEcoliAndCountWeightedHHMembers(df.MICS_Ecoli)
   
-  df.MICS_Ecoli_FilteredForEcoli$No_EcoliAtRegionalLevel <- creatingRegionalProportionOfPopulationWithNoEcoliInWater(df.MICS_Ecoli_FilteredForEcoli)
+  df.MICS_Ecoli_FilteredForEcoli$No_EcoliAtRegionalLevel <- 
+    creatingRegionalProportionOfPopulationWithNoEcoliInWater(df.MICS_Ecoli_FilteredForEcoli)
   
-  df.MICS_NoEcoli_RegionalProportion <-creatingUnweightedPercentageOfEcoliHousholdCoverage(df.MICS_Ecoli)
+  df.MICS_NoEcoli_RegionalProportion <- creatingUnweightedPercentageOfEcoliHousholdCoverage(df.MICS_Ecoli)
   
-  EcoliFreeRegionalProportion <- df.MICS_NoEcoli_RegionalProportion  %>% 
-    left_join(df.MICS_Ecoli_FilteredForEcoli, by = c("HH7_region"="HH7_region")) %>%
-    select(all_of("No_EcoliAtRegionalLevel"),all_of("HH7_region"),all_of("country.x"), all_of("HouseholdsInRegion.Freq.x")) 
+  EcoliFreeRegionalProportion <- df.MICS_NoEcoli_RegionalProportion %>% 
+    dplyr::left_join(
+      df.MICS_Ecoli_FilteredForEcoli %>%
+        dplyr::select(country, HH7_region, No_EcoliAtRegionalLevel),
+      by = c("country", "HH7_region")
+    ) %>%
+    dplyr::select(
+      No_EcoliAtRegionalLevel,
+      HH7_region,
+      country,
+      HouseholdsInRegion,
+      HH5Y
+    ) %>%
+    dplyr::rename(
+      country.x = country,
+      HouseholdsInRegion.Freq.x = HouseholdsInRegion,
+      HH5Y.x = HH5Y
+    )
   
-  EcoliFreeRegionalProportion$No_EcoliAtRegionalLevel[is.na(EcoliFreeRegionalProportion$No_EcoliAtRegionalLevel)] <- 0
+  EcoliFreeRegionalProportion$No_EcoliAtRegionalLevel[
+    is.na(EcoliFreeRegionalProportion$No_EcoliAtRegionalLevel)
+  ] <- 0
   
   return(EcoliFreeRegionalProportion)
 }
@@ -620,25 +710,47 @@ return(EcoliFreeCountryProportion)
 }
 
 
-createIndicatorForRegionalWaterAccessibility <-function(df.MICS_Accessibility){ 
-df.MICS_Accessibility <-creatingColumnWithWeightedHouseholdMemberUsing_hhweight(df.MICS_Accessibility)
-
-df.MICS_Accessibility  <-createColumnWithNumberOfTotalRegionalHouseholds(df.MICS_Accessibility)
-
-df.MICS_Accessibility  <- count_hhWeighted_HHMembersByRegion(df.MICS_Accessibility)
-
-df.MICS_FilteredForAccessibility <- FilterForAccessAndCountWeightedHHMembers(df.MICS_Accessibility)
-
-df.MICS_FilteredForAccessibility$AccessAtRegionalLevel <- creatingRegionalProportionOfPopulationWithAccess(df.MICS_FilteredForAccessibility)
-
-df.MICS_Access_RegionalProportion <-creatingUnweightedPercentageOfAccess(df.MICS_Accessibility)
-
-RegionalAccess <- df.MICS_Access_RegionalProportion  %>% 
-  left_join(df.MICS_FilteredForAccessibility, by = c("HH7_region"="HH7_region")) %>% select(all_of("AccessAtRegionalLevel"),all_of("HH7_region"),all_of("country.x"), all_of("HouseholdsInRegion.Freq.x")) 
-
-RegionalAccess$AccessAtRegionalLevel[is.na(RegionalAccess$AccessAtRegionalLevel)] <- 0
-return(RegionalAccess)
+createIndicatorForRegionalWaterAccessibility <- function(df.MICS_Accessibility) {
+  
+  RegionalAccess <- df.MICS_Accessibility %>%
+    dplyr::mutate(
+      HH48_hhweight = as.numeric(HH48) * as.numeric(hhweight),
+      accessible_water = dplyr::if_else(
+        as.character(Accessible) == "1",
+        1,
+        0
+      )
+    ) %>%
+    dplyr::group_by(country, HH7_region) %>%
+    dplyr::summarise(
+      HouseholdsInRegion.Freq.x = dplyr::n(),
+      HouseholdMembersInRegion = sum(HH48_hhweight, na.rm = TRUE),
+      HHmembersWithAccess = sum(HH48_hhweight * accessible_water, na.rm = TRUE),
+      AccessAtRegionalLevel = dplyr::if_else(
+        HouseholdMembersInRegion > 0,
+        HHmembersWithAccess / HouseholdMembersInRegion,
+        NA_real_
+      ),
+      pct.Access = mean(accessible_water == 1, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    dplyr::mutate(
+      AccessAtRegionalLevel = dplyr::coalesce(AccessAtRegionalLevel, 0)
+    ) %>%
+    dplyr::rename(
+      country.x = country
+    ) %>%
+    dplyr::select(
+      AccessAtRegionalLevel,
+      HH7_region,
+      country.x,
+      HouseholdsInRegion.Freq.x,
+      pct.Access
+    )
+  
+  return(RegionalAccess)
 }
+
 
 createIndicatorForCountryWaterAccessibility <-function(df.MICS_Accessibility){ 
   df.MICS_Accessibility <-creatingColumnWithWeightedHouseholdMemberUsing_hhweight(df.MICS_Accessibility)
@@ -662,27 +774,47 @@ createIndicatorForCountryWaterAccessibility <-function(df.MICS_Accessibility){
 
 
 
-createIndicatorForRegionalAvailability <- function(df.MICS_Availability) { 
-  df.MICS_Availability <-creatingColumnWithWeightedHouseholdMemberUsing_hhweight(df.MICS_Availability)
-
-  df.MICS_Availability  <-createColumnWithNumberOfTotalRegionalHouseholds(df.MICS_Availability)
+createIndicatorForRegionalAvailability <- function(df.MICS_Availability) {
   
-  df.MICS_Availability  <- count_hhWeighted_HHMembersByRegion(df.MICS_Availability)
-  
-  df.MICS_FilteredForAvailability <- FilterForAvailableAndCountWeightedHHMembers(df.MICS_Availability)
-  
-  df.MICS_FilteredForAvailability$AvailableAtRegionalLevel <- creatingRegionalProportionOfPopulationWithAvailability(df.MICS_FilteredForAvailability)
-  
-  df.MICS_Availability_RegionalProportion <-creatingUnweightedPercentageOfAvailable(df.MICS_Availability)
-  
-  Availability_RegionalProportion <- df.MICS_Availability_RegionalProportion  %>% 
-    left_join(df.MICS_FilteredForAvailability, by = c("HH7_region"="HH7_region")) %>%
-    select(all_of("AvailableAtRegionalLevel"),all_of("HH7_region"),all_of("country.x"), all_of("HouseholdsInRegion.Freq.x")) 
-  
-  Availability_RegionalProportion$AvailableAtRegionalLevel[is.na(Availability_RegionalProportion$AvailableAtRegionalLevel)] <- 0
+  Availability_RegionalProportion <- df.MICS_Availability %>%
+    dplyr::mutate(
+      HH48_hhweight = as.numeric(HH48) * as.numeric(hhweight),
+      water_available = dplyr::if_else(
+        as.character(WS7_sufficiency) == "0",
+        1,
+        0
+      )
+    ) %>%
+    dplyr::group_by(country, HH7_region) %>%
+    dplyr::summarise(
+      HouseholdsInRegion.Freq.x = dplyr::n(),
+      HouseholdMembersInRegion = sum(HH48_hhweight, na.rm = TRUE),
+      HHmembersWaterAvailable = sum(HH48_hhweight * water_available, na.rm = TRUE),
+      AvailableAtRegionalLevel = dplyr::if_else(
+        HouseholdMembersInRegion > 0,
+        HHmembersWaterAvailable / HouseholdMembersInRegion,
+        NA_real_
+      ),
+      pct.Available = mean(water_available == 1, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    dplyr::mutate(
+      AvailableAtRegionalLevel = dplyr::coalesce(AvailableAtRegionalLevel, 0)
+    ) %>%
+    dplyr::rename(
+      country.x = country
+    ) %>%
+    dplyr::select(
+      AvailableAtRegionalLevel,
+      HH7_region,
+      country.x,
+      HouseholdsInRegion.Freq.x,
+      pct.Available
+    )
   
   return(Availability_RegionalProportion)
 }
+
 
 createIndicatorForCountryAvailability <- function(df.MICS_Availability) { 
   df.MICS_Availability <-creatingColumnWithWeightedHouseholdMemberUsing_hhweight(df.MICS_Availability)
@@ -708,24 +840,43 @@ createIndicatorForCountryAvailability <- function(df.MICS_Availability) {
 
 
 
-createIndicatorForRegionalWaterSourceType <- function(df.MICS_WaterSource) { 
-  df.MICS_WaterSource <-creatingColumnWithWeightedHouseholdMemberUsing_hhweight(df.MICS_WaterSource)
+createIndicatorForRegionalWaterSourceType <- function(df.MICS_WaterSource) {
   
-  df.MICS_WaterSource  <-createColumnWithNumberOfTotalRegionalHouseholds(df.MICS_WaterSource)
-  
-  df.MICS_WaterSource  <- count_hhWeighted_HHMembersByRegion(df.MICS_WaterSource)
-  
-  df.MICS_FilteredForImprovedSource <- FilterForImprovedSourceAndCountWeightedHHMembers(df.MICS_WaterSource)
-  
-  df.MICS_FilteredForImprovedSource$ImprovedAtRegionalLevel <- creatingRegionalProportionOfPopulationWithImprovedSource(df.MICS_FilteredForImprovedSource)
-  
-  df.MICS_WaterSource_RegionalProportion <-creatingUnweightedPercentageOfImprovedSource(df.MICS_WaterSource)
-  
-  Improved_RegionalProportion <- df.MICS_WaterSource_RegionalProportion  %>% 
-    left_join(df.MICS_FilteredForImprovedSource, by = c("HH7_region"="HH7_region")) %>%
-    select(all_of("ImprovedAtRegionalLevel"),all_of("HH7_region"),all_of("country.x"), all_of("HouseholdsInRegion.Freq.x")) 
-  
-  Improved_RegionalProportion$ImprovedAtRegionalLevel[is.na(Improved_RegionalProportion$ImprovedAtRegionalLevel)] <- 0
+  Improved_RegionalProportion <- df.MICS_WaterSource %>%
+    dplyr::mutate(
+      HH48_hhweight = as.numeric(HH48) * as.numeric(hhweight),
+      improved_source = dplyr::if_else(
+        as.character(WS1_mainWaterSourceDrink) %in% c("1", "2", "3"),
+        1,
+        0
+      )
+    ) %>%
+    dplyr::group_by(country, HH7_region) %>%
+    dplyr::summarise(
+      HouseholdsInRegion.Freq.x = dplyr::n(),
+      HouseholdMembersInRegion = sum(HH48_hhweight, na.rm = TRUE),
+      HHmembersImproved = sum(HH48_hhweight * improved_source, na.rm = TRUE),
+      ImprovedAtRegionalLevel = dplyr::if_else(
+        HouseholdMembersInRegion > 0,
+        HHmembersImproved / HouseholdMembersInRegion,
+        NA_real_
+      ),
+      pct.Improved = mean(improved_source == 1, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    dplyr::mutate(
+      ImprovedAtRegionalLevel = dplyr::coalesce(ImprovedAtRegionalLevel, 0)
+    ) %>%
+    dplyr::rename(
+      country.x = country
+    ) %>%
+    dplyr::select(
+      ImprovedAtRegionalLevel,
+      HH7_region,
+      country.x,
+      HouseholdsInRegion.Freq.x,
+      pct.Improved
+    )
   
   return(Improved_RegionalProportion)
 }
@@ -753,17 +904,31 @@ createIndicatorForCountryWaterSourceType <- function(df.MICS_WaterSource) {
 }
 
 
-createColumnForCVfoldBasedOnCountries <- function(df){
-  library(plyr)
-  df$country_fold <- revalue(df$NAME_0,
-c("Bangladesh"="1", "Gambia"="2", "Georgia"="3", "Ghana"="4", "Guinea-Bissau"="5","Iraq"="6", "Kosovo (under UNSC res. 1244)"="7", "Lao People's Democratic Republic"="8", "Lesotho"="9", 
-  "Madagascar"="10","Mongolia"="11", "Nigeria"="12", "Pakistan"="13", "Suriname"="14", 
-  "Togo"="15",  "Tunisia"="16","Zimbabwe"="17","Chad"="18", "Guyana"="19", 
-  "State of Palestine"="20", "Paraguay"="21", "Sierra Leone"="22", "Tonga"= "23", 
-  "Sao Tome and Principe"="24","Algeria"="25","Central African Republic"="26",
-  "Kiribati"="27" ))
-  df$country_fold <- as.factor(df$country_fold)
-  detach("package:plyr", unload = TRUE)
+createColumnForCVfoldBasedOnCountries <- function(df, country_var = "country.x", countries_per_fold = 3, seed = 123) {
+  
+  if (!country_var %in% names(df)) {
+    stop(paste("Column not found:", country_var))
+  }
+  
+  if (!is.null(seed)) set.seed(seed)
+  
+  countries <- data.frame(
+    country = unique(as.character(df[[country_var]])),
+    stringsAsFactors = FALSE
+  ) %>%
+    filter(!is.na(country))
+  
+  countries <- countries[order(countries$country), , drop = FALSE]
+  countries <- countries[sample(nrow(countries)), , drop = FALSE]
+  
+  countries$country_fold <- factor(
+    ceiling(seq_len(nrow(countries)) / countries_per_fold)
+  )
+  
+  names(countries)[1] <- country_var
+  
+  df <- dplyr::left_join(df, countries, by = country_var)
+  
   return(df)
 }
 
@@ -787,4 +952,350 @@ c("Bangladesh"="3", "Gambia"="4", "Georgia"="2", "Ghana"="3", "Guinea-Bissau"="4
   "Algeria"="3","Central African Republic"="4","Kiribati"="3" ))
 detach("package:plyr", unload = TRUE)
 return(df)
+}
+
+extract_model_metrics <- function(model, test_h2o, model_name) {
+  
+  test_perf <- h2o::h2o.performance(model, newdata = test_h2o)
+  
+  tibble::tibble(
+    model = model_name,
+    xval_r2 = as.numeric(h2o::h2o.r2(model, xval = TRUE)),
+    xval_mae = as.numeric(h2o::h2o.mae(model, xval = TRUE)),
+    xval_rmse = as.numeric(h2o::h2o.rmse(model, xval = TRUE)),
+    test_r2 = as.numeric(h2o::h2o.r2(test_perf)),
+    test_mae = as.numeric(h2o::h2o.mae(test_perf)),
+    test_rmse = as.numeric(h2o::h2o.rmse(test_perf))
+  )
+}
+
+# ============================================================
+# Workflow wrappers for safe drinking water subcomponents
+# ============================================================
+#
+# These wrapper functions keep the original indicator calculations,
+# but standardise the outputs so that E. coli, improved source,
+# availability, and accessibility can all use the same covariate
+# joining workflow.
+#
+# Outcome data sources:
+#   - E. coli absence: water-quality surveys only
+#   - Improved source: water-quality + other household surveys
+#   - Availability: water-quality + other household surveys
+#   - Accessibility: water-quality + other household surveys
+#
+#   The following functions call the original functions:
+#     createDataFrameWithEcoliIndicator()
+#     createIndicatorForRegionalProportionFreeOfEcoli()
+#     createDataFrameWithmainWaterSourceType()
+#     createIndicatorForRegionalWaterSourceType()
+#     createDataFrameWithAvailabilty()
+#     createIndicatorForRegionalAvailability()
+#     createDataFrameWithAccessibilityIndicator()
+#     createIndicatorForRegionalWaterAccessibility()
+#
+
+
+add_missing_columns_for_outcomes <- function(df, cols) {
+  missing_cols <- setdiff(cols, names(df))
+  
+  for (col in missing_cols) {
+    df[[col]] <- NA
+  }
+  
+  df
+}
+
+
+# ============================================================
+# Harmonise household country/region names for modelling
+# ============================================================
+
+harmonise_household_country_names_for_modelling <- function(df) {
+  df %>%
+    dplyr::mutate(
+      country = dplyr::case_when(
+        country == "Sao Tome and Principe" ~ "São Tomé and Príncipe",
+        country == "Lao PDR" ~ "Lao People's Democratic Republic",
+        country == "West Bank and Gaza" ~ "Palestina",
+        TRUE ~ country
+      )
+    )
+}
+
+harmonise_household_country_region_names_for_modelling <- function(df) {
+  df %>%
+    harmonise_household_country_names_for_modelling() %>%
+    dplyr::mutate(
+      HH7_region = stringr::str_squish(as.character(HH7_region))
+    )
+}
+
+harmonise_household_regions_for_modelling <- 
+  harmonise_household_country_region_names_for_modelling
+
+
+
+
+prepare_household_data_for_subcomponents <- function(df) {
+  # Standardises variable names and region names.
+  # The original outcome functions are still used later.
+  
+  df %>%
+    replaceMinus99WithNa() %>%
+    renameVariables() %>%
+    harmonise_household_regions_for_modelling() %>%
+    renameDuplicateHH7RegionNamesFromDifferentCountries()
+}
+
+make_year_lookup_from_prepared_household_data <- function(df) {
+  # Creates one analysis year per country.
+  # This follows your previous E. coli workflow, where analysis_year
+  # was assigned as the minimum cleaned survey year within each country.
+  
+  df %>%
+    dplyr::mutate(
+      HH5Y_clean = standardise_survey_year(country, HH5Y)
+    ) %>%
+    dplyr::group_by(country) %>%
+    dplyr::summarise(
+      analysis_year = min(HH5Y_clean, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    dplyr::mutate(
+      analysis_year = dplyr::if_else(
+        is.infinite(analysis_year),
+        NA_integer_,
+        as.integer(analysis_year)
+      )
+    )
+}
+
+make_country_year_lookup <- function(df) {
+  # The original E. coli code assigns one analysis year per country.
+  # This preserves that structure for all subcomponents.
+  
+  df %>%
+    dplyr::mutate(
+      HH5Y_clean = standardise_survey_year(country, HH5Y)
+    ) %>%
+    dplyr::group_by(country) %>%
+    dplyr::summarise(
+      analysis_year = min(HH5Y_clean, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    dplyr::mutate(
+      analysis_year = dplyr::if_else(
+        is.infinite(analysis_year),
+        NA_integer_,
+        as.integer(analysis_year)
+      )
+    )
+}
+
+
+
+make_ecoli_regional_outcome <- function(df_hh_water_quality) {
+  # E. coli outcome.
+  # Data source: water-quality surveys only.
+  # Original calculation and weighting are kept unchanged.
+  
+  year_lookup <- make_year_lookup_from_raw_household_data(
+    df = df_hh_water_quality,
+    manual_analysis_year_fixes = manual_analysis_year_fixes_ecoli
+  )
+  
+  ecoli_original <- df_hh_water_quality %>%
+    createDataFrameWithEcoliIndicator() %>%
+    harmonise_household_country_region_names_for_modelling() %>%
+    renameDuplicateHH7RegionNamesFromDifferentCountries() %>%
+    createIndicatorForRegionalProportionFreeOfEcoli()
+  
+  standardise_regional_outcome_table(
+    outcome_df = ecoli_original,
+    outcome_type = "ecoli_free",
+    outcome_value_col = "No_EcoliAtRegionalLevel",
+    year_lookup = year_lookup
+  )
+}
+
+
+make_improved_source_regional_outcome <- function(df_hh_full) {
+  # Improved drinking water source.
+  # Data source: water-quality surveys + other household surveys.
+  # Original calculation and weighting are kept unchanged.
+  
+  year_lookup <- make_year_lookup_from_raw_household_data(
+    df_hh_full
+  )
+  
+  improved_original <- df_hh_full %>%
+    createDataFrameWithmainWaterSourceType() %>%
+    harmonise_household_country_region_names_for_modelling() %>%
+    renameDuplicateHH7RegionNamesFromDifferentCountries() %>%
+    createIndicatorForRegionalWaterSourceType()
+  
+  standardise_regional_outcome_table(
+    outcome_df = improved_original,
+    outcome_type = "improved_source",
+    outcome_value_col = "ImprovedAtRegionalLevel",
+    year_lookup = year_lookup
+  )
+}
+
+
+make_availability_regional_outcome <- function(df_hh_full) {
+  # Drinking water availability.
+  # Data source: water-quality surveys + other household surveys.
+  # Original calculation and weighting are kept unchanged.
+  
+  year_lookup <- make_year_lookup_from_raw_household_data(
+    df_hh_full
+  )
+  
+  availability_original <- df_hh_full %>%
+    createDataFrameWithAvailabilty() %>%
+    harmonise_household_country_region_names_for_modelling() %>%
+    renameDuplicateHH7RegionNamesFromDifferentCountries() %>%
+    createIndicatorForRegionalAvailability()
+  
+  standardise_regional_outcome_table(
+    outcome_df = availability_original,
+    outcome_type = "availability",
+    outcome_value_col = "AvailableAtRegionalLevel",
+    year_lookup = year_lookup
+  )
+}
+
+
+make_accessibility_regional_outcome <- function(df_hh_full) {
+  # Drinking water accessibility.
+  # Data source: water-quality surveys + other household surveys.
+  # Original calculation and weighting are kept unchanged.
+  
+  year_lookup <- make_year_lookup_from_raw_household_data(
+    df_hh_full
+  )
+  
+  accessibility_original <- df_hh_full %>%
+    createDataFrameWithAccessibilityIndicator() %>%
+    harmonise_household_country_region_names_for_modelling() %>%
+    renameDuplicateHH7RegionNamesFromDifferentCountries() %>%
+    createIndicatorForRegionalWaterAccessibility()
+  
+  standardise_regional_outcome_table(
+    outcome_df = accessibility_original,
+    outcome_type = "accessibility",
+    outcome_value_col = "AccessAtRegionalLevel",
+    year_lookup = year_lookup
+  )
+}
+
+# ============================================================
+# SMDW regional outcome wrapper
+# ============================================================
+
+make_smdw_regional_outcome <- function(df_hh_water_quality) {
+  # SMDW outcome.
+  # Data source: water-quality surveys only, because WQ27 is needed.
+  # Uses the existing SMDW helper functions and standardises the output
+  # to the same structure as the other model outcomes.
+  
+  year_lookup <- make_year_lookup_from_raw_household_data(
+    df = df_hh_water_quality,
+    manual_analysis_year_fixes = manual_analysis_year_fixes_ecoli
+  )
+  
+  smdw_original <- df_hh_water_quality %>%
+    creatingSMDWIndicators() %>%
+    harmonise_household_country_region_names_for_modelling() %>%
+    renameDuplicateHH7RegionNamesFromDifferentCountries() %>%
+    createIndicatorForRegionalSMDWCoverage()
+  
+  standardise_regional_outcome_table(
+    outcome_df = smdw_original,
+    outcome_type = "smdw",
+    outcome_value_col = "SMDWcoverageAtRegionalLevel",
+    year_lookup = year_lookup
+  )
+}
+
+# ============================================================
+# Add number of PSUs as simple reliability weight
+# ============================================================
+
+# ------------------------------------------------------------
+# Helper: count PSUs by country-region-year and join to outcome
+# ------------------------------------------------------------
+
+add_n_psu_weight <- function(hh_df, outcome_df, year_lookup) {
+  
+  psu_table <- hh_df %>%
+    dplyr::select(
+      dplyr::any_of(c(
+        "country",
+        "HH7",
+        "HH7_region",
+        "HH1",
+        "HH6",
+        "PSU",
+        "stratum"
+      ))
+    ) %>%
+    add_missing_columns(c("country", "HH7", "HH7_region", "HH1", "PSU")) %>%
+    dplyr::mutate(
+      HH7_region = dplyr::coalesce(
+        as.character(HH7_region),
+        as.character(HH7)
+      )
+    ) %>%
+    harmonise_household_country_region_names_for_modelling() %>%
+    renameDuplicateHH7RegionNamesFromDifferentCountries() %>%
+    dplyr::left_join(
+      year_lookup,
+      by = "country"
+    ) %>%
+    dplyr::mutate(
+      psu_id = dplyr::coalesce(
+        as.character(PSU),
+        as.character(HH1)
+      )
+    ) %>%
+    dplyr::filter(
+      !is.na(country),
+      !is.na(HH7_region),
+      !is.na(analysis_year),
+      !is.na(psu_id)
+    ) %>%
+    dplyr::group_by(country, HH7_region, analysis_year) %>%
+    dplyr::summarise(
+      n_psu = dplyr::n_distinct(psu_id),
+      .groups = "drop"
+    ) %>%
+    dplyr::mutate(
+      n_psu_weight_raw = as.numeric(n_psu),
+      n_psu_weight_scaled = n_psu_weight_raw /
+        mean(n_psu_weight_raw, na.rm = TRUE)
+    ) %>%
+    dplyr::rename(
+      country_outcome = country,
+      HH7_region_outcome = HH7_region
+    )
+  
+  outcome_df %>%
+    dplyr::select(
+      -dplyr::any_of(c(
+        "n_psu",
+        "n_psu_weight_raw",
+        "n_psu_weight_scaled"
+      ))
+    ) %>%
+    dplyr::left_join(
+      psu_table,
+      by = c(
+        "country_outcome",
+        "HH7_region_outcome",
+        "analysis_year"
+      )
+    )
 }
