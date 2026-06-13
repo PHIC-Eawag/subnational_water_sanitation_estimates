@@ -19,7 +19,7 @@ editor:
     wrap: 72
 ---
 
-# Setup
+# 1. Setup
 
 ## Libraries and sourced functions
 
@@ -30,7 +30,7 @@ library(fuzzyjoin)
 library(stringdist)
 library(stringi)
 
-source(here::here("functions/create_indicators.R"))
+source(here::here("functions/create_SMDW_indicators.R"))
 source(here::here("functions/create_sanitation_indicators.R"))
 source(here::here("functions/join_and_structure_dataframes.R"))
 source(here::here("functions/diagnostics.R"))           # generalised diagnostic helpers
@@ -62,7 +62,7 @@ CROSSWALK_REVIEW_DIR   <- here::here("data/crosswalk_review")
 
 ------------------------------------------------------------------------
 
-# Input data
+# 2. Input data
 
 ## Household survey data
 
@@ -93,11 +93,23 @@ df_hh_sanitation <- df_hh_sanitation %>%
 ```{r}
 df_wgi_lmics        <- readWGI_lmics()
 country_name_key_WB <- readr::read_csv(PATH_COUNTRY_KEY, show_col_types = FALSE)
+
+oghist_raw <- readxl::read_excel(
+  "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/OGHIST_2026_03_10.xlsx",
+  sheet     = "Country Analytical History",
+  col_names = FALSE
+)
+
+jmp_raw <- suppressMessages(readxl::read_excel(
+  "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/JMP_2025_WLD.xlsx",
+  sheet     = "Sanitation",
+  col_names = FALSE
+))
 ```
 
 ------------------------------------------------------------------------
 
-# Survey selection
+# 3. Survey selection
 
 ## Filter to study period (2015–2024)
 
@@ -196,13 +208,13 @@ df_hh_sanitation <- df_hh_sanitation %>%
 
 ------------------------------------------------------------------------
 
-# Geospatial covariates
+# 4. Geospatial covariates
 
 ## Build covariate table
 
-Population-weighted and non-population covariates are merged into a
-single region-level covariate table. The `covariate_cols` vector is
-defined in `config/covariate_cols.R`.
+Population sums and non-population covariates are merged into a single
+region-level covariate table. The `covariate_cols` vector is defined in
+`config/covariate_cols.R`.
 
 ```{r}
 pop_files_other <- list.files(
@@ -305,7 +317,7 @@ dplyr::bind_rows(
 
 ------------------------------------------------------------------------
 
-# Covariate–outcome matching
+# 5. Covariate–outcome matching
 
 ## Filter covariates to outcome country–years
 
@@ -424,12 +436,13 @@ open_defecation_training_output$missing_covariates
 
 ------------------------------------------------------------------------
 
-# Country-level covariates
+# 6. Country-level covariates
 
 ## GDP per capita and secondary education
 
 Country-year level economic and education indicators from the World Bank
-are joined by standardised country name.
+are joined by standardised country name. (Downloaded on 27 May 2026 from
+<https://databank.worldbank.org/source/world-development-indicators/Type/TABLE/preview/on>)
 
 ```{r}
 gdp_clean <- readr::read_csv(PATH_GDP, show_col_types = FALSE) %>%
@@ -490,7 +503,9 @@ check_missing_covariates(open_defecation_training, "open_defecation",
 ## Wastewater treatment
 
 Country-level wastewater collection, treatment, and reuse percentages.
-These are static (no year dimension) and joined by country name only.
+These are static (no year dimension) and joined by country name only
+(Downloaded on 21 May 2026 from
+<https://doi.pangaea.de/10.1594/PANGAEA.918731>)
 
 ```{r}
 ww_country_clean <- readr::read_tsv(PATH_WASTEWATER, show_col_types = FALSE) %>%
@@ -552,6 +567,8 @@ check_missing_covariates(open_defecation_training, "open_defecation",
 ## WGI governance indicators
 
 Six World Governance Indicators are joined by country and year.
+(Downloaded on 27 May 2026 from
+<https://databank.worldbank.org/source/worldwide-governance-indicators/Type/TABLE/preview/on>)
 
 ```{r}
 indicator_map <- c(
@@ -602,7 +619,211 @@ check_missing_covariates(open_defecation_training,  "open_defecation",  unname(i
 
 ------------------------------------------------------------------------
 
-# Output
+## World Bank Income Groups
+
+Here we use the file OGHIST_2026_03_10.xlsx which was downloaded from
+the World Bank website on 13 June 2026
+(<https://datahelpdesk.worldbank.org/knowledgebase/articles/906519-world-bank-country-and-lending-groups>)
+
+```{r}
+# ============================================================
+# World Bank income group classification (OGHIST)
+# ============================================================
+
+# Assign column names: cols 1-2 get fixed names, cols 3-40 get the calendar
+# years from row 6 (coerced via numeric to handle Excel's numeric cell format).
+col_names_vec <- c(
+  "country_code", "country_name",
+  as.character(suppressWarnings(as.integer(as.numeric(unlist(oghist_raw[6, 3:40])))))
+)
+
+# Country data starts at row 12; rows above are header / threshold definitions.
+oghist_countries <- oghist_raw[12:nrow(oghist_raw), 1:40]
+names(oghist_countries) <- col_names_vec
+
+target_years <- as.character(2015:2024)
+
+income_group_clean <- oghist_countries %>%
+  dplyr::select(country_code, country_name, dplyr::all_of(target_years)) %>%
+  dplyr::filter(!is.na(country_code), !is.na(country_name)) %>%
+  tidyr::pivot_longer(
+    cols      = dplyr::all_of(target_years),
+    names_to  = "analysis_year",
+    values_to = "wb_income_group"
+  ) %>%
+  dplyr::mutate(
+    analysis_year   = as.integer(analysis_year),
+    wb_income_group = dplyr::if_else(wb_income_group == "..", NA_character_, wb_income_group)
+  )
+
+# Join income group into training datasets via country_join key.
+# wb_income_group values: "L", "LM", "UM", "H"
+add_income_group_covariates <- function(training_df) {
+  training_df %>%
+    dplyr::select(-dplyr::any_of(c("country_join", "wb_income_group"))) %>%
+    dplyr::mutate(analysis_year = as.integer(analysis_year)) %>%
+    add_country_join_key_extended(
+      country_col         = country_outcome,
+      country_name_key_WB = country_name_key_WB
+    ) %>%
+    dplyr::left_join(
+      income_group_clean %>%
+        add_country_join_key_extended(
+          country_col         = country_name,
+          country_name_key_WB = country_name_key_WB
+        ) %>%
+        dplyr::select(country_join, analysis_year, wb_income_group),
+      by = c("country_join", "analysis_year")
+    ) %>%
+    dplyr::select(-country_join)
+}
+
+basic_sanitation_training <- add_income_group_covariates(basic_sanitation_training)
+open_defecation_training  <- add_income_group_covariates(open_defecation_training)
+
+# Diagnostics: rows missing income group
+check_missing_income_group <- function(training_df, outcome_name) {
+  training_df %>%
+    dplyr::filter(is.na(wb_income_group)) %>%
+    dplyr::distinct(country_outcome, analysis_year) %>%
+    dplyr::mutate(outcome_type = outcome_name) %>%
+    dplyr::arrange(country_outcome, analysis_year)
+}
+
+missing_income_group <- dplyr::bind_rows(
+  check_missing_income_group(basic_sanitation_training, "basic_sanitation"),
+  check_missing_income_group(open_defecation_training,  "open_defecation")
+)
+print(missing_income_group)
+```
+
+## JMP Sanitation Indicators
+
+Extracts country-level sanitation estimates (at least basic, open
+defecation), regional classifications (ISO3, SDG region, fragile
+context) from the JMP 2025 global dataset (downloaded on 13 June 2026
+from <https://washdata.org/data/downloads>) and joins them to the
+training data by country and year. Time-invariant fields (ISO3, SDG
+region) are carried forward from any available survey year to fill gaps
+where a specific year is missing.
+
+```{r}
+# ============================================================
+# JMP sanitation indicators
+# ============================================================
+
+jmp_cols <- c(
+  country_name     = 1,
+  analysis_year    = 2,
+  sanitation_basic = 17,   # "At least basic" (TOTAL)
+  open_defecation  = 20,   # "Open defecation" (TOTAL)
+  iso3             = 52,   # ISO3
+  sdg_region       = 53,   # SDG Region
+  fragile_context  = 59    # Fragile contexts
+)
+
+jmp_clean <- jmp_raw[4:nrow(jmp_raw), unname(jmp_cols)] %>%
+  purrr::set_names(names(jmp_cols)) %>%
+  dplyr::filter(!is.na(country_name), !is.na(analysis_year)) %>%
+  dplyr::mutate(
+    analysis_year = as.integer(analysis_year),
+    dplyr::across(
+      c(sanitation_basic, open_defecation),
+      ~ dplyr::case_when(
+          stringr::str_starts(.x, "<") ~ 0,
+          stringr::str_starts(.x, ">") ~ 100,
+          TRUE                         ~ suppressWarnings(as.numeric(.x))
+        )
+    )
+  )
+
+# Country-level lookup for time-invariant fields: take the first non-NA value
+# across all survey years so missing-year joins still get iso3/sdg_region/fragile_context
+jmp_country_meta <- jmp_clean %>%
+  dplyr::group_by(country_name) %>%
+  dplyr::summarise(
+    iso3            = dplyr::first(iso3[!is.na(iso3)]),
+    sdg_region      = dplyr::first(sdg_region[!is.na(sdg_region)]),
+    fragile_context = dplyr::first(fragile_context[!is.na(fragile_context)]),
+    .groups = "drop"
+  ) %>%
+  add_country_join_key_extended(
+    country_col         = country_name,
+    country_name_key_WB = country_name_key_WB
+  ) %>%
+  dplyr::select(country_join, iso3, sdg_region, fragile_context)
+
+# Year-varying estimates only
+jmp_estimates <- jmp_clean %>%
+  dplyr::select(country_name, analysis_year, sanitation_basic, open_defecation) %>%
+  add_country_join_key_extended(
+    country_col         = country_name,
+    country_name_key_WB = country_name_key_WB
+  ) %>%
+  dplyr::select(country_join, analysis_year, sanitation_basic, open_defecation)
+
+# Join JMP covariates into training datasets
+add_jmp_covariates <- function(training_df) {
+  training_df %>%
+    dplyr::select(-dplyr::any_of(c(
+      "country_join", "sanitation_basic", "open_defecation",
+      "iso3", "sdg_region", "fragile_context"
+    ))) %>%
+    dplyr::mutate(analysis_year = as.integer(analysis_year)) %>%
+    add_country_join_key_extended(
+      country_col         = country_outcome,
+      country_name_key_WB = country_name_key_WB
+    ) %>%
+    dplyr::left_join(jmp_estimates, by = c("country_join", "analysis_year")) %>%
+    dplyr::left_join(jmp_country_meta, by = "country_join") %>%
+    dplyr::select(-country_join)
+}
+
+basic_sanitation_training <- add_jmp_covariates(basic_sanitation_training)
+open_defecation_training  <- add_jmp_covariates(open_defecation_training)
+
+# Manual patch for countries whose names don't match JMP — applied directly
+# on country_outcome to bypass country_join key mismatches
+patch_jmp_meta <- function(training_df) {
+  training_df %>%
+    dplyr::mutate(
+      iso3 = dplyr::case_when(
+        country_outcome == "Kosovo"    & is.na(iso3) ~ "XKX",
+        country_outcome == "Palestina" & is.na(iso3) ~ "PSE",
+        country_outcome == "Tanzania"  & is.na(iso3) ~ "TZA",
+        TRUE                                         ~ iso3
+      ),
+      sdg_region = dplyr::case_when(
+        country_outcome == "Kosovo"    & is.na(sdg_region) ~ "Europe and Northern America",
+        country_outcome == "Palestina" & is.na(sdg_region) ~ "Northern Africa and Western Asia",
+        country_outcome == "Tanzania"  & is.na(sdg_region) ~ "Sub-Saharan Africa",
+        TRUE                                               ~ sdg_region
+      )
+    )
+}
+
+basic_sanitation_training <- patch_jmp_meta(basic_sanitation_training)
+open_defecation_training  <- patch_jmp_meta(open_defecation_training)
+
+# Diagnostics: rows still missing JMP covariates after meta fallback and patch
+jmp_vars <- c("sanitation_basic", "open_defecation", "iso3", "sdg_region")
+
+check_missing_jmp <- function(training_df, outcome_name) {
+  training_df %>%
+    dplyr::filter(dplyr::if_any(dplyr::all_of(jmp_vars), is.na)) %>%
+    dplyr::distinct(country_outcome, analysis_year,
+                    dplyr::across(dplyr::all_of(jmp_vars))) %>%
+    dplyr::mutate(outcome_type = outcome_name) %>%
+    dplyr::arrange(country_outcome, analysis_year)
+}
+
+missing_jmp <- dplyr::bind_rows(
+  check_missing_jmp(basic_sanitation_training, "basic_sanitation")
+)
+print(missing_jmp)
+```
+
+# 7. Output
 
 ## Write training CSVs
 
