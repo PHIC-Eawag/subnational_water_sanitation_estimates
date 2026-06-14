@@ -881,7 +881,7 @@ build_crosswalk_for_one_outcome <- function(
     outcome_df,
     df_training_covariates,
     country_name_key_WB,
-    output_dir = here::here("./data/crosswalk_review")
+    output_dir = here::here("./outputs/01_matching_regions/crosswalk_review")
 ) {
   # Builds and exports an initial crosswalk and a review file for one outcome.
   # Manual corrections are added later.
