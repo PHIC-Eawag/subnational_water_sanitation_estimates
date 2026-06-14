@@ -152,7 +152,9 @@ COUNTRY_LEVEL_FEATURES = [
     "political_stability",
     "regulatory_quality",
     "rule_of_law",
-    "voice_and_accountability"
+    "voice_and_accountability",
+    "sanitation_basic",
+    "open_defecation"
 ]
 
 ALL_FEATURES = ALL_EO_FEATURES + COUNTRY_LEVEL_FEATURES
@@ -412,15 +414,15 @@ for outcome_name, cfg in TASKS.items():
 
     prefix = cfg["output_prefix"]
     fold_df.to_csv(
-        os.path.join(OUTPUT_DIR, f"{prefix}_tabpfn_loco_cv_by_country_v3.csv"),
+        os.path.join(OUTPUT_DIR, f"{prefix}_tabpfn_loco_cv_by_country_v4.csv"),
         index=False,
     )
     overall_df.to_csv(
-        os.path.join(OUTPUT_DIR, f"{prefix}_tabpfn_loco_cv_overall_v3.csv"),
+        os.path.join(OUTPUT_DIR, f"{prefix}_tabpfn_loco_cv_overall_v4.csv"),
         index=False,
     )
     oof_df.to_csv(
-        os.path.join(OUTPUT_DIR, f"{prefix}_tabpfn_loco_cv_oof_predictions_v3.csv"),
+        os.path.join(OUTPUT_DIR, f"{prefix}_tabpfn_loco_cv_oof_predictions_v4.csv"),
         index=False,
     )
 
@@ -433,7 +435,7 @@ for outcome_name, cfg in TASKS.items():
 # -------------------------------------------------------
 
 summary_df = pd.concat(all_overall, ignore_index=True)
-summary_path = os.path.join(OUTPUT_DIR, "sanitation_tabpfn_loco_cv_summary_v3.csv")
+summary_path = os.path.join(OUTPUT_DIR, "sanitation_tabpfn_loco_cv_summary_v4.csv")
 summary_df.to_csv(summary_path, index=False)
 
 print(f"\n{'='*60}")
@@ -590,14 +592,14 @@ for outcome_name, cfg in TASKS.items():
             model_df, feature_cols, outcome_name
         )
         q_oof_df.to_csv(
-            os.path.join(OUTPUT_DIR, f"{prefix}_tabpfn_quantile_oof_v3.csv"),
+            os.path.join(OUTPUT_DIR, f"{prefix}_tabpfn_quantile_oof_v4.csv"),
             index=False,
         )
         q_cov_df.to_csv(
-            os.path.join(OUTPUT_DIR, f"{prefix}_tabpfn_quantile_coverage_by_country_v3.csv"),
+            os.path.join(OUTPUT_DIR, f"{prefix}_tabpfn_quantile_coverage_by_country_v4.csv"),
             index=False,
         )
-        print(f"  Saved TabPFN quantile OOF to {OUTPUT_DIR}/{prefix}_tabpfn_quantile_v3*.csv")
+        print(f"  Saved TabPFN quantile OOF to {OUTPUT_DIR}/{prefix}_tabpfn_quantile_v4*.csv")
 
         # Quick coverage summary
         if not q_cov_df.empty:
@@ -653,7 +655,7 @@ TARGET_COL  = "outcome_value"
 
 
 def load_quantile_oof(prefix, output_dir):
-    path = os.path.join(output_dir, f"{prefix}_tabpfn_quantile_oof_v3.csv")
+    path = os.path.join(output_dir, f"{prefix}_tabpfn_quantile_oof_v4.csv")
     if not os.path.exists(path):
         raise FileNotFoundError(f"Quantile OOF file not found: {path}")
     df = pd.read_csv(path)
@@ -747,7 +749,7 @@ fig.suptitle(
     fontsize=13, y=1.02,
 )
 plt.tight_layout()
-out_a = os.path.join(PLOT_DIR, "tabpfn_quantile_width_vs_error_v3.png")
+out_a = os.path.join(PLOT_DIR, "tabpfn_quantile_width_vs_error_v4.png")
 plt.savefig(out_a, dpi=300, bbox_inches="tight")
 plt.close()
 print(f"Saved: {out_a}")
@@ -807,27 +809,6 @@ for ax, (name, df) in zip(axes, dfs.items()):
     ax.plot(lims, lims, color="black", lw=1.2, ls="--", zorder=4, label="y = x")
     ax.set_xlim(lims); ax.set_ylim(lims)
 
-    # Weighted R²
-    w_r2 = r2_score(y_obs, y_pred, sample_weight=w)
-    ax.text(
-        0.05, 0.93,
-        f"Weighted R² = {w_r2:.3f}",
-        transform=ax.transAxes,
-        fontsize=9, va="top",
-        bbox=dict(boxstyle="round,pad=0.3", fc="white", alpha=0.7),
-    )
-
-    # Coverage annotation
-    covered = (y_obs >= lo) & (y_obs <= hi)
-    w_cov   = np.average(covered.astype(float), weights=w)
-    ax.text(
-        0.05, 0.84,
-        f"90 % PI coverage = {w_cov:.1%}",
-        transform=ax.transAxes,
-        fontsize=9, va="top",
-        bbox=dict(boxstyle="round,pad=0.3", fc="white", alpha=0.7),
-    )
-
     ax.set_xlabel("Observed proportion", fontsize=11)
     ax.set_ylabel("Predicted proportion (q50)", fontsize=11)
     ax.set_title(cfg["label"], fontsize=12, fontweight="bold")
@@ -842,7 +823,7 @@ fig.suptitle(
     fontsize=13, y=1.02,
 )
 plt.tight_layout()
-out_b = os.path.join(PLOT_DIR, "tabpfn_quantile_obs_vs_pred_90pct_v3.png")
+out_b = os.path.join(PLOT_DIR, "tabpfn_quantile_obs_vs_pred_90pct_v4.png")
 plt.savefig(out_b, dpi=300, bbox_inches="tight")
 plt.close()
 print(f"Saved: {out_b}")
@@ -937,168 +918,72 @@ ax.legend(fontsize=9, framealpha=0.8, loc="upper left")
 ax.spines[["top", "right"]].set_visible(False)
 
 plt.tight_layout()
-out_calib = os.path.join(PLOT_DIR, "tabpfn_quantile_calibration_diagram_v3.png")
+out_calib = os.path.join(PLOT_DIR, "tabpfn_quantile_calibration_diagram_v4.png")
 plt.savefig(out_calib, dpi=300, bbox_inches="tight")
 plt.close()
 print(f"Saved: {out_calib}")
 
+
 # -------------------------------------------------------
-# 12d. Improved uncertainty visualisations
-#
-# Plot C: Binned ribbon — obs decile vs weighted mean pred + PI
-# Plot D: Hexbin obs vs pred + strip plot of PI width by obs decile
+# Residuals (q50 − observed) vs observed proportion
+# point size ∝ PSU weight; error bars = q05–q95 residuals
 # -------------------------------------------------------
 
-# ── Plot C: Binned ribbon ────────────────────────────────
-
-fig, axes = plt.subplots(1, len(dfs), figsize=(6 * len(dfs), 5), sharey=True)
+fig, axes = plt.subplots(1, len(dfs), figsize=(6 * len(dfs), 5), sharey=False)
 if len(dfs) == 1:
     axes = [axes]
-
-N_BINS = 10
 
 for ax, (name, df) in zip(axes, dfs.items()):
     cfg = OUTCOMES[name]
 
-    df_s = df.copy()
-    df_s["obs_bin"] = pd.qcut(df_s[TARGET_COL], q=N_BINS, duplicates="drop")
+    obs      = df[TARGET_COL].to_numpy(dtype=float)
+    resid    = df["error"].to_numpy(dtype=float)
+    lo_resid = df["q05"].to_numpy(dtype=float) - obs
+    hi_resid = df["q95"].to_numpy(dtype=float) - obs
+    w        = df[WEIGHT_COL].to_numpy(dtype=float)
+    s        = np.clip(df["w_norm"].to_numpy(dtype=float) * 18, 2, 120)
 
-    def wstats(g):
-        w = g[WEIGHT_COL]
-        return pd.Series({
-            "obs_mid":    np.average(g[TARGET_COL], weights=w),
-            "pred_mean":  np.average(g["q50"],      weights=w),
-            "pi90_lo":    np.average(np.clip(g["q05"], 0, 1), weights=w),
-            "pi90_hi":    np.average(np.clip(g["q95"], 0, 1), weights=w),
-            "pi80_lo":    np.average(np.clip(g["q10"], 0, 1), weights=w),
-            "pi80_hi":    np.average(np.clip(g["q90"], 0, 1), weights=w),
-            "n":          len(g),
-        })
+    # Clip to avoid negative yerr from quantile crossing
+    yerr_lo = np.clip(resid - lo_resid, 0, None)
+    yerr_hi = np.clip(hi_resid - resid, 0, None)
 
-    binned = df_s.groupby("obs_bin", observed=True).apply(wstats).reset_index(drop=True)
-
-    # 90 % PI ribbon
-    ax.fill_between(
-        binned["obs_mid"], binned["pi90_lo"], binned["pi90_hi"],
-        alpha=0.20, color=cfg["colour"], label="90 % PI",
+    ax.errorbar(
+        obs, resid,
+        yerr=[yerr_lo, yerr_hi],
+        fmt="none", ecolor=cfg["colour"], alpha=0.15, lw=0.6, zorder=1,
     )
-    # 80 % PI ribbon
-    ax.fill_between(
-        binned["obs_mid"], binned["pi80_lo"], binned["pi80_hi"],
-        alpha=0.35, color=cfg["colour"], label="80 % PI",
+    ax.scatter(
+        obs, resid,
+        s=s, color=cfg["colour"], alpha=0.55, zorder=2, linewidths=0,
     )
-    # Mean prediction line
-    ax.plot(
-        binned["obs_mid"], binned["pred_mean"],
-        color=cfg["colour"], lw=2, marker="o", ms=5, label="Mean predicted (q50)",
-    )
-    # Perfect calibration
-    lims = [0, 1]
-    ax.plot(lims, lims, "k--", lw=1.2, label="y = x")
 
-    ax.set_xlim(0, 1); ax.set_ylim(0, 1)
-    ax.set_xlabel("Observed proportion (binned into deciles)", fontsize=11)
-    ax.set_ylabel("Predicted proportion (weighted mean)", fontsize=11)
+    # Running mean trend
+    sort_idx  = np.argsort(obs)
+    obs_s     = obs[sort_idx]
+    resid_s   = resid[sort_idx]
+    window    = max(1, len(obs_s) // 10)
+    running   = np.convolve(resid_s, np.ones(window) / window, mode="valid")
+    x_running = obs_s[window // 2: window // 2 + len(running)]
+    ax.plot(x_running, running, color="black", lw=1.5, alpha=0.7, label="Running mean")
+
+    ax.axhline(0,     color="black", lw=1.2, ls="--", label="Zero residual")
+    ax.axhline( 0.10, color="grey",  lw=0.5, ls=":",  alpha=0.5)
+    ax.axhline(-0.10, color="grey",  lw=0.5, ls=":",  alpha=0.5)
+
+    ax.set_xlim(0, 1)
+    ax.set_xlabel("Observed proportion", fontsize=11)
+    ax.set_ylabel("Residual (predicted − observed)", fontsize=11)
     ax.set_title(cfg["label"], fontsize=12, fontweight="bold")
     ax.legend(fontsize=8, framealpha=0.8)
-    ax.spines[["top","right"]].set_visible(False)
+    ax.spines[["top", "right"]].set_visible(False)
 
 fig.suptitle(
-    "Binned obs vs predicted with 80 % and 90 % prediction intervals\n"
-    "(each point = weighted mean within observed decile)",
+    "Residuals (q50 − observed) vs observed proportion\n"
+    "(point size ∝ PSU weight; error bars = q05–q95 residuals)",
     fontsize=12, y=1.02,
 )
 plt.tight_layout()
-out_c = os.path.join(PLOT_DIR, "tabpfn_quantile_binned_ribbon_v3.png")
-plt.savefig(out_c, dpi=300, bbox_inches="tight")
+out_resid = os.path.join(PLOT_DIR, "tabpfn_residuals_vs_observed_v4.png")
+plt.savefig(out_resid, dpi=300, bbox_inches="tight")
 plt.close()
-print(f"Saved: {out_c}")
-
-
-# ── Plot D: Hexbin + PI width strip ─────────────────────
-
-fig, axes = plt.subplots(
-    2, len(dfs),
-    figsize=(5.5 * len(dfs), 9),
-    gridspec_kw={"height_ratios": [2, 1]},
-)
-# Normalise axes indexing for single vs multiple outcomes
-if len(dfs) == 1:
-    axes = axes.reshape(2, 1)
-
-for col_i, (name, df) in enumerate(dfs.items()):
-    cfg   = OUTCOMES[name]
-    ax_hx = axes[0, col_i]   # hexbin panel
-    ax_st = axes[1, col_i]   # strip panel
-
-    # — Top panel: hexbin obs vs pred —
-    hb = ax_hx.hexbin(
-        df[TARGET_COL], df["q50"],
-        C=df[WEIGHT_COL],             # aggregate by PSU weight
-        reduce_C_function=np.sum,
-        gridsize=35,
-        cmap="Blues",
-        linewidths=0.2,
-    )
-    ax_hx.plot([0,1],[0,1], "k--", lw=1.2, label="y = x")
-    cb = fig.colorbar(hb, ax=ax_hx, pad=0.02, shrink=0.8)
-    cb.set_label("Sum PSU weight", fontsize=8)
-
-    w_r2 = r2_score(df[TARGET_COL], df["q50"], sample_weight=df[WEIGHT_COL])
-    ax_hx.text(0.05, 0.93, f"Weighted R² = {w_r2:.3f}",
-               transform=ax_hx.transAxes, fontsize=9, va="top",
-               bbox=dict(boxstyle="round,pad=0.3", fc="white", alpha=0.8))
-    ax_hx.set_xlim(0,1); ax_hx.set_ylim(0,1)
-    ax_hx.set_xlabel("Observed proportion", fontsize=10)
-    ax_hx.set_ylabel("Predicted proportion (q50)", fontsize=10)
-    ax_hx.set_title(cfg["label"], fontsize=12, fontweight="bold")
-    ax_hx.legend(fontsize=8)
-    ax_hx.spines[["top","right"]].set_visible(False)
-
-    # — Bottom panel: 90 % PI width by observed decile —
-    df_s = df.copy()
-    df_s["width_90"] = np.clip(df_s["q95"], 0, 1) - np.clip(df_s["q05"], 0, 1)
-    df_s["obs_bin"]  = pd.qcut(df_s[TARGET_COL], q=N_BINS, duplicates="drop")
-
-    bin_width = (
-        df_s.groupby("obs_bin", observed=True)
-        .apply(lambda g: pd.Series({
-            "obs_mid":      np.average(g[TARGET_COL],  weights=g[WEIGHT_COL]),
-            "mean_width":   np.average(g["width_90"],  weights=g[WEIGHT_COL]),
-            "q25_width":    np.quantile(g["width_90"], 0.25),
-            "q75_width":    np.quantile(g["width_90"], 0.75),
-        }))
-        .reset_index(drop=True)
-    )
-
-    ax_st.bar(
-        bin_width["obs_mid"], bin_width["mean_width"],
-        width=0.07, color=cfg["colour"], alpha=0.7,
-        label="Mean 90 % PI width",
-    )
-    ax_st.errorbar(
-        bin_width["obs_mid"], bin_width["mean_width"],
-        yerr=[
-            bin_width["mean_width"] - bin_width["q25_width"],
-            bin_width["q75_width"]  - bin_width["mean_width"],
-        ],
-        fmt="none", color="black", capsize=3, lw=1,
-    )
-    ax_st.set_xlim(0, 1)
-    ax_st.set_xlabel("Observed proportion (decile midpoint)", fontsize=10)
-    ax_st.set_ylabel("90 % PI width", fontsize=10)
-    ax_st.set_title("Interval width by observed level", fontsize=10)
-    ax_st.spines[["top","right"]].set_visible(False)
-    ax_st.legend(fontsize=8)
-
-fig.suptitle(
-    "Point prediction density (hexbin) and interval width by observed level",
-    fontsize=12, y=1.01,
-)
-plt.tight_layout()
-out_d = os.path.join(PLOT_DIR, "tabpfn_quantile_hexbin_width_v3.png")
-plt.savefig(out_d, dpi=300, bbox_inches="tight")
-plt.close()
-print(f"Saved: {out_d}")
-
-
+print(f"Saved: {out_resid}")
