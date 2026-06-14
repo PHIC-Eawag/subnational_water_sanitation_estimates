@@ -46,10 +46,10 @@ moves.
 
 ```{r}
 PATH_TO_POP_SUMS_OTHER <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/pop_sums_training_other"
-FILE_NONPOP_OTHER      <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/other_surveys_covariates_nonpop_v2.csv"
+FILE_NONPOP_OTHER      <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/other_surveys_covariates_nonpop_v3.csv"
 
-PATH_MICS_SANITATION   <- "~/switchdrive/Eawag/WorldBankProject/HH_surveys/HH_survey_data/df_sanitation_MICS_v1.csv"
-PATH_DHS_SANITATION    <- "~/switchdrive/Eawag/WorldBankProject/HH_surveys/HH_survey_data/df_sanitation_DHS.csv"
+PATH_MICS_SANITATION   <- here::here("outputs/00_raw_household_data/df_sanitation_MICS_v1.csv")
+PATH_DHS_SANITATION    <- here::here("outputs/00_raw_household_data/df_sanitation_DHS.csv")
 
 PATH_COUNTRY_KEY       <- here::here("data/country_name_key_WB.csv")
 PATH_GDP               <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/gdp_per_capita_2015.csv"
@@ -57,7 +57,7 @@ PATH_EDUCATION         <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covar
 PATH_WASTEWATER        <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/Country_WWctr_Percentage.txt"
 
 OUTPUT_DIR             <- here::here("data/training_subcomponents") #writing training data into this file
-CROSSWALK_REVIEW_DIR   <- here::here("data/crosswalk_review")
+CROSSWALK_REVIEW_DIR   <- here::here("outputs/01_matching_regions/crosswalk_review")
 ```
 
 ------------------------------------------------------------------------
@@ -94,11 +94,11 @@ df_hh_sanitation <- df_hh_sanitation %>%
 df_wgi_lmics        <- readWGI_lmics()
 country_name_key_WB <- readr::read_csv(PATH_COUNTRY_KEY, show_col_types = FALSE)
 
-oghist_raw <- readxl::read_excel(
+oghist_raw <- suppressMessages(readxl::read_excel(
   "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/OGHIST_2026_03_10.xlsx",
   sheet     = "Country Analytical History",
   col_names = FALSE
-)
+))
 
 jmp_raw <- suppressMessages(readxl::read_excel(
   "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/JMP_2025_WLD.xlsx",
@@ -207,6 +207,49 @@ df_hh_sanitation <- df_hh_sanitation %>%
 ```
 
 ------------------------------------------------------------------------
+
+## Region level drops and merges
+
+```{r}
+
+# ============================================================
+# Region-level drops and merges
+# ============================================================
+
+df_hh_sanitation <- df_hh_sanitation %>%
+  # Drop uninformative region labels
+    dplyr::filter(
+    !(country == "Nauru"  & HH7_region == "LOCATION"),
+    !(country == "Uganda" & HH7_region == "Refugee settlements")
+  ) %>%
+  dplyr::mutate(
+    HH7_region = dplyr::case_when(
+
+      # Togo: merge Golfe Urbain and Lomé Commune
+      country == "Togo" & HH7_region %in% c("Golfe Urbain", "Lomé Commune") ~ "Lomé Commune/Golfe Urbain",
+
+      country == "Sao Tome and Principe" & HH7_region %in% c(
+  "DISTRITO DE ÁGUA GRANDE",
+  "DISTRITO DE MÉ-ZÓCHI",
+  "REGIÃO NORTE OESTE",
+  "REGIÃO SUL ESTE"
+) ~ "São Tomé",
+
+country == "Sao Tome and Principe" & HH7_region == "REGIÃO AUTÓNOMA DO PRÍNCIPE" ~ "Príncipe",
+      # Samoa: merge all Upolu regions
+      country == "Samoa" & HH7_region %in% c(
+        "Apia Urban Area",
+        "North West Upolu",
+        "Rest of Upolu"
+      ) ~ "Upolu",
+
+      # Samoa: keep Savaii as is
+      country == "Samoa" & HH7_region == "Savaii" ~ "Savaii",
+
+      TRUE ~ HH7_region
+    )
+  )
+```
 
 # 4. Geospatial covariates
 
