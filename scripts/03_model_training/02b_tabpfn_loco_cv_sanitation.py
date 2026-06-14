@@ -411,15 +411,15 @@ for outcome_name, cfg in TASKS.items():
 
     prefix = cfg["output_prefix"]
     fold_df.to_csv(
-        os.path.join(OUTPUT_DIR, f"{prefix}_tabpfn_loco_cv_by_country.csv"),
+        os.path.join(OUTPUT_DIR, f"{prefix}_tabpfn_loco_cv_by_country_v2.csv"),
         index=False,
     )
     overall_df.to_csv(
-        os.path.join(OUTPUT_DIR, f"{prefix}_tabpfn_loco_cv_overall.csv"),
+        os.path.join(OUTPUT_DIR, f"{prefix}_tabpfn_loco_cv_overall_v2.csv"),
         index=False,
     )
     oof_df.to_csv(
-        os.path.join(OUTPUT_DIR, f"{prefix}_tabpfn_loco_cv_oof_predictions.csv"),
+        os.path.join(OUTPUT_DIR, f"{prefix}_tabpfn_loco_cv_oof_predictions_v2.csv"),
         index=False,
     )
 
@@ -432,7 +432,7 @@ for outcome_name, cfg in TASKS.items():
 # -------------------------------------------------------
 
 summary_df = pd.concat(all_overall, ignore_index=True)
-summary_path = os.path.join(OUTPUT_DIR, "sanitation_tabpfn_loco_cv_summary.csv")
+summary_path = os.path.join(OUTPUT_DIR, "sanitation_tabpfn_loco_cv_summary_v2.csv")
 summary_df.to_csv(summary_path, index=False)
 
 print(f"\n{'='*60}")
@@ -446,170 +446,7 @@ print(f"\nSaved combined summary: {summary_path}")
 
 
 # -------------------------------------------------------
-# 11. LOCO conformal prediction intervals
-#
-# For each held-out country C, the calibration set is the
-# absolute OOF residuals from all OTHER countries. The
-# finite-sample-corrected quantile of those residuals gives
-# the symmetric half-width: interval = ŷ ± q_hat.
-#
-# Coverage levels: 80 % and 90 % (adjust ALPHAS as needed).
-#
-# Two additional diagnostics per country × alpha:
-#   - empirical_coverage : fraction of val rows inside interval
-#   - mean_interval_width: average 2 × q_hat (constant within fold
-#                          but varies across folds)
-# -------------------------------------------------------
-
-ALPHAS = [0.10, 0.20]   # target miscoverage rates → 90 % and 80 % intervals
-
-
-def loco_conformal_intervals(oof_df, alphas=None):
-    """
-    Compute LOCO-structured conformal prediction intervals from OOF results.
-
-    For each country fold, calibration nonconformity scores are the absolute
-    residuals from every *other* country's held-out rows. The conformal quantile
-    uses the finite-sample correction: level = ceil((n_cal + 1)(1 - alpha)) / n_cal,
-    clamped to [0, 1].
-
-    Parameters
-    ----------
-    oof_df : DataFrame with columns country_fold, TARGET_COL, pred_tabpfn,
-             abs_error_tabpfn, WEIGHT_COL, COUNTRY_COL, REGION_COL, YEAR_COL
-    alphas : list of miscoverage rates, e.g. [0.10, 0.20]
-
-    Returns
-    -------
-    interval_df  : oof_df extended with lower/upper bound columns for each alpha
-    coverage_df  : per-country-fold × alpha empirical coverage and interval width
-    """
-    if alphas is None:
-        alphas = [0.10, 0.20]
-
-    df = oof_df.copy().reset_index(drop=True)
-    scores = df["abs_error_tabpfn"].to_numpy(dtype=float)
-    folds  = df["country_fold"].to_numpy()
-
-    unique_folds = np.unique(folds)
-    coverage_rows = []
-
-    for alpha in alphas:
-        lb_col = f"conformal_lower_{int((1 - alpha) * 100)}"
-        ub_col = f"conformal_upper_{int((1 - alpha) * 100)}"
-        df[lb_col] = np.nan
-        df[ub_col] = np.nan
-
-        for fold_id in unique_folds:
-            val_mask = folds == fold_id
-            cal_mask = ~val_mask
-
-            cal_scores = scores[cal_mask]
-            n_cal = len(cal_scores)
-
-            # Finite-sample-corrected quantile level
-            level = np.ceil((n_cal + 1) * (1 - alpha)) / n_cal
-            level = float(np.clip(level, 0.0, 1.0))
-
-            q_hat = float(np.quantile(cal_scores, level))
-
-            preds_val = df.loc[val_mask, "pred_tabpfn"].to_numpy(dtype=float)
-            df.loc[val_mask, lb_col] = preds_val - q_hat
-            df.loc[val_mask, ub_col] = preds_val + q_hat
-
-            y_val = df.loc[val_mask, TARGET_COL].to_numpy(dtype=float)
-            covered = ((y_val >= preds_val - q_hat) & (y_val <= preds_val + q_hat))
-            w_val   = df.loc[val_mask, WEIGHT_COL].to_numpy(dtype=float)
-
-            coverage_rows.append({
-                "country_fold":          int(fold_id),
-                "held_out_country":      df.loc[val_mask, COUNTRY_COL].iloc[0],
-                "alpha":                 alpha,
-                "target_coverage":       1 - alpha,
-                "n_cal":                 n_cal,
-                "n_val":                 int(val_mask.sum()),
-                "q_hat":                 round(q_hat, 6),
-                "mean_interval_width":   round(2 * q_hat, 6),
-                "empirical_coverage":    round(float(covered.mean()), 4),
-                "weighted_coverage":     round(
-                    float(np.average(covered.astype(float), weights=w_val)), 4
-                ),
-            })
-
-    coverage_df = pd.DataFrame(coverage_rows).sort_values(
-        ["alpha", "held_out_country"]
-    ).reset_index(drop=True)
-
-    return df, coverage_df
-
-
-def conformal_summary(coverage_df):
-    """Mean empirical coverage and interval width across countries, by alpha."""
-    return (
-        coverage_df
-        .groupby("alpha", sort=True)
-        .agg(
-            target_coverage    =("target_coverage",  "first"),
-            mean_empirical_cov =("empirical_coverage","mean"),
-            mean_weighted_cov  =("weighted_coverage", "mean"),
-            mean_interval_width=("mean_interval_width","mean"),
-            min_interval_width =("mean_interval_width","min"),
-            max_interval_width =("mean_interval_width","max"),
-            n_folds            =("country_fold",       "count"),
-        )
-        .reset_index()
-    )
-
-
-print(f"\n{'='*60}")
-print("Computing LOCO conformal prediction intervals …")
-print(f"{'='*60}")
-
-all_conformal_summary = []
-
-for outcome_name, cfg in TASKS.items():
-    prefix   = cfg["output_prefix"]
-    oof_path = os.path.join(OUTPUT_DIR, f"{prefix}_tabpfn_loco_cv_oof_predictions.csv")
-
-    if not os.path.exists(oof_path):
-        print(f"  Skipping {outcome_name} — OOF file not found: {oof_path}")
-        continue
-
-    print(f"\n  Outcome: {outcome_name}")
-    oof_df = pd.read_csv(oof_path)
-
-    interval_df, coverage_df = loco_conformal_intervals(oof_df, alphas=ALPHAS)
-
-    # Per-country coverage diagnostics
-    summary = conformal_summary(coverage_df)
-    summary.insert(0, "outcome", outcome_name)
-    all_conformal_summary.append(summary)
-
-    print(summary[[
-        "outcome", "target_coverage", "mean_empirical_cov",
-        "mean_weighted_cov", "mean_interval_width",
-    ]].to_string(index=False))
-
-    # Save
-    interval_df.to_csv(
-        os.path.join(OUTPUT_DIR, f"{prefix}_tabpfn_loco_cv_conformal_intervals.csv"),
-        index=False,
-    )
-    coverage_df.to_csv(
-        os.path.join(OUTPUT_DIR, f"{prefix}_tabpfn_loco_cv_conformal_coverage_by_country.csv"),
-        index=False,
-    )
-    print(f"  Saved conformal outputs to {OUTPUT_DIR}/{prefix}_tabpfn_loco_cv_conformal_*.csv")
-
-if all_conformal_summary:
-    conf_summary_df  = pd.concat(all_conformal_summary, ignore_index=True)
-    conf_summary_path = os.path.join(OUTPUT_DIR, "sanitation_tabpfn_loco_cv_conformal_summary.csv")
-    conf_summary_df.to_csv(conf_summary_path, index=False)
-    print(f"\nSaved combined conformal summary: {conf_summary_path}")
-
-
-# -------------------------------------------------------
-# 12. TabPFN quantile predictions (LOCO CV)
+# 11. TabPFN quantile predictions (LOCO CV)
 #
 # Re-runs LOCO CV requesting quantile outputs from TabPFN.
 # These are raw model quantiles — well-calibrated on average
@@ -752,14 +589,14 @@ for outcome_name, cfg in TASKS.items():
             model_df, feature_cols, outcome_name
         )
         q_oof_df.to_csv(
-            os.path.join(OUTPUT_DIR, f"{prefix}_tabpfn_quantile_oof.csv"),
+            os.path.join(OUTPUT_DIR, f"{prefix}_tabpfn_quantile_oof_v2.csv"),
             index=False,
         )
         q_cov_df.to_csv(
-            os.path.join(OUTPUT_DIR, f"{prefix}_tabpfn_quantile_coverage_by_country.csv"),
+            os.path.join(OUTPUT_DIR, f"{prefix}_tabpfn_quantile_coverage_by_country_v2.csv"),
             index=False,
         )
-        print(f"  Saved TabPFN quantile OOF to {OUTPUT_DIR}/{prefix}_tabpfn_quantile_*.csv")
+        print(f"  Saved TabPFN quantile OOF to {OUTPUT_DIR}/{prefix}_tabpfn_quantile_v2*.csv")
 
         # Quick coverage summary
         if not q_cov_df.empty:
@@ -815,7 +652,7 @@ TARGET_COL  = "outcome_value"
 
 
 def load_quantile_oof(prefix, output_dir):
-    path = os.path.join(output_dir, f"{prefix}_tabpfn_quantile_oof.csv")
+    path = os.path.join(output_dir, f"{prefix}_tabpfn_quantile_oof_v2.csv")
     if not os.path.exists(path):
         raise FileNotFoundError(f"Quantile OOF file not found: {path}")
     df = pd.read_csv(path)
@@ -909,7 +746,7 @@ fig.suptitle(
     fontsize=13, y=1.02,
 )
 plt.tight_layout()
-out_a = os.path.join(PLOT_DIR, "tabpfn_quantile_width_vs_error.png")
+out_a = os.path.join(PLOT_DIR, "tabpfn_quantile_width_vs_error_v2.png")
 plt.savefig(out_a, dpi=300, bbox_inches="tight")
 plt.close()
 print(f"Saved: {out_a}")
@@ -1004,7 +841,7 @@ fig.suptitle(
     fontsize=13, y=1.02,
 )
 plt.tight_layout()
-out_b = os.path.join(PLOT_DIR, "tabpfn_quantile_obs_vs_pred_90pct.png")
+out_b = os.path.join(PLOT_DIR, "tabpfn_quantile_obs_vs_pred_90pct_v2.png")
 plt.savefig(out_b, dpi=300, bbox_inches="tight")
 plt.close()
 print(f"Saved: {out_b}")
@@ -1099,7 +936,7 @@ ax.legend(fontsize=9, framealpha=0.8, loc="upper left")
 ax.spines[["top", "right"]].set_visible(False)
 
 plt.tight_layout()
-out_calib = os.path.join(PLOT_DIR, "tabpfn_quantile_calibration_diagram.png")
+out_calib = os.path.join(PLOT_DIR, "tabpfn_quantile_calibration_diagram_v2.png")
 plt.savefig(out_calib, dpi=300, bbox_inches="tight")
 plt.close()
 print(f"Saved: {out_calib}")
@@ -1171,7 +1008,7 @@ fig.suptitle(
     fontsize=12, y=1.02,
 )
 plt.tight_layout()
-out_c = os.path.join(PLOT_DIR, "tabpfn_quantile_binned_ribbon.png")
+out_c = os.path.join(PLOT_DIR, "tabpfn_quantile_binned_ribbon_v2.png")
 plt.savefig(out_c, dpi=300, bbox_inches="tight")
 plt.close()
 print(f"Saved: {out_c}")
@@ -1258,7 +1095,7 @@ fig.suptitle(
     fontsize=12, y=1.01,
 )
 plt.tight_layout()
-out_d = os.path.join(PLOT_DIR, "tabpfn_quantile_hexbin_width.png")
+out_d = os.path.join(PLOT_DIR, "tabpfn_quantile_hexbin_width_v2.png")
 plt.savefig(out_d, dpi=300, bbox_inches="tight")
 plt.close()
 print(f"Saved: {out_d}")
