@@ -38,6 +38,7 @@ extractStandardSurveyVariables_sanitation <- function(hh_Survey) {
   return(hh_Survey)
 }
 
+
 # ── psu lowercase variant ─────────────────────────────────────────────────────
 extractStandardSurveyVariables_sanitation_psu_lowercaps <- function(hh_Survey) {
   hh_Survey <- hh_Survey %>%

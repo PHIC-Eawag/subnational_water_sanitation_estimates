@@ -168,6 +168,23 @@ hh_Yemen_san                     <- extractStandardSurveyVariables_sanitation(hh
 hh_Zimbabwe_san                  <- extractStandardSurveyVariables_sanitation_psu_lowercaps(hh_Zimbabwe)
 
 
+# Comoros: build 4-region HH7_region from HH7Aux + HH7A (Ngazidja split)
+hh_Comoros_san$HH7_region <- dplyr::case_when(
+  as.numeric(hh_Comoros$HH7Aux) == 1 ~ "Mwali",
+  as.numeric(hh_Comoros$HH7Aux) == 2 ~ "Ndzuwani",
+  as.numeric(hh_Comoros$HH7Aux) == 3 & as.numeric(hh_Comoros$HH7A) == 1 ~ "Moroni",
+  as.numeric(hh_Comoros$HH7Aux) == 3 & as.numeric(hh_Comoros$HH7A) == 2 ~ "Reste de Ngazidja"
+)
+hh_Comoros_san$HH7 <- NULL
+# Empty extract so step 7's loop is consistent (Comoros is skipped there anyway)
+hh_Comoros_HH7extract <- data.frame(id = factor())
+
+#Thailand
+labs <- sjlabelled::get_labels(hh_Thailand$HH7A, values = "n")  # names = codes, values = province names
+codes <- as.character(hh_Thailand$HH7A)                          # "10", "11", ...
+hh_Thailand_san$HH7_region <- unname(labs[codes])
+hh_Thailand_san$HH7 <- NULL
+
 # Pakistan Sindh
 names(hh_Pakistan_Sindh_san)[names(hh_Pakistan_Sindh_san) == "psu"] <- "PSU"
 
@@ -210,21 +227,18 @@ for (survey_name in all_san_surveys) {
     message(survey_name, " is missing: ", paste(missing_vars, collapse = ", "))
   }
 }
-
-# =============================================================================
-# 7. EXTRACT REGION NAMES FROM HH7
-# =============================================================================
+# Step 7
 for (survey_name in all_san_surveys) {
+  if (survey_name %in% c("Comoros", "Thailand")) next
   hh_data <- get(paste0("hh_", survey_name, "_san"))
   hh7_extract <- extractVariableLabelsfromHH7(hh_data)
   hh7_extract$id <- as.factor(hh7_extract$id)
   assign(paste0("hh_", survey_name, "_HH7extract"), hh7_extract)
 }
 
-# =============================================================================
-# 8. REPLACE HH7 NUMERIC IDS WITH REGION NAME LABELS
-# =============================================================================
+# Step 8
 for (survey_name in all_san_surveys) {
+  if (survey_name %in% c("Comoros", "Thailand")) next
   hh_data  <- get(paste0("hh_", survey_name, "_san"))
   hh7_extr <- get(paste0("hh_", survey_name, "_HH7extract"))
   hh_data  <- replaceHH7LabelsWithRegionNames(hh_data, hh7_extr)
@@ -287,3 +301,4 @@ write.csv(df.MICS.sanitation,
 #   PSU / stratum   survey design variables
 #   hhweight        household weight
 # =============================================================================
+

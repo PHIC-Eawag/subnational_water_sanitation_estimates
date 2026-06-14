@@ -95,6 +95,7 @@ dhs_sanitation_vars_to_read <- c(
   "HV024",
   "SHDISTRICT",
   "SHSTATE",
+  "SHDIST",
   "HV025",
   "HV009",
   "HV005",
@@ -174,11 +175,13 @@ process_one_dhs_sanitation_file <- function(file_path, survey_id, country_name) 
   dhs_raw <- read_dhs_sanitation_minimal(file_path)
 
   area_candidates <- dplyr::case_when(
-    country_name %in% c("Cambodia", "Gambia") ~ list(c("HV024", "SHDISTRICT")),
-    country_name == "Nigeria"                  ~ list(c("SHSTATE", "SHDISTRICT", "HV024")),
-    TRUE                                       ~ list(c("SHDISTRICT", "HV024"))
+    country_name %in% c("Cambodia", "Gambia", "Rwanda") ~ list(c("HV024", "SHDISTRICT")),
+    country_name == "Nigeria"                            ~ list(c("SHSTATE", "SHDISTRICT", "HV024")),
+    country_name == "Sierra Leone"                       ~ list(c("SHDIST", "SHDISTRICT", "HV024")),
+    country_name == "Uganda"                             ~ list(c("HV024")),
+    TRUE                                                 ~ list(c("SHDISTRICT", "HV024"))
   ) %>% .[[1]]
-
+  
   # Extract
   dhs_san <- extractDHSSanitationSurveyVariables(
     hh_Survey    = dhs_raw,
@@ -262,5 +265,5 @@ if (nrow(all_na_check) > 0) {
 # ============================================================
 readr::write_csv(
   df.DHS.sanitation_Labeled,
-  here::here("outputs/00_raw_household_data/df_sanitation_DHS.csv"
+  here::here("outputs/00_raw_household_data/df_sanitation_DHS.csv")
 )

@@ -11,9 +11,7 @@
 manual_fixes_sanitation <- tibble::tribble(
   ~HH7_region_outcome,                         ~country_cov,                              ~correct_region_name,
   #Armenia
-  "Aragatsotn
-Aragatsotn
-Aragatsotn",                                   "Armenia",                                "Aragatsotn",
+  "Aragatsotn",                                "Armenia",                                 "Aragatsotn Aragatsotn Aragatsotn",
   
   # Afghanistan
   "MAIDAN WARDAK",                             "Afghanistan",                             "Wardak",
@@ -86,24 +84,7 @@ Aragatsotn",                                   "Armenia",                       
   # Nepal
   "Sudurpashchim",                             "Nepal",                                   "Sudur Paschim",
   
-  # Pakistan
-  "Chaghi",                                    "Pakistan",                                "Chagai",
-  "DG Khan",                                   "Pakistan",                                "Dera Ghazi Khan",
-  "Kachhi (Bolan)",                            "Pakistan",                                "Kachhi",
-  "Bajor",                                     "Pakistan",                                "Bajaur",
-  "TT Singh",                                  "Pakistan",                                "Toba Tek Singh",
-  "RY Khan",                                   "Pakistan",                                "Rahim Yar Khan",
-  "Laki Marwat",                               "Pakistan",                                "Lakki Marwat",
-  "Abbotabad",                                 "Pakistan",                                "Abbottabad",
-  "Nowshehra",                                 "Pakistan",                                "Nowshera",
-  "Sheerani",                                  "Pakistan",                                "Sherani",
-  "Hari Pur",                                  "Pakistan",                                "Haripur",
-  "Torghar",                                   "Pakistan",                                "Tor Ghar",
-  "Kuram",                                     "Pakistan",                                "Kurram",
-  "Sibbi",                                     "Pakistan",                                "Sibi",
-  "Mohmind",                                   "Pakistan",                                "Mohmand",
-  "Kech (Turbat)",                             "Pakistan",                                "Kech",
-  
+
   # São Tomé and Príncipe
   "REGIÃO AUTÓNOMA DO PRÍNCIPE",               "São Tomé and Príncipe",                   "Príncipe",
   
@@ -151,6 +132,15 @@ Aragatsotn",                                   "Armenia",                       
   "NIBOK",      "Nauru",  "NIBOK_Nauru",
   "UABOE",      "Nauru",  "UABOE_Nauru",
   "YAREN",      "Nauru",  "YAREN_Nauru",
+
+  
+  # Turkmenistan
+  "AKHAL VELAYAT",    "Turkmenistan",  "AKHAL_ARKADAG_Turkmenistan",
+  "ARKADAG CITY",     "Turkmenistan",  "ASHGABAT_CITY_Turkmenistan",
+  "BALKAN VELAYAT",   "Turkmenistan",  "BALKAN_Turkmenistan",
+  "DASHOGUZ VELAYAT", "Turkmenistan",  "DASHOGUZ_Turkmenistan",
+  "LEBAP VELAYAT",    "Turkmenistan",  "LEBAP_Turkmenistan",
+  "MARY VELAYAT",     "Turkmenistan",  "MARY_Turkmenistan",
   
   # Trinidad and Tobago
   "Eastern RHA",       "Trinidad and Tobago",  "Eastern_RHA_Trinidad_and_Tobago",
@@ -158,6 +148,10 @@ Aragatsotn",                                   "Armenia",                       
   "North-West RHA",    "Trinidad and Tobago",  "North_West_RHA_Trinidad_and_Tobago",
   "South-West RHA",    "Trinidad and Tobago",  "South_West_RHA_Trinidad_and_Tobago",
   "Tobago RHA",        "Trinidad and Tobago",  "Tobago_RHA_Trinidad_and_Tobago",
+  
+  #Uganda
+  "North Buganda",                             "Uganda",                                  "Buganda north",
+  "South Buganda",                             "Uganda",                                  "Buganda south",
   
   # North Macedonia
   "EAST",       "North Macedonia",  "EAST_North_Macedonia",
@@ -167,16 +161,36 @@ Aragatsotn",                                   "Armenia",                       
   "SKOPJE",     "North Macedonia",  "SKOPJE_North_Macedonia",
   "SOUTHEAST",  "North Macedonia",  "SOUTHEAST_North_Macedonia",
   "SOUTHWEST",  "North Macedonia",  "SOUTHWEST_North_Macedonia",
-  "VARDAR",     "North Macedonia",  "VARDAR_North_Macedonia",
+  "VARDAR",     "North Macedonia",  "VARDAR_North_Macedonia"
   
-  # Costa Rica
-  "Alajuela",   "Costa Rica",  "Alajuela_Costa_Rica",
-  "Cartago",    "Costa Rica",  "Cartago_Costa_Rica",
-  "Guanacaste", "Costa Rica",  "Guanacaste_Costa_Rica",
-  "Heredia",    "Costa Rica",  "Heredia_Costa_Rica",
-  "Limón",      "Costa Rica",  "Limon_Costa_Rica",
-  "Limon",      "Costa Rica",  "Limon_Costa_Rica",
-  "Puntarenas", "Costa Rica",  "Puntarenas_Costa_Rica",
-  "San José",   "Costa Rica",  "San_Jose_Costa_Rica",
-  "San Jose",   "Costa Rica",  "San_Jose_Costa_Rica"
+
 )
+
+# Pakistan
+#"Chaghi",                                    "Pakistan",                                "Chagai",
+#"DG Khan",                                   "Pakistan",                                "Dera Ghazi Khan",
+#"Kachhi (Bolan)",                            "Pakistan",                                "Kachhi",
+#"Bajor",                                     "Pakistan",                                "Bajaur",
+#"TT Singh",                                  "Pakistan",                                "Toba Tek Singh",
+#"RY Khan",                                   "Pakistan",                                "Rahim Yar Khan",
+#"Laki Marwat",                               "Pakistan",                                "Lakki Marwat",
+#"Abbotabad",                                 "Pakistan",                                "Abbottabad",
+#"Nowshehra",                                 "Pakistan",                                "Nowshera",
+#"Sheerani",                                  "Pakistan",                                "Sherani",
+#"Hari Pur",                                  "Pakistan",                                "Haripur",
+#"Torghar",                                   "Pakistan",                                "Tor Ghar",
+#"Kuram",                                     "Pakistan",                                "Kurram",
+#"Sibbi",                                     "Pakistan",                                "Sibi",
+#"Mohmind",                                   "Pakistan",                                "Mohmand",
+#"Kech (Turbat)",                             "Pakistan",                                "Kech",
+
+# Costa Rica
+#"Alajuela",   "Costa Rica",  "Alajuela_Costa_Rica",
+#"Cartago",    "Costa Rica",  "Cartago_Costa_Rica",
+#"Guanacaste", "Costa Rica",  "Guanacaste_Costa_Rica",
+#"Heredia",    "Costa Rica",  "Heredia_Costa_Rica",
+#"Limón",      "Costa Rica",  "Limon_Costa_Rica",
+#"Limon",      "Costa Rica",  "Limon_Costa_Rica",
+#"Puntarenas", "Costa Rica",  "Puntarenas_Costa_Rica",
+#"San José",   "Costa Rica",  "San_Jose_Costa_Rica",
+#"San Jose",   "Costa Rica",  "San_Jose_Costa_Rica"
