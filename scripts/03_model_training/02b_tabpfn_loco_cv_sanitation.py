@@ -138,6 +138,7 @@ ALL_EO_FEATURES = [
     "worldpop",
     "worldpop_sum",
     "ghsl_population_sum",
+    "area_km2"
 ]
 
 COUNTRY_LEVEL_FEATURES = [
@@ -151,7 +152,7 @@ COUNTRY_LEVEL_FEATURES = [
     "political_stability",
     "regulatory_quality",
     "rule_of_law",
-    "voice_and_accountability",
+    "voice_and_accountability"
 ]
 
 ALL_FEATURES = ALL_EO_FEATURES + COUNTRY_LEVEL_FEATURES
@@ -411,15 +412,15 @@ for outcome_name, cfg in TASKS.items():
 
     prefix = cfg["output_prefix"]
     fold_df.to_csv(
-        os.path.join(OUTPUT_DIR, f"{prefix}_tabpfn_loco_cv_by_country_v2.csv"),
+        os.path.join(OUTPUT_DIR, f"{prefix}_tabpfn_loco_cv_by_country_v3.csv"),
         index=False,
     )
     overall_df.to_csv(
-        os.path.join(OUTPUT_DIR, f"{prefix}_tabpfn_loco_cv_overall_v2.csv"),
+        os.path.join(OUTPUT_DIR, f"{prefix}_tabpfn_loco_cv_overall_v3.csv"),
         index=False,
     )
     oof_df.to_csv(
-        os.path.join(OUTPUT_DIR, f"{prefix}_tabpfn_loco_cv_oof_predictions_v2.csv"),
+        os.path.join(OUTPUT_DIR, f"{prefix}_tabpfn_loco_cv_oof_predictions_v3.csv"),
         index=False,
     )
 
@@ -432,7 +433,7 @@ for outcome_name, cfg in TASKS.items():
 # -------------------------------------------------------
 
 summary_df = pd.concat(all_overall, ignore_index=True)
-summary_path = os.path.join(OUTPUT_DIR, "sanitation_tabpfn_loco_cv_summary_v2.csv")
+summary_path = os.path.join(OUTPUT_DIR, "sanitation_tabpfn_loco_cv_summary_v3.csv")
 summary_df.to_csv(summary_path, index=False)
 
 print(f"\n{'='*60}")
@@ -589,14 +590,14 @@ for outcome_name, cfg in TASKS.items():
             model_df, feature_cols, outcome_name
         )
         q_oof_df.to_csv(
-            os.path.join(OUTPUT_DIR, f"{prefix}_tabpfn_quantile_oof_v2.csv"),
+            os.path.join(OUTPUT_DIR, f"{prefix}_tabpfn_quantile_oof_v3.csv"),
             index=False,
         )
         q_cov_df.to_csv(
-            os.path.join(OUTPUT_DIR, f"{prefix}_tabpfn_quantile_coverage_by_country_v2.csv"),
+            os.path.join(OUTPUT_DIR, f"{prefix}_tabpfn_quantile_coverage_by_country_v3.csv"),
             index=False,
         )
-        print(f"  Saved TabPFN quantile OOF to {OUTPUT_DIR}/{prefix}_tabpfn_quantile_v2*.csv")
+        print(f"  Saved TabPFN quantile OOF to {OUTPUT_DIR}/{prefix}_tabpfn_quantile_v3*.csv")
 
         # Quick coverage summary
         if not q_cov_df.empty:
@@ -652,7 +653,7 @@ TARGET_COL  = "outcome_value"
 
 
 def load_quantile_oof(prefix, output_dir):
-    path = os.path.join(output_dir, f"{prefix}_tabpfn_quantile_oof_v2.csv")
+    path = os.path.join(output_dir, f"{prefix}_tabpfn_quantile_oof_v3.csv")
     if not os.path.exists(path):
         raise FileNotFoundError(f"Quantile OOF file not found: {path}")
     df = pd.read_csv(path)
@@ -746,7 +747,7 @@ fig.suptitle(
     fontsize=13, y=1.02,
 )
 plt.tight_layout()
-out_a = os.path.join(PLOT_DIR, "tabpfn_quantile_width_vs_error_v2.png")
+out_a = os.path.join(PLOT_DIR, "tabpfn_quantile_width_vs_error_v3.png")
 plt.savefig(out_a, dpi=300, bbox_inches="tight")
 plt.close()
 print(f"Saved: {out_a}")
@@ -841,7 +842,7 @@ fig.suptitle(
     fontsize=13, y=1.02,
 )
 plt.tight_layout()
-out_b = os.path.join(PLOT_DIR, "tabpfn_quantile_obs_vs_pred_90pct_v2.png")
+out_b = os.path.join(PLOT_DIR, "tabpfn_quantile_obs_vs_pred_90pct_v3.png")
 plt.savefig(out_b, dpi=300, bbox_inches="tight")
 plt.close()
 print(f"Saved: {out_b}")
@@ -936,7 +937,7 @@ ax.legend(fontsize=9, framealpha=0.8, loc="upper left")
 ax.spines[["top", "right"]].set_visible(False)
 
 plt.tight_layout()
-out_calib = os.path.join(PLOT_DIR, "tabpfn_quantile_calibration_diagram_v2.png")
+out_calib = os.path.join(PLOT_DIR, "tabpfn_quantile_calibration_diagram_v3.png")
 plt.savefig(out_calib, dpi=300, bbox_inches="tight")
 plt.close()
 print(f"Saved: {out_calib}")
@@ -1008,7 +1009,7 @@ fig.suptitle(
     fontsize=12, y=1.02,
 )
 plt.tight_layout()
-out_c = os.path.join(PLOT_DIR, "tabpfn_quantile_binned_ribbon_v2.png")
+out_c = os.path.join(PLOT_DIR, "tabpfn_quantile_binned_ribbon_v3.png")
 plt.savefig(out_c, dpi=300, bbox_inches="tight")
 plt.close()
 print(f"Saved: {out_c}")
@@ -1095,7 +1096,7 @@ fig.suptitle(
     fontsize=12, y=1.01,
 )
 plt.tight_layout()
-out_d = os.path.join(PLOT_DIR, "tabpfn_quantile_hexbin_width_v2.png")
+out_d = os.path.join(PLOT_DIR, "tabpfn_quantile_hexbin_width_v3.png")
 plt.savefig(out_d, dpi=300, bbox_inches="tight")
 plt.close()
 print(f"Saved: {out_d}")
