@@ -1,0 +1,284 @@
+---
+title: "Covariate Cluster Analysis"
+subtitle: "Hierarchical clustering of geospatial covariates for feature selection"
+author: ""
+date: today
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    code-fold: true
+    self-contained: true
+execute:
+  echo: true
+  warning: false
+  message: false
+editor:
+  markdown:
+    wrap: 72
+---
+
+# 1. Setup
+
+## Libraries
+
+```{r}
+library(tidyverse)
+library(here)
+library(ClustOfVar)
+```
+
+## Paths
+
+```{r}
+PATH_PRED_COVARIATES <- here::here("data/prediction/prediction_covariates_2024.csv")
+OUTPUT_DIR           <- here::here("outputs/cluster_analysis")
+```
+
+------------------------------------------------------------------------
+
+# 2. Input data
+
+Prediction covariates prepared in `05_prepare_prediction_data.qmd`.
+Each row is one GADM admin-1 region.
+
+```{r}
+df_pred_covariates <- readr::read_csv(PATH_PRED_COVARIATES, show_col_types = FALSE)
+
+cat("Regions:", nrow(df_pred_covariates), "\n")
+cat("Countries:", dplyr::n_distinct(df_pred_covariates$NAME_0), "\n")
+cat("Columns:", ncol(df_pred_covariates), "\n")
+```
+
+------------------------------------------------------------------------
+
+# 3. Variable selection
+
+117 variables pre-selected based on their relevance for modelling access
+to infrastructure and urban services, as well as anthropogenic,
+hydrogeologic, climatic, topographic and biogeographic indicators used
+to model safely managed drinking water services (Greenwood et al.,
+2024).
+
+```{r}
+band_names <- c(
+  # ── Static environmental ─────────────────────────────────────────────────
+  "CGIAR_Aridity_Index",
+  "CGIAR_PET",
+  "CHELSA_BIO_Annual_Mean_Temperature",
+  "CHELSA_BIO_Annual_Precipitation",
+  "CHELSA_BIO_Precipitation_Seasonality",
+  "CHELSA_BIO_Precipitation_of_Coldest_Quarter",
+  "CHELSA_BIO_Precipitation_of_Driest_Month",
+  "CHELSA_BIO_Precipitation_of_Driest_Quarter",
+  "CHELSA_BIO_Precipitation_of_Warmest_Quarter",
+  "CHELSA_BIO_Precipitation_of_Wettest_Month",
+  "CHELSA_BIO_Precipitation_of_Wettest_Quarter",
+  "CHELSA_BIO_Temperature_Annual_Range",
+  "CHELSA_BIO_Temperature_Seasonality",
+  "CIFOR_TropicalPeatlandExtent",
+  "CSP_Global_Human_Modification",
+  "ConsensusLandCoverClass_Barren",
+  "ConsensusLandCoverClass_Cultivated_and_Managed_Vegetation",
+  "ConsensusLandCoverClass_Deciduous_Broadleaf_Trees",
+  "ConsensusLandCoverClass_Evergreen_Broadleaf_Trees",
+  "ConsensusLandCoverClass_Evergreen_Deciduous_Needleleaf_Trees",
+  "ConsensusLandCoverClass_Herbaceous_Vegetation",
+  "ConsensusLandCoverClass_Mixed_Other_Trees",
+  "ConsensusLandCoverClass_Open_Water",
+  "ConsensusLandCoverClass_Regularly_Flooded_Vegetation",
+  "ConsensusLandCoverClass_Shrubs",
+  "ConsensusLandCoverClass_Snow_Ice",
+  "ConsensusLandCoverClass_Urban_Builtup",
+  "ConsensusLandCover_Human_Development_Percentage",
+  "CrowtherLab_Tree_Density",
+  "EarthEnvCloudCover_CloudForestPrediction",
+  "EarthEnvTexture_CoOfVar_EVI",
+  "EarthEnvTexture_Contrast_EVI",
+  "EarthEnvTexture_Correlation_EVI",
+  "EarthEnvTexture_Dissimilarity_EVI",
+  "EarthEnvTexture_Entropy_EVI",
+  "EarthEnvTexture_Evenness_EVI",
+  "EarthEnvTexture_Homogeneity_EVI",
+  "EarthEnvTexture_Maximum_EVI",
+  "EarthEnvTexture_Range_EVI",
+  "EarthEnvTexture_Shannon_Index",
+  "EarthEnvTexture_Simpson_Index",
+  "EarthEnvTexture_Std_EVI",
+  "EarthEnvTexture_Uniformity_EVI",
+  "EarthEnvTexture_Variance_EVI",
+  "EarthEnvTopoMed_1stOrderPartialDerivEW",
+  "EarthEnvTopoMed_1stOrderPartialDerivNS",
+  "EarthEnvTopoMed_Eastness",
+  "EarthEnvTopoMed_Elevation",
+  "EarthEnvTopoMed_Roughness",
+  "EarthEnvTopoMed_Slope",
+  "EarthEnvTopoMed_TerrainRuggednessIndex",
+  "EarthEnvTopoMed_TopoPositionIndex",
+  "EsaCci_BurntAreasProbability",
+  "FanEtAl_Depth_to_Water_Table_AnnualMean",
+  "FanEtAl_Depth_to_Water_Table_AnnualSD",
+  "GHS_Population_Density",
+  "GPWv4_Population_Density",
+  "GiriEtAl_MangrovesExtent",
+  "GLW3_RuminantsDistribution_downsampled10km",
+  "MODIS_EVI",
+  "MODIS_NDVI",
+  "MODIS_NPP",
+  "PelletierEtAl_SoilAndSedimentaryDepositThicknesses",
+  "SG_Absolute_depth_to_bedrock",
+  "SG_Bulk_density_015cm",
+  "SG_Depth_to_bedrock",
+  "SG_H2O_Capacity_015cm",
+  "SG_Saturated_H2O_Content_015cm",
+  "TootchiEtAl_WetlandsRegularlyFlooded",
+  "WCS_Human_Footprint_2009",
+  "map_friction",
+  # ── Year-specific ────────────────────────────────────────────────────────
+  "chirps_annual_precipitation",
+  "era5_temperature_2m",
+  "ghsl_built_surface",
+  "ghsl_population",
+  "ghsl_population_sum",
+  "ghsl_urban_frac",
+  "jrc_building_height",
+  "modis_evi",
+  "modis_ndvi",
+  "runoff_max_annualmax",
+  "runoff_min_annualmin",
+  "temperature_2m_max_annualmax",
+  "viirs_average",
+  # ── Governance (WGI) ─────────────────────────────────────────────────────
+  "governance_effectiveness",
+  "control_of_corruption",
+  "political_stability",
+  "regulatory_quality",
+  "rule_of_law",
+  "voice_and_accountability"
+)
+
+cat("Variables defined:", length(band_names), "\n")
+
+# Check all variables are present in the prediction data
+missing_vars <- setdiff(band_names, names(df_pred_covariates))
+if (length(missing_vars) > 0) {
+  warning("Variables in band_names not found in prediction data:\n",
+          paste(missing_vars, collapse = "\n"))
+} else {
+  message("All variables present.")
+}
+```
+
+## Prepare feature matrix
+
+```{r}
+samples_df <- df_pred_covariates %>%
+  dplyr::select(dplyr::all_of(band_names)) %>%
+  dplyr::mutate(dplyr::across(everything(), as.numeric))
+
+# Flag zero-variance columns (constant across all regions)
+constant_cols <- names(samples_df)[
+  sapply(samples_df, function(x) dplyr::n_distinct(x, na.rm = TRUE) <= 1)
+]
+if (length(constant_cols) > 0) {
+  message("Zero-variance columns (will cause hclustvar to fail):\n",
+          paste(constant_cols, collapse = "\n"))
+} else {
+  message("No zero-variance columns.")
+}
+
+cat("Regions with complete cases:", sum(complete.cases(samples_df)), "/", nrow(samples_df), "\n")
+```
+
+------------------------------------------------------------------------
+
+# 4. Hierarchical cluster analysis
+
+Variables are clustered using `hclustvar` (ClustOfVar), which groups
+variables by their shared information content rather than their
+pairwise correlations. One representative variable is later selected
+per cluster.
+
+```{r}
+set.seed(123)
+hclust_result <- hclustvar(X.quanti = as.data.frame(samples_df))
+plot(hclust_result, type = "index")
+```
+
+------------------------------------------------------------------------
+
+# 5. Cut tree and select representative variables
+
+The dendrogram is cut at several values of k. For each k, the variable
+with the highest squared loading on its cluster component is selected
+as representative.
+
+```{r}
+k_values <- c(5, 7, 12, 17, 25, 45, 60)
+
+dir.create(OUTPUT_DIR, recursive = TRUE, showWarnings = FALSE)
+
+cluster_results <- purrr::map(k_values, function(k) {
+  set.seed(123)
+  message("Processing k = ", k, " ...")
+
+  cuttree <- cutreevar(hclust_result, k = k)
+
+  # Cluster membership for every variable
+  df_clusters <- cuttree$cluster %>%
+    as.data.frame() %>%
+    dplyr::rename(cluster = 1) %>%
+    tibble::rownames_to_column("variable") %>%
+    dplyr::arrange(cluster)
+
+  # Representative variable per cluster (highest squared loading)
+  reps <- purrr::map_chr(cuttree$var, function(cluster_df) {
+    rownames(cluster_df)[which.max(cluster_df[, 1])]
+  })
+
+  df_reps <- tibble::tibble(
+    cluster                  = seq_along(reps),
+    representative_variable  = reps
+  )
+
+  # Save representative variables
+  readr::write_csv(
+    df_reps,
+    file.path(OUTPUT_DIR, paste0("representative_variables_k", k, ".csv"))
+  )
+
+  # Save dendrogram PDF
+  pdf_path <- file.path(OUTPUT_DIR, paste0("dendrogram_k", k, ".pdf"))
+  pdf(pdf_path, width = 20, height = 12)
+  tryCatch({
+    plot(hclust_result, main = paste("k =", k), cex = 0.5)
+    rect.hclust(hclust_result, k = k, border = "red")
+  }, error = function(e) {
+    message("Plotting failed for k = ", k, ": ", e$message)
+  })
+  dev.off()
+
+  list(k = k, clusters = df_clusters, representatives = df_reps)
+})
+
+names(cluster_results) <- paste0("k", k_values)
+
+message("Done. Outputs written to: ", OUTPUT_DIR)
+```
+
+------------------------------------------------------------------------
+
+# 6. Summary
+
+```{r}
+purrr::map_dfr(cluster_results, function(res) {
+  tibble::tibble(
+    k                    = res$k,
+    n_clusters           = nrow(res$representatives),
+    representative_vars  = paste(res$representatives$representative_variable, collapse = ", ")
+  )
+}) %>%
+  dplyr::select(k, n_clusters) %>%
+  knitr::kable(caption = "Number of clusters per k")
+```
