@@ -194,3 +194,26 @@ manual_fixes_sanitation <- tibble::tribble(
 #"Puntarenas", "Costa Rica",  "Puntarenas_Costa_Rica",
 #"San José",   "Costa Rica",  "San_Jose_Costa_Rica",
 #"San Jose",   "Costa Rica",  "San_Jose_Costa_Rica"
+
+# ============================================================
+# SMDW: manual region fixes for E. coli outcome only
+# ============================================================
+#
+# A smaller set — only the regions that appear in water-quality surveys.
+# Add new entries here when E. coli crosswalk review flags mismatches.
+
+manual_fixes_smdw_ecoli <- tibble::tribble(
+  ~HH7_region_outcome,               ~country_cov,              ~correct_region_name,
+  "Ndjamena",                        "Chad",                    "Ville de N'Djamena",
+  "SAB",                             "Guinea-Bissau",           "Bissau",
+  "KIRKUK",                          "Iraq",                    "At-Ta'mim",
+  "SULAIMANIYA",                     "Iraq",                    "As-Sulaymaniyah",
+  "DG Khan",                         "Pakistan",                "Dera Ghazi Khan",
+  "RY Khan",                         "Pakistan",                "Rahim Yar Khan",
+  "TT Singh",                        "Pakistan",                "Toba Tek Singh",
+  "REGIÃO AUTÓNOMA DO PRÍNCIPE",     "São Tomé and Príncipe",   "Príncipe",
+  "ONGO NIUA",                       "Tonga",                   "Niuas",
+  "Ariha & Al Aghwar",               "Palestina",               "Jericho",
+  "North Gaza",                      "Palestina",               "Gaza ash Shamaliyah",
+  "Cidade de Maputo",                "Mozambique",              "Maputo City"
+)

@@ -10,12 +10,9 @@ library(surveytoolbox)
 library(survey)
 
 
-source("~/Documents/GitHub/mapping_sanitation_access_LMICs/functions/label_mics_variables.R")
-source("~/Documents/GitHub/mapping_sanitation_access_LMICs/functions/extract_mics_variables.R")
-
-PATH_TO_SURVEYS_old_SMDW <- "~/switchdrive/Eawag/WorldBankProject/HH_surveys/HH_survey_data/HH_MICS_old_SMDW"
-PATH_TO_SURVEYS_new_SMDW <- "~/switchdrive/Eawag/WorldBankProject/HH_surveys/HH_survey_data/HH_MICS_new_SMDW/"
-PATH_TO_SURVEYS_new_other <- "~/switchdrive/Eawag/WorldBankProject/HH_surveys/HH_survey_data/HH_MICS_new_other/"
+source(here::here("functions/label_mics_SMDW_variables.R"))
+source(here::here("functions/extract_mics_SMDW_variables.R"))
+source(here::here("configuration/paths.R"))
 
 
 
@@ -139,6 +136,18 @@ hh_Afghanistan_Variables <- extractOtherStandardSurveyVariables(hh_Afghanistan)
 hh_Argentina_Variables <- extractOtherStandardSurveyVariables_withoutHH6_psu(hh_Argentina)
 hh_Belarus_Variables <- extractOtherStandardSurveyVariables_withoutWS8(hh_Belarus)
 hh_Comoros_Variables <- extractOtherStandardSurveyVariables(hh_Comoros)
+
+# Comoros: the standard HH7 code does not yield usable region labels.
+# Build a 4-region variable from HH7Aux (island) and HH7A (Ngazidja sub-area).
+hh_Comoros_Variables$HH7_region <- dplyr::case_when(
+  as.numeric(hh_Comoros$HH7Aux) == 1                                             ~ "Mwali",
+  as.numeric(hh_Comoros$HH7Aux) == 2                                             ~ "Ndzuwani",
+  as.numeric(hh_Comoros$HH7Aux) == 3 & as.numeric(hh_Comoros$HH7A) == 1         ~ "Moroni",
+  as.numeric(hh_Comoros$HH7Aux) == 3 & as.numeric(hh_Comoros$HH7A) == 2         ~ "Reste de Ngazidja"
+)
+hh_Comoros_Variables$HH7 <- NULL
+# Pre-create empty extract so the loop below can safely skip Comoros
+hh_Comoros_HH7extract_other <- data.frame(id = factor())
 hh_Costa_Rica_Variables <- extractOtherStandardSurveyVariables_withoutWS8_psu(hh_Costa_Rica)
 hh_Cuba_Variables <- extractOtherStandardSurveyVariables(hh_Cuba)
 hh_Jamaica_Variables <- extractOtherStandardSurveyVariables(hh_Jamaica)
@@ -152,6 +161,14 @@ hh_Republic_of_North_Macedonia_Variables <- extractOtherStandardSurveyVariables(
 hh_Serbia_Variables <- extractOtherStandardSurveyVariables(hh_Serbia)
 hh_Suriname_Variables <- extractOtherStandardSurveyVariables(hh_Suriname)
 hh_Thailand_Variables <- extractOtherStandardSurveyVariables(hh_Thailand)
+
+# Thailand: province names are stored in HH7A value labels, not in HH7.
+labs  <- sjlabelled::get_labels(hh_Thailand$HH7A, values = "n")
+codes <- as.character(hh_Thailand$HH7A)
+hh_Thailand_Variables$HH7_region <- unname(labs[codes])
+hh_Thailand_Variables$HH7 <- NULL
+# Pre-create empty extract so the loop below can safely skip Thailand
+hh_Thailand_HH7extract_other <- data.frame(id = factor())
 hh_Trinidad_and_Tobago_Variables <- extractOtherStandardSurveyVariables_psu(hh_Trinidad_and_Tobago)
 hh_Turkmenistan_Variables <- extractOtherStandardSurveyVariables_Stratum(hh_Turkmenistan)
 hh_Uzbekistan_Variables <- extractOtherStandardSurveyVariables(hh_Uzbekistan)
@@ -238,9 +255,21 @@ other_surveys <- c(
 "Yemen")
 
 
+# =============================================================================
+# NORMALISE COLUMN NAMES ACROSS OTHER_SURVEYS
+# Mirrors sanitation step 9: standardise psu → PSU and Stratum → stratum
+# for all other_surveys before variable checks and HH7 extraction loops.
+# =============================================================================
+for (survey_name in other_surveys) {
+  hh_data <- get(paste0("hh_", survey_name, "_Variables"))
+  names(hh_data)[names(hh_data) == "psu"]    <- "PSU"
+  names(hh_data)[names(hh_data) == "Stratum"] <- "stratum"
+  assign(paste0("hh_", survey_name, "_Variables"), hh_data)
+}
+
 # check which extracted survey files are missing variables needed for relabeling
-variables_to_check_WQ <- c("WS1", "WS2", "WS3", "WS4", "WS7", "WS8", "WQ27", "HH5D", "HH5M", "HH5Y", "stratum", "PSU", "HH7")
-other_variables_to_check <- c("WS1", "WS2", "WS3", "WS4", "WS7", "WS8", "HH5D", "HH5M", "HH5Y", "stratum", "PSU", "HH/")
+variables_to_check_WQ    <- c("WS1", "WS2", "WS3", "WS4", "WS7", "WS8", "WQ27", "HH5D", "HH5M", "HH5Y", "stratum", "PSU", "HH7")
+other_variables_to_check <- c("WS1", "WS2", "WS3", "WS4", "WS7", "WS8",         "HH5D", "HH5M", "HH5Y", "stratum", "PSU", "HH7")
 
 for (survey_name in SMDW_surveys) {
   smdw_data <- get(paste0("hh_", survey_name, "_SMDW"))
@@ -270,6 +299,8 @@ for (survey_name in SMDW_surveys) {
 }
 
 for (survey_name in other_surveys) {
+  # Comoros and Thailand have custom HH7_region built above; skip standard extraction
+  if (survey_name %in% c("Comoros", "Thailand")) next
   hh_data_other <- get(paste0("hh_", survey_name, "_Variables"))
   hh7_extract_other <- extractVariableLabelsfromHH7(hh_data_other)
   hh7_extract_other$id <- as.factor(hh7_extract_other$id)
@@ -299,6 +330,8 @@ for (survey_name in SMDW_surveys) {
 }
 
 for (survey_name in other_surveys) {
+  # Comoros and Thailand already have HH7_region set; skip standard replacement
+  if (survey_name %in% c("Comoros", "Thailand")) next
   hh_data_other <- get(paste0("hh_", survey_name, "_Variables"))
   hh7_extract_other <- get(paste0("hh_", survey_name, "_HH7extract_other"))
   hh_data_other <- replaceHH7LabelsWithRegionNames(hh_data_other, hh7_extract_other)
@@ -347,8 +380,8 @@ df.MICS.SMDW_old_Labeled <- relabelingSurveyQuestionResponses(
   df.MICS.SMDW_old, WS1, WS2, WS3, WS4, WS7, WS8, WQ27
 )
 
-write.csv(df.MICS.SMDW_old_Labeled, "~/switchdrive/Eawag/WorldBankProject/HH_surveys/HH_survey_data/df_SMDW_oldMICS_v1.csv", 
-          fileEncoding = "UTF-8", row.names = F)
+write.csv(df.MICS.SMDW_old_Labeled, here::here("outputs/00_raw_household_data/df.SMDW_wq_MICS_old.csv"),
+          fileEncoding = "UTF-8", row.names = FALSE)
 
 df.MICS.SMDW_new <- rbind(
 hh_Azerbaijan_SMDW,
@@ -375,8 +408,8 @@ df.MICS.SMDW_new_Labeled <- relabelingSurveyQuestionResponses(
   df.MICS.SMDW_new, WS1, WS2, WS3, WS4, WS7, WS8, WQ27
 )
 
-write.csv(df.MICS.SMDW_new_Labeled, "~/switchdrive/Eawag/WorldBankProject/HH_surveys/HH_survey_data/df_SMDW_newMICS_v1.csv", 
-          fileEncoding = "UTF-8", row.names = F)
+write.csv(df.MICS.SMDW_new_Labeled, here::here("outputs/00_raw_household_data/df.SMDW_wq_MICS_new.csv"),
+          fileEncoding = "UTF-8", row.names = FALSE)
 
 
 other_surveys <- c(
@@ -391,7 +424,7 @@ other_surveys <- c(
   "hh_Kyrgyzstan_Variables",
   "hh_Montenegro_Variables",
   "hh_Nauru_Variables",
-  "hh_Nigeria_Variables",
+  "hh_Nigeria_new_Variables",
   "hh_Pakistan_Sindh_Variables",
   "hh_Republic_of_North_Macedonia_Variables",
   "hh_Serbia_Variables",
@@ -403,17 +436,13 @@ other_surveys <- c(
   "hh_Yemen_Variables"
 )
 
-# rename Stratum -> stratum and PSU -> psu
+# Convert factor variables to character to avoid NAs on rbind.
+# Stratum → stratum and psu → PSU normalisation already done above.
 for (obj in other_surveys) {
   df <- get(obj)
-  
-  names(df)[names(df) == "Stratum"] <- "stratum"
-  names(df)[names(df) == "PSU"] <- "psu"
-  
   df[] <- lapply(df, function(x) {
     if (is.factor(x)) as.character(x) else x
   })
-  
   assign(obj, df)
 }
 
@@ -430,7 +459,7 @@ df.MICS.other <- rbind(
   hh_Kyrgyzstan_Variables,
   hh_Montenegro_Variables,
   hh_Nauru_Variables,
-  hh_Nigeria_Variables,
+  hh_Nigeria_new_Variables,
   hh_Pakistan_Sindh_Variables,
   hh_Republic_of_North_Macedonia_Variables,
   hh_Serbia_Variables,
@@ -452,8 +481,8 @@ df.MICS.other_Labeled <- relabelingSurveyQuestionResponses(
   df.MICS.other, WS1, WS2, WS3, WS4, WS7, WS8, WQ27
 )
 
-write.csv(df.MICS.other_Labeled, "~/switchdrive/Eawag/WorldBankProject/HH_surveys/HH_survey_data/df_other_MICS.csv", 
-          fileEncoding = "UTF-8", row.names = F)
+write.csv(df.MICS.other_Labeled, here::here("outputs/00_raw_household_data/df.SMDW_other_MICS.csv"),
+          fileEncoding = "UTF-8", row.names = FALSE)
 
 
 #######################################################
@@ -474,7 +503,7 @@ df_region_summary_new <- df.MICS.SMDW_new_Labeled %>%
     `number of households with data on water quality (WQ27)` = households_with_WQ27
   )
 
-write.csv(df_region_summary_new, "~/switchdrive/Eawag/WorldBankProject/MICS_SurveysDrinkingWater/HH_surveys/regionalSummary_MICSquality_new.csv", row.names = FALSE)
+#write.csv(df_region_summary_new, "~/switchdrive/Eawag/WorldBankProject/MICS_SurveysDrinkingWater/HH_surveys/regionalSummary_MICSquality_new.csv", row.names = FALSE)
 
 
 
@@ -569,4 +598,4 @@ df_region_summary <- df_wq_se %>%
     `95% CI upper percent` = ci_upper_percent,
     `design effect` = DEff.WQ27
   )
-write.csv(df_region_summary, "~/switchdrive/Eawag/WorldBankProject/MICS_SurveysDrinkingWater/HH_surveys/regionalSummary_MICSquality.csv", row.names = FALSE)
+#write.csv(df_region_summary, "~/switchdrive/Eawag/WorldBankProject/MICS_SurveysDrinkingWater/HH_surveys/regionalSummary_MICSquality.csv", row.names = FALSE)

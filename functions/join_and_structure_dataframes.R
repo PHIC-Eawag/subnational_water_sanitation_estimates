@@ -29,28 +29,28 @@ readEarthObservationFeaturesAndRenameCountriesAccordingToUN_WPP <- function(){
 }
 
 readHouseHoldSurveyData_SMDW_new <- function(){
-  df.MICS_HH <- read.csv("~/switchdrive/Eawag/WorldBankProject/HH_surveys/HH_survey_data/df_SMDW_newMICS_v1.csv")
-  return(df.MICS_HH)
+  readr::read_csv(here::here("outputs/00_raw_household_data/df.SMDW_wq_MICS_new.csv"),
+                  show_col_types = FALSE)
 }
 
 readHouseHoldSurveyData_SMDW_new_other <- function(){
-  df.MICS_HH <- read.csv("~/switchdrive/Eawag/WorldBankProject/HH_surveys/HH_survey_data/df_other_MICS.csv")
-  return(df.MICS_HH)
+  readr::read_csv(here::here("outputs/00_raw_household_data/df.SMDW_other_MICS.csv"),
+                  show_col_types = FALSE)
 }
 
 readHouseHoldSurveyData_SMDW_old <- function(){
-  df.MICS_HH <- read.csv("~/switchdrive/Eawag/WorldBankProject/HH_surveys/HH_survey_data/df_SMDW_oldMICS_v1.csv")
-  return(df.MICS_HH)
+  readr::read_csv(here::here("outputs/00_raw_household_data/df.SMDW_wq_MICS_old.csv"),
+                  show_col_types = FALSE)
 }
 
 readHouseHoldSurveyData_SMDW_DHS <- function(){
-  df.MICS_HH <- read.csv("~/switchdrive/Eawag/WorldBankProject/HH_surveys/HH_survey_data/df_SMDW_DHS.csv")
-  return(df.MICS_HH)
+  readr::read_csv(here::here("outputs/00_raw_household_data/df.SMDW_wq_DHS.csv"),
+                  show_col_types = FALSE)
 }
 
 readHouseHoldSurveyData_SMDW_DHS_other <- function(){
-  df.MICS_HH <- read.csv("~/switchdrive/Eawag/WorldBankProject/HH_surveys/HH_survey_data/df_other_DHS_SMDW.csv")
-  return(df.MICS_HH)
+  readr::read_csv(here::here("outputs/00_raw_household_data/df.SMDW_other_DHS.csv"),
+                  show_col_types = FALSE)
 }
 
 readOverviewWaterQualityData <- function(){

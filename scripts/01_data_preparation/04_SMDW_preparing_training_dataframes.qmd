@@ -1,351 +1,438 @@
 ---
-title: "4_preparing_dataframes"
-format: html
-editor: visual
+title: "Prepare SMDW Model Training Data"
+subtitle: "Safe drinking water and subcomponent outcomes with geospatial covariates"
+author: ""
+date: today
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    code-fold: true
+    self-contained: true
+execute:
+  echo: true
+  warning: false
+  message: false
+editor:
+  markdown:
+    wrap: 72
 ---
 
-## 1. Loading data
+# 1. Setup
+
+## Libraries and sourced functions
 
 ```{r}
-# ============================================================
-# Prepare model training datasets for safe drinking water
-# subcomponents
-# ============================================================
-#
-# Outputs:
-#   ./data/training_subcomponents/ecoli_free_training_with_covariates.csv
-#   ./data/training_subcomponents/improved_source_training_with_covariates.csv
-#   ./data/training_subcomponents/availability_training_with_covariates.csv
-#   ./data/training_subcomponents/accessibility_training_with_covariates.csv
-#
-# Crosswalk review files:
-#   ./data/crosswalk_review/
-
-
 library(tidyverse)
 library(here)
 library(fuzzyjoin)
 library(stringdist)
 library(stringi)
 
-source(here::here("./functions/create_indicators.R"))
-source(here::here("./functions/join_and_structure_dataframes.R"))
+source(here::here("functions/create_SMDW_indicators.R"))
+source(here::here("functions/join_and_structure_dataframes.R"))
+source(here::here("functions/diagnostics.R"))           # generalised diagnostic helpers
+source(here::here("functions/country_join_helpers.R"))  # unified add_country_join_key_extended()
+source(here::here("configuration/covariate_cols.R"))           # loads `covariate_cols` vector
+source(here::here("configuration/manual_region_fixes.R"))      # loads `manual_fixes_smdw`, `manual_fixes_smdw_ecoli`
 ```
 
+## Paths
+
+All raw data paths are defined here so they are easy to update when data
+moves.
+
 ```{r}
-# ============================================================
-# Geospatial covariate paths
-# ============================================================
-
-PATH_TO_POP_SUMS_WQ <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/pop_sums_training_water_quality"
+# ── Geospatial covariate paths ──────────────────────────────────────────────
+PATH_TO_POP_SUMS_WQ    <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/pop_sums_training_water_quality"
 PATH_TO_POP_SUMS_OTHER <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/pop_sums_training_other"
+FILE_NONPOP_WQ         <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/water_quality_covariates_nonpop_v4.csv"
+FILE_NONPOP_OTHER      <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/other_surveys_covariates_nonpop_v3.csv"
 
-FILE_NONPOP_WQ <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/water_quality_covariates_nonpop_v4.csv"
-FILE_NONPOP_OTHER <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/other_surveys_covariates_nonpop_v2.csv"
+# ── Household survey data ────────────────────────────────────────────────────
+PATH_MICS_SMDW_WQ_OLD <- here::here("outputs/00_raw_household_data/df.SMDW_wq_MICS_old.csv")
+PATH_MICS_SMDW_WQ_NEW <- here::here("outputs/00_raw_household_data/df.SMDW_wq_MICS_new.csv")
+PATH_MICS_SMDW_OTHER  <- here::here("outputs/00_raw_household_data/df.SMDW_other_MICS.csv")
+PATH_DHS_SMDW_WQ      <- here::here("outputs/00_raw_household_data/df.SMDW_wq_DHS.csv")
+PATH_DHS_SMDW_OTHER   <- here::here("outputs/00_raw_household_data/df.SMDW_other_DHS.csv")
 
+# ── Lookup tables ────────────────────────────────────────────────────────────
+PATH_COUNTRY_KEY  <- here::here("data/country_name_key_WB.csv")
+PATH_GDP          <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/gdp_per_capita_2015.csv"
+PATH_EDUCATION    <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/secondary_education_years.csv"
+PATH_WASTEWATER   <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/Country_WWctr_Percentage.txt"
+
+PATH_TO_REGION_AREAS_WQ    <- here::here("outputs/02_boundary_files/water_quality_surveys/region_areas_km2.csv")
+PATH_TO_REGION_AREAS_OTHER <- here::here("outputs/02_boundary_files/other_surveys/region_areas_km2.csv")
+
+# ── Outputs ──────────────────────────────────────────────────────────────────
+OUTPUT_DIR           <- here::here("data/training_subcomponents")
+CROSSWALK_REVIEW_DIR <- here::here("outputs/01_matching_regions/crosswalk_review")
+```
+
+------------------------------------------------------------------------
+
+# 2. Input data
+
+## Household survey data
+
+Water-quality surveys (MICS new, MICS old, DHS) provide the E. coli and
+SMDW composite. Other household surveys (MICS other, DHS other) provide
+improved source, availability, and accessibility.
+
+```{r}
+df_mics_wq_new <- readr::read_csv(PATH_MICS_SMDW_WQ_NEW, show_col_types = FALSE) %>%
+  dplyr::mutate(household_data_source = "MICS_water_quality")
+
+df_mics_wq_old <- readr::read_csv(PATH_MICS_SMDW_WQ_OLD, show_col_types = FALSE) %>%
+  dplyr::mutate(household_data_source = "MICS_water_quality")
+
+df_dhs_wq <- readr::read_csv(PATH_DHS_SMDW_WQ, show_col_types = FALSE) %>%
+  dplyr::mutate(
+    HH7_region            = as.character(HH7_region),
+    household_data_source = "DHS_water_quality"
+  )
+
+df_mics_other <- readr::read_csv(PATH_MICS_SMDW_OTHER, show_col_types = FALSE) %>%
+  dplyr::mutate(household_data_source = "MICS_other")
+
+df_dhs_other <- readr::read_csv(PATH_DHS_SMDW_OTHER, show_col_types = FALSE) %>%
+  dplyr::mutate(household_data_source = "DHS_other")
+
+# Water-quality pool: used for E. coli and SMDW composite
+df_hh_water_quality <- dplyr::bind_rows(
+  df_mics_wq_old,
+  df_mics_wq_new,
+  df_dhs_wq
+)
+
+# Other-survey pool: used for improved source, availability, accessibility
+# Includes water-quality MICS data because those surveys also carry the
+# other subcomponent questions.
+df_hh_other <- dplyr::bind_rows(
+  df_mics_wq_old,
+  df_mics_wq_new,
+  df_mics_other,
+  df_dhs_other
+)
+
+# Standardise country name for DR Congo across both pools.
+# The compile script assigns "DR Congo"; covariate files use the full name.
+fix_country_names <- function(df) {
+  df %>%
+    dplyr::mutate(
+      country = dplyr::case_when(
+        country == "DR Congo" ~ "Democratic Republic of the Congo",
+        TRUE ~ country
+      )
+    )
+}
+
+df_hh_water_quality <- fix_country_names(df_hh_water_quality)
+df_hh_other         <- fix_country_names(df_hh_other)
+```
+
+## Lookup tables and metadata
+
+```{r}
+df_wgi_lmics        <- readWGI_lmics()
+country_name_key_WB <- readr::read_csv(PATH_COUNTRY_KEY, show_col_types = FALSE)
+
+oghist_raw <- suppressMessages(readxl::read_excel(
+  "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/OGHIST_2026_03_10.xlsx",
+  sheet     = "Country Analytical History",
+  col_names = FALSE
+))
+
+# JMP 2025 global dataset — two sheets
+# "Sanitation" provides iso3, sdg_region, fragile_context, and country-level
+#   sanitation estimates (used as contextual covariates for all outcomes).
+# "Water" provides drinking water estimates specific to the SMDW outcomes.
+jmp_raw_sanitation <- suppressMessages(readxl::read_excel(
+  "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/JMP_2025_WLD.xlsx",
+  sheet     = "Sanitation",
+  col_names = FALSE
+))
+
+jmp_raw_water <- suppressMessages(readxl::read_excel(
+  "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/JMP_2025_WLD.xlsx",
+  sheet     = "Water",
+  col_names = FALSE
+))
+```
+
+------------------------------------------------------------------------
+
+# 3. Survey selection
+
+## Filter to study period (2015–2024)
+
+Surveys outside the modelling window are dropped. Surveys near the
+boundary are flagged before filtering so the exclusions are visible. The
+same standardisation and year-range logic used for sanitation is applied
+here to both household data pools.
+
+```{r}
+filter_to_study_period <- function(df) {
+  df <- df %>%
+    dplyr::mutate(
+      HH5Y_original = HH5Y,
+      HH5Y          = standardise_survey_year(country, HH5Y)
+    )
+
+  surveys_outside_range <- df %>%
+    dplyr::filter(!is.na(HH5Y), HH5Y < 2015 | HH5Y > 2025) %>%
+    dplyr::distinct(country, HH5Y_original, HH5Y) %>%
+    dplyr::arrange(country, HH5Y)
+  print(surveys_outside_range)
+
+  countries_with_2024 <- df %>%
+    dplyr::filter(HH5Y == 2024) %>%
+    dplyr::distinct(country)
+
+  df %>%
+    dplyr::filter(
+      is.na(HH5Y) | (HH5Y >= 2015 & HH5Y <= 2024) |
+        (HH5Y == 2025 & country %in% countries_with_2024$country)
+    )
+}
+
+df_hh_water_quality <- filter_to_study_period(df_hh_water_quality)
+df_hh_other         <- filter_to_study_period(df_hh_other)
+```
+
+## Select most recent data source per country
+
+Where a country has both MICS and DHS data, we keep the source with the
+most recent survey year. Ties are broken by row count, then source name.
+This is applied separately to each household data pool.
+
+```{r}
+keep_most_recent_source <- function(df, pool_label = "") {
+
+  country_source_summary <- df %>%
+    dplyr::mutate(HH5Y = as.integer(HH5Y)) %>%
+    dplyr::group_by(country, household_data_source) %>%
+    dplyr::summarise(
+      min_year     = ifelse(all(is.na(HH5Y)), NA_integer_, min(HH5Y, na.rm = TRUE)),
+      max_year     = ifelse(all(is.na(HH5Y)), NA_integer_, max(HH5Y, na.rm = TRUE)),
+      survey_years = paste(sort(unique(HH5Y[!is.na(HH5Y)])), collapse = ", "),
+      n_rows       = dplyr::n(),
+      .groups      = "drop"
+    )
+
+  knitr::kable(
+    country_source_summary %>% dplyr::arrange(country, household_data_source),
+    caption = paste("Available surveys by country and data source", pool_label)
+  ) %>% print()
+
+  source_to_keep <- country_source_summary %>%
+    dplyr::group_by(country) %>%
+    dplyr::arrange(desc(!is.na(max_year)), desc(max_year), desc(n_rows),
+                   household_data_source) %>%
+    dplyr::slice(1) %>%
+    dplyr::ungroup() %>%
+    dplyr::select(country, household_data_source)
+
+  source_to_drop <- country_source_summary %>%
+    dplyr::anti_join(source_to_keep, by = c("country", "household_data_source")) %>%
+    dplyr::arrange(country, household_data_source)
+
+  knitr::kable(
+    source_to_drop,
+    caption = paste("Sources dropped (superseded by more recent data)", pool_label)
+  ) %>% print()
+
+  df %>% dplyr::semi_join(source_to_keep, by = c("country", "household_data_source"))
+}
+
+df_hh_water_quality <- keep_most_recent_source(df_hh_water_quality, "(water-quality pool)")
+df_hh_other         <- keep_most_recent_source(df_hh_other,         "(other-surveys pool)")
+```
+
+## Drop Pakistan sub-national MICS surveys (other pool)
+
+Pakistan sub-national MICS surveys (Balochistan, KP, Punjab, Sindh)
+report at district level, which does not match the province-level
+covariate boundaries. They are dropped from the other-surveys pool; the
+national Pakistan DHS is used instead. The water-quality pool is
+unaffected (Pakistan Punjab WQ uses province-level regions).
+
+```{r}
+pakistan_mics_other_dropped <- df_hh_other %>%
+  dplyr::filter(
+    stringr::str_detect(country, "^Pakistan ") &
+    household_data_source %in% c("MICS_water_quality", "MICS_other")
+  ) %>%
+  dplyr::distinct(country, HH5Y, household_data_source)
+
+knitr::kable(
+  pakistan_mics_other_dropped,
+  caption = "Pakistan sub-national MICS surveys dropped from other-surveys pool"
+)
+
+df_hh_other <- df_hh_other %>%
+  dplyr::filter(
+    !(stringr::str_detect(country, "^Pakistan ") &
+      household_data_source %in% c("MICS_water_quality", "MICS_other"))
+  )
+```
+
+## Region-level drops and merges
+
+Known region labels that are uninformative or that need to be combined
+before crosswalk matching are handled here.
+
+```{r}
+# ── Water-quality pool ───────────────────────────────────────────────────────
+df_hh_water_quality <- df_hh_water_quality %>%
+  dplyr::mutate(
+    HH7_region = dplyr::case_when(
+      # São Tomé and Príncipe: merge mainland districts
+      country == "Sao Tome and Principe" & HH7_region %in% c(
+        "DISTRITO DE ÁGUA GRANDE",
+        "DISTRITO DE MÉ-ZÓCHI",
+        "REGIÃO NORTE OESTE",
+        "REGIÃO SUL ESTE"
+      ) ~ "São Tomé",
+      country == "Sao Tome and Principe" & HH7_region == "REGIÃO AUTÓNOMA DO PRÍNCIPE" ~ "Príncipe",
+      # Samoa: merge Upolu sub-regions into one
+      country == "Samoa" & HH7_region %in% c(
+        "Apia Urban Area", "North West Upolu", "Rest of Upolu"
+      ) ~ "Upolu",
+      country == "Samoa" & HH7_region == "Savaii" ~ "Savaii",
+      # Togo: merge Golfe Urbain and Lomé Commune
+      country == "Togo" & HH7_region %in% c("Golfe Urbain", "Lomé Commune") ~ "Lomé Commune/Golfe Urbain",
+      TRUE ~ HH7_region
+    )
+  )
+
+# ── Other-surveys pool ───────────────────────────────────────────────────────
+df_hh_other <- df_hh_other %>%
+  dplyr::filter(
+    !(country == "Nauru"  & HH7_region == "LOCATION")
+  ) %>%
+  dplyr::mutate(
+    HH7_region = dplyr::case_when(
+      # São Tomé and Príncipe: merge mainland districts
+      country == "Sao Tome and Principe" & HH7_region %in% c(
+        "DISTRITO DE ÁGUA GRANDE",
+        "DISTRITO DE MÉ-ZÓCHI",
+        "REGIÃO NORTE OESTE",
+        "REGIÃO SUL ESTE"
+      ) ~ "São Tomé",
+      country == "Sao Tome and Principe" & HH7_region == "REGIÃO AUTÓNOMA DO PRÍNCIPE" ~ "Príncipe",
+      # Samoa: merge Upolu sub-regions into one
+      country == "Samoa" & HH7_region %in% c(
+        "Apia Urban Area", "North West Upolu", "Rest of Upolu"
+      ) ~ "Upolu",
+      country == "Samoa" & HH7_region == "Savaii" ~ "Savaii",
+      # Togo: merge Golfe Urbain and Lomé Commune
+      country == "Togo" & HH7_region %in% c("Golfe Urbain", "Lomé Commune") ~ "Lomé Commune/Golfe Urbain",
+      TRUE ~ HH7_region
+    )
+  )
+```
+
+------------------------------------------------------------------------
+
+# 4. Geospatial covariates
+
+## Build covariate tables
+
+SMDW uses two covariate tables: one based on water-quality survey
+boundaries (for E. coli and SMDW), one based on other survey boundaries
+(for improved source, availability, accessibility). The `covariate_cols`
+vector is defined in `configuration/covariate_cols.R`.
+
+```{r}
 pop_files_wq <- list.files(
-  path = path.expand(PATH_TO_POP_SUMS_WQ),
-  pattern = "\\.csv$",
+  path       = path.expand(PATH_TO_POP_SUMS_WQ),
+  pattern    = "\\.csv$",
   full.names = TRUE
 )
 
 pop_files_other <- list.files(
-  path = path.expand(PATH_TO_POP_SUMS_OTHER),
-  pattern = "\\.csv$",
+  path       = path.expand(PATH_TO_POP_SUMS_OTHER),
+  pattern    = "\\.csv$",
   full.names = TRUE
 )
 
-
-# Keep the same covariate list you used before.
-# This should be the full vector of environmental and human covariates.
-covariate_cols <- c(
-  "CGIAR_Aridity_Index", "CGIAR_PET",
-  "CHELSA_BIO_Annual_Mean_Temperature",
-  "CHELSA_BIO_Annual_Precipitation",
-  "CHELSA_BIO_Precipitation_Seasonality",
-  "CHELSA_BIO_Precipitation_of_Coldest_Quarter",
-  "CHELSA_BIO_Precipitation_of_Driest_Month",
-  "CHELSA_BIO_Precipitation_of_Driest_Quarter",
-  "CHELSA_BIO_Precipitation_of_Warmest_Quarter",
-  "CHELSA_BIO_Precipitation_of_Wettest_Month",
-  "CHELSA_BIO_Precipitation_of_Wettest_Quarter",
-  "CHELSA_BIO_Temperature_Annual_Range",
-  "CHELSA_BIO_Temperature_Seasonality",
-  "CIFOR_TropicalPeatlandExtent",
-  "CSP_Global_Human_Modification",
-  "ConsensusLandCoverClass_Barren",
-  "ConsensusLandCoverClass_Cultivated_and_Managed_Vegetation",
-  "ConsensusLandCoverClass_Deciduous_Broadleaf_Trees",
-  "ConsensusLandCoverClass_Evergreen_Broadleaf_Trees",
-  "ConsensusLandCoverClass_Evergreen_Deciduous_Needleleaf_Trees",
-  "ConsensusLandCoverClass_Herbaceous_Vegetation",
-  "ConsensusLandCoverClass_Mixed_Other_Trees",
-  "ConsensusLandCoverClass_Open_Water",
-  "ConsensusLandCoverClass_Regularly_Flooded_Vegetation",
-  "ConsensusLandCoverClass_Shrubs",
-  "ConsensusLandCoverClass_Snow_Ice",
-  "ConsensusLandCoverClass_Urban_Builtup",
-  "ConsensusLandCover_Human_Development_Percentage",
-  "CrowtherLab_Tree_Density",
-  "EarthEnvCloudCover_CloudForestPrediction",
-  "EarthEnvTexture_CoOfVar_EVI",
-  "EarthEnvTexture_Contrast_EVI",
-  "EarthEnvTexture_Correlation_EVI",
-  "EarthEnvTexture_Dissimilarity_EVI",
-  "EarthEnvTexture_Entropy_EVI",
-  "EarthEnvTexture_Evenness_EVI",
-  "EarthEnvTexture_Homogeneity_EVI",
-  "EarthEnvTexture_Maximum_EVI",
-  "EarthEnvTexture_Range_EVI",
-  "EarthEnvTexture_Shannon_Index",
-  "EarthEnvTexture_Simpson_Index",
-  "EarthEnvTexture_Std_EVI",
-  "EarthEnvTexture_Uniformity_EVI",
-  "EarthEnvTexture_Variance_EVI",
-  "EarthEnvTopoMed_1stOrderPartialDerivEW",
-  "EarthEnvTopoMed_1stOrderPartialDerivNS",
-  "EarthEnvTopoMed_Eastness",
-  "EarthEnvTopoMed_Elevation",
-  "EarthEnvTopoMed_Roughness",
-  "EarthEnvTopoMed_Slope",
-  "EarthEnvTopoMed_TerrainRuggednessIndex",
-  "EarthEnvTopoMed_TopoPositionIndex",
-  "EsaCci_BurntAreasProbability",
-  "FanEtAl_Depth_to_Water_Table_AnnualMean",
-  "FanEtAl_Depth_to_Water_Table_AnnualSD",
-  "GHS_Population_Density",
-  "GLW3_RuminantsDistribution_downsampled10km",
-  "GPWv4_Population_Density",
-  "GiriEtAl_MangrovesExtent",
-  "MODIS_EVI", "MODIS_NDVI", "MODIS_NPP",
-  "PelletierEtAl_SoilAndSedimentaryDepositThicknesses",
-  "SG_Absolute_depth_to_bedrock",
-  "SG_Bulk_density_015cm",
-  "SG_Depth_to_bedrock",
-  "SG_H2O_Capacity_015cm",
-  "SG_Saturated_H2O_Content_015cm",
-  "TootchiEtAl_WetlandsRegularlyFlooded",
-  "WCS_Human_Footprint_2009",
-  "chirps_annual_precipitation",
-  "era5_temperature_2m",
-  "ghsl_built_surface",
-  "ghsl_population",
-  "ghsl_urban_frac",
-  "jrc_building_height",
-  "map_friction",
-  "modis_evi",
-  "modis_ndvi",
-  "runoff_max_annualmax",
-  "runoff_min_annualmin",
-  "temperature_2m_max_annualmax",
-  "viirs_average",
-  "worldpop"
-)
-```
-
-```{r}
-# ============================================================
-# Read household survey inputs
-# ============================================================
-
-df.water_quality_overview <- readOverviewWaterQualityData()
-
-df.MICS_HH_SMDW_new <- readHouseHoldSurveyData_SMDW_new() #with water quality data
-df.MICS_HH_SMDW_old <- readHouseHoldSurveyData_SMDW_old() #with water quality data
-df.DHS_HH_SMDW <- readHouseHoldSurveyData_SMDW_DHS() #with water quality data
-
-df.DHS_HH_SMDW <- df.DHS_HH_SMDW %>%
-  dplyr::mutate(
-    HH7_region = as.character(HH7_region)
-  )
-
-df.MICS_HH_SMDW_new_other <- readHouseHoldSurveyData_SMDW_new_other() #with data on other subcomponents (improved source, availability, accessibility)
-df.DHS_HH_SMDW_other <- readHouseHoldSurveyData_SMDW_DHS_other() #with data on other subcomponents
-
-
-#Adding information about source
-
-df.MICS_HH_SMDW_new <- df.MICS_HH_SMDW_new  %>%
-  dplyr::mutate(household_data_source = "MICS_water_quality")
-df.MICS_HH_SMDW_old <- df.MICS_HH_SMDW_old  %>%
-  dplyr::mutate(household_data_source = "MICS_water_quality")
-df.DHS_HH_SMDW <- df.DHS_HH_SMDW  %>%
-  dplyr::mutate(household_data_source = "DHS_water_quality")
-
-df.MICS_HH_SMDW_new_other <- df.MICS_HH_SMDW_new_other  %>%
-  dplyr::mutate(household_data_source = "MICS_other")
-df.DHS_HH_SMDW_other <- df.DHS_HH_SMDW_other  %>%
-  dplyr::mutate(household_data_source = "DHS_other")
-
-
-# Water-quality household data.
-# These are used for E. coli and also included in the other subcomponents.
-df_hh_water_quality <- dplyr::bind_rows(
-  df.MICS_HH_SMDW_old,
-  df.MICS_HH_SMDW_new,
-  df.DHS_HH_SMDW
-)
-
-
-# Other household surveys.
-# These are used for improved source, availability, and accessibility.
-df_hh_other <- dplyr::bind_rows(
-  df.MICS_HH_SMDW_old,
-  df.MICS_HH_SMDW_new,
-  df.MICS_HH_SMDW_new_other,
-  df.DHS_HH_SMDW_other
-  ) 
-
-
-# ============================================================
-# Read lookup and metadata inputs
-# ============================================================
-
-df.WGI_lmics <- readWGI_lmics()
-
-country_name_key_WB <- readr::read_csv(
-  here::here("./data/country_name_key_WB.csv"),
-  show_col_types = FALSE
-)
-
-UN_region_key <- readr::read_delim(
-  here::here("./data/UNSD—Methodology.csv"),
-  show_col_types = FALSE
-)
-
-df.prediction_nonpop <- readPredictionData_nonpop()
-```
-
-```{r}
-# Remove countries with HH5Y outside 2015–2024
-countries_HH5Y_outside_range <- df_hh_other %>%
-  dplyr::filter(
-    !is.na(HH5Y),
-    HH5Y < 2015 | HH5Y > 2024
-  ) %>%
-  dplyr::distinct(country) %>%
-  dplyr::arrange(country)
-
-print(countries_HH5Y_outside_range)
-
-df_hh_other <- df_hh_other %>%
-  dplyr::mutate(
-    HH5Y_original = HH5Y,
-    HH5Y = standardise_survey_year(country, HH5Y)
-  ) %>%
-  dplyr::filter(
-    is.na(HH5Y) | HH5Y >= 2015
-  )
-```
-
-```{r}
-
-# ------------------------------------------------------------
-# Summarise survey years by country and data source
-# ------------------------------------------------------------
-
-country_source_summary <- df_hh_other %>%
-  mutate(HH5Y = as.integer(HH5Y)) %>%
-  group_by(country, household_data_source) %>%
-  summarise(
-    min_year = ifelse(all(is.na(HH5Y)), NA_integer_, min(HH5Y, na.rm = TRUE)),
-    max_year = ifelse(all(is.na(HH5Y)), NA_integer_, max(HH5Y, na.rm = TRUE)),
-    survey_years = paste(sort(unique(HH5Y[!is.na(HH5Y)])), collapse = ", "),
-    n_rows = n(),
-    .groups = "drop"
-  )
-
-print(country_source_summary)
-
-# ------------------------------------------------------------
-# Identify which data source to keep per country
-# ------------------------------------------------------------
-
-source_to_keep <- country_source_summary %>%
-  group_by(country) %>%
-  arrange(
-    desc(!is.na(max_year)),  # prefer sources with year information
-    desc(max_year),          # keep source with latest survey year
-    desc(n_rows),            # if tied, keep source with more rows
-    household_data_source
-  ) %>%
-  slice(1) %>%
-  ungroup() %>%
-  select(country, household_data_source)
-
-print(source_to_keep)
-
-
-# ------------------------------------------------------------
-# see which sources will be dropped
-# ------------------------------------------------------------
-
-source_to_drop <- country_source_summary %>%
-  anti_join(source_to_keep, by = c("country", "household_data_source")) %>%
-  arrange(country, household_data_source)
-
-print(source_to_drop)
-
-# ------------------------------------------------------------
-# Keep only one survey source per country
-# ------------------------------------------------------------
-
-df_hh_other <- df_hh_other %>%
-  semi_join(
-    source_to_keep,
-    by = c("country", "household_data_source")
-  )
-
-```
-
-```{r}
-# ============================================================
-# Build separate covariate tables
-# ============================================================
-
 df_training_covariates_wq <- make_training_covariates(
-  pop_files = pop_files_wq,
-  nonpop_files = FILE_NONPOP_WQ,
+  pop_files      = pop_files_wq,
+  nonpop_files   = FILE_NONPOP_WQ,
   covariate_cols = covariate_cols
 )
 
 df_training_covariates_other <- make_training_covariates(
-  pop_files = pop_files_other,
-  nonpop_files = FILE_NONPOP_OTHER,
+  pop_files      = pop_files_other,
+  nonpop_files   = FILE_NONPOP_OTHER,
   covariate_cols = covariate_cols
 )
-
-# Check for duplicate covariate keys.
-# This should ideally return zero rows.
-duplicate_covariate_keys_wq <- check_duplicate_covariate_keys(
-  df_training_covariates_wq
-)
-
-duplicate_covariate_keys_other <- check_duplicate_covariate_keys(
-  df_training_covariates_other
-)
-
-duplicate_covariate_keys_wq
-duplicate_covariate_keys_other
-
 ```
 
+## Add region areas
+
 ```{r}
-# ============================================================
-# Create household input datasets
-# ============================================================
+load_region_areas <- function(path) {
+  readr::read_csv(path, show_col_types = FALSE) %>%
+    dplyr::mutate(HH7_region = stringr::str_trim(HH7_region)) %>%
+    dplyr::select(country, analysis_year, HH7_region, area_km2) %>%
+    dplyr::group_by(country, analysis_year, HH7_region) %>%
+    dplyr::slice(1) %>%
+    dplyr::ungroup()
+}
 
-df_hh_water_quality_for_ecoli <- df_hh_water_quality
+#df_region_areas_wq    <- load_region_areas(PATH_TO_REGION_AREAS_WQ)
+#df_region_areas_other <- load_region_areas(PATH_TO_REGION_AREAS_OTHER)
 
-df_hh_other_for_subcomponents <- df_hh_other
+#df_training_covariates_wq <- df_training_covariates_wq %>%
+  #dplyr::left_join(df_region_areas_wq, by = c("country", "analysis_year", "HH7_region"))
+
+df_training_covariates_other <- df_training_covariates_other %>%
+  dplyr::left_join(df_region_areas_other, by = c("country", "analysis_year", "HH7_region"))
+
+cat("WQ regions missing area_km2:    ", sum(is.na(df_training_covariates_wq$area_km2)),    "\n")
+cat("Other regions missing area_km2: ", sum(is.na(df_training_covariates_other$area_km2)), "\n")
 ```
 
+## Check for duplicate covariate keys
+
 ```{r}
+check_duplicate_covariate_keys(df_training_covariates_wq)
+check_duplicate_covariate_keys(df_training_covariates_other)
+```
 
-# ============================================================
-# Reviewed e.coli analysis-year fixes
-# ============================================================
+------------------------------------------------------------------------
 
+# 5. Build regional outcomes
+
+## Restrict to most recent survey year per country
+
+Before building outcomes, each household data pool is filtered to the
+most recent survey round (within a 2-year window) to avoid mixing
+multiple rounds.
+
+```{r}
+keep_latest_survey_year_hh <- function(df, max_survey_duration = 2) {
+  df %>%
+    dplyr::group_by(country) %>%
+    dplyr::filter(HH5Y >= max(HH5Y, na.rm = TRUE) - max_survey_duration) %>%
+    dplyr::ungroup()
+}
+
+df_hh_water_quality_latest <- keep_latest_survey_year_hh(df_hh_water_quality)
+df_hh_other_latest         <- keep_latest_survey_year_hh(df_hh_other)
+```
+
+## Analysis-year fixes for E. coli
+
+Some countries require a manual override of the analysis year assigned
+from the raw survey year. Add new entries here when new surveys are
+incorporated.
+
+```{r}
 manual_analysis_year_fixes_ecoli <- tibble::tribble(
   ~country,                              ~analysis_year_manual,
   "Lao People's Democratic Republic",    2023L,
@@ -353,1009 +440,471 @@ manual_analysis_year_fixes_ecoli <- tibble::tribble(
   "São Tomé and Príncipe",               2019L,
   "Zimbabwe",                            2019L
 )
-
-# ============================================================
-# Create outcomes
-# ============================================================
-
-SMDW_outcome <- make_smdw_regional_outcome(
-  df_hh_water_quality_for_ecoli
-)
-
-ecoli_outcome <- make_ecoli_regional_outcome(
-  df_hh_water_quality_for_ecoli
-)
-
-improved_source_outcome <- make_improved_source_regional_outcome(
-  df_hh_other_for_subcomponents
-)
-
-availability_outcome <- make_availability_regional_outcome(
-  df_hh_other_for_subcomponents
-)
-
-accessibility_outcome <- make_accessibility_regional_outcome(
-  df_hh_other_for_subcomponents
-)
 ```
 
+## Create outcomes
+
 ```{r}
+SMDW_outcome             <- make_smdw_regional_outcome(df_hh_water_quality_latest)
+ecoli_outcome            <- make_ecoli_regional_outcome(df_hh_water_quality_latest)
+improved_source_outcome  <- make_improved_source_regional_outcome(df_hh_other_latest)
+availability_outcome     <- make_availability_regional_outcome(df_hh_other_latest)
+accessibility_outcome    <- make_accessibility_regional_outcome(df_hh_other_latest)
+```
 
-# ------------------------------------------------------------
-# Year lookups
-# ------------------------------------------------------------
+## Add PSU weights
 
-ecoli_year_lookup <- make_year_lookup_from_raw_household_data(
-  df_hh_water_quality_for_ecoli,
+Survey-design weights based on the number of primary sampling units are
+attached to each region–year row. The unfiltered household data pools
+are used here to count all available PSUs.
+
+```{r}
+wq_year_lookup    <- make_year_lookup_from_raw_household_data(
+  df_hh_water_quality_latest,
   manual_analysis_year_fixes = manual_analysis_year_fixes_ecoli
 )
+other_year_lookup <- make_year_lookup_from_raw_household_data(df_hh_other_latest)
 
-other_year_lookup <- make_year_lookup_from_raw_household_data(
-  df_hh_other_for_subcomponents
-)
-
-
-# ------------------------------------------------------------
-# Add n_PSU weights to outcome tables
-# ------------------------------------------------------------
 SMDW_outcome <- add_n_psu_weight(
-  hh_df = df_hh_water_quality_for_ecoli,
-  outcome_df = SMDW_outcome,
-  year_lookup = ecoli_year_lookup
+  hh_df       = df_hh_water_quality,
+  outcome_df  = SMDW_outcome,
+  year_lookup = wq_year_lookup
 )
-
 ecoli_outcome <- add_n_psu_weight(
-  hh_df = df_hh_water_quality_for_ecoli,
-  outcome_df = ecoli_outcome,
-  year_lookup = ecoli_year_lookup
+  hh_df       = df_hh_water_quality,
+  outcome_df  = ecoli_outcome,
+  year_lookup = wq_year_lookup
 )
-
 improved_source_outcome <- add_n_psu_weight(
-  hh_df = df_hh_other_for_subcomponents,
-  outcome_df = improved_source_outcome,
+  hh_df       = df_hh_other,
+  outcome_df  = improved_source_outcome,
   year_lookup = other_year_lookup
 )
-
 availability_outcome <- add_n_psu_weight(
-  hh_df = df_hh_other_for_subcomponents,
-  outcome_df = availability_outcome,
+  hh_df       = df_hh_other,
+  outcome_df  = availability_outcome,
   year_lookup = other_year_lookup
 )
-
 accessibility_outcome <- add_n_psu_weight(
-  hh_df = df_hh_other_for_subcomponents,
-  outcome_df = accessibility_outcome,
+  hh_df       = df_hh_other,
+  outcome_df  = accessibility_outcome,
   year_lookup = other_year_lookup
 )
 
-
-# ------------------------------------------------------------
-# Quick check
-# ------------------------------------------------------------
-
-n_psu_check <- dplyr::bind_rows(
-  SMDW_outcome %>% dplyr::mutate(check_outcome = "smdw"),
-  ecoli_outcome %>% dplyr::mutate(check_outcome = "ecoli_free"),
-  improved_source_outcome %>% dplyr::mutate(check_outcome = "improved_source"),
-  availability_outcome %>% dplyr::mutate(check_outcome = "availability"),
-  accessibility_outcome %>% dplyr::mutate(check_outcome = "accessibility")
+# Quick sanity check on PSU coverage
+dplyr::bind_rows(
+  SMDW_outcome            %>% dplyr::mutate(outcome = "smdw"),
+  ecoli_outcome           %>% dplyr::mutate(outcome = "ecoli_free"),
+  improved_source_outcome %>% dplyr::mutate(outcome = "improved_source"),
+  availability_outcome    %>% dplyr::mutate(outcome = "availability"),
+  accessibility_outcome   %>% dplyr::mutate(outcome = "accessibility")
 ) %>%
-  dplyr::group_by(check_outcome) %>%
+  dplyr::group_by(outcome) %>%
   dplyr::summarise(
-    n_rows = dplyr::n(),
+    n_rows        = dplyr::n(),
     missing_n_psu = sum(is.na(n_psu)),
-    min_n_psu = min(n_psu, na.rm = TRUE),
-    median_n_psu = median(n_psu, na.rm = TRUE),
-    max_n_psu = max(n_psu, na.rm = TRUE),
+    min_n_psu     = min(n_psu, na.rm = TRUE),
+    median_n_psu  = median(n_psu, na.rm = TRUE),
+    max_n_psu     = max(n_psu, na.rm = TRUE),
     .groups = "drop"
   )
-
-print(n_psu_check)
 ```
 
-```{r}
-# ============================================================
-# Filter covariates to the country-year pairs in each outcome
-# ============================================================
+------------------------------------------------------------------------
 
+# 6. Covariate–outcome matching
+
+## Filter covariates to outcome country–years
+
+The full covariate tables are subset to only the country–year
+combinations present in each outcome, using a country name crosswalk to
+harmonise naming. Water-quality outcomes use the WQ covariate table;
+other subcomponents use the other covariate table.
+
+```{r}
 df_covariates_SMDW <- filter_covariates_to_outcome_years(
-  outcome_df = SMDW_outcome,
+  outcome_df             = SMDW_outcome,
   df_training_covariates = df_training_covariates_wq,
-  country_name_key_WB = country_name_key_WB
+  country_name_key_WB    = country_name_key_WB
 )
-
 df_covariates_ecoli <- filter_covariates_to_outcome_years(
-  outcome_df = ecoli_outcome,
+  outcome_df             = ecoli_outcome,
   df_training_covariates = df_training_covariates_wq,
-  country_name_key_WB = country_name_key_WB
+  country_name_key_WB    = country_name_key_WB
 )
-
 df_covariates_improved_source <- filter_covariates_to_outcome_years(
-  outcome_df = improved_source_outcome,
+  outcome_df             = improved_source_outcome,
   df_training_covariates = df_training_covariates_other,
-  country_name_key_WB = country_name_key_WB
+  country_name_key_WB    = country_name_key_WB
 )
-
 df_covariates_availability <- filter_covariates_to_outcome_years(
-  outcome_df = availability_outcome,
+  outcome_df             = availability_outcome,
   df_training_covariates = df_training_covariates_other,
-  country_name_key_WB = country_name_key_WB
+  country_name_key_WB    = country_name_key_WB
 )
-
 df_covariates_accessibility <- filter_covariates_to_outcome_years(
-  outcome_df = accessibility_outcome,
+  outcome_df             = accessibility_outcome,
   df_training_covariates = df_training_covariates_other,
-  country_name_key_WB = country_name_key_WB
+  country_name_key_WB    = country_name_key_WB
 )
-```
 
-```{r}
+check_duplicate_covariate_join_keys(df_covariates_SMDW)
 check_duplicate_covariate_join_keys(df_covariates_ecoli)
 check_duplicate_covariate_join_keys(df_covariates_improved_source)
 check_duplicate_covariate_join_keys(df_covariates_availability)
 check_duplicate_covariate_join_keys(df_covariates_accessibility)
 ```
 
+## Diagnose unmatched country–years
+
+Countries present in the outcome but absent from filtered covariates are
+flagged here. Common causes: country name mismatch or missing covariate
+data.
+
 ```{r}
-# ============================================================
-# Build initial region crosswalks
-# ============================================================
-#
-# Review the files written to:
-#   ./data/crosswalk_review/
-#
-# You should manually inspect the *_review_needed.csv files,
-# especially for the three outcomes using the new other-survey data.
+country_year_filtering_issues <- dplyr::bind_rows(
+  diagnose_country_year_filtering(
+    outcome_name        = "smdw",
+    outcome_df          = SMDW_outcome,
+    raw_covariates      = df_training_covariates_wq,
+    filtered_covariates = df_covariates_SMDW,
+    country_name_key_WB = country_name_key_WB
+  ),
+  diagnose_country_year_filtering(
+    outcome_name        = "ecoli_free",
+    outcome_df          = ecoli_outcome,
+    raw_covariates      = df_training_covariates_wq,
+    filtered_covariates = df_covariates_ecoli,
+    country_name_key_WB = country_name_key_WB
+  ),
+  diagnose_country_year_filtering(
+    outcome_name        = "improved_source",
+    outcome_df          = improved_source_outcome,
+    raw_covariates      = df_training_covariates_other,
+    filtered_covariates = df_covariates_improved_source,
+    country_name_key_WB = country_name_key_WB
+  ),
+  diagnose_country_year_filtering(
+    outcome_name        = "availability",
+    outcome_df          = availability_outcome,
+    raw_covariates      = df_training_covariates_other,
+    filtered_covariates = df_covariates_availability,
+    country_name_key_WB = country_name_key_WB
+  ),
+  diagnose_country_year_filtering(
+    outcome_name        = "accessibility",
+    outcome_df          = accessibility_outcome,
+    raw_covariates      = df_training_covariates_other,
+    filtered_covariates = df_covariates_accessibility,
+    country_name_key_WB = country_name_key_WB
+  )
+)
+print(country_year_filtering_issues)
+```
 
+## Build region crosswalks
+
+Survey region names are matched to covariate region names using fuzzy
+string matching. Rows that cannot be matched automatically are flagged
+for manual review.
+
+```{r}
 crosswalk_SMDW <- build_crosswalk_for_one_outcome(
-  outcome_name = "smdw",
-  outcome_df = SMDW_outcome,
+  outcome_name           = "smdw",
+  outcome_df             = SMDW_outcome,
   df_training_covariates = df_covariates_SMDW,
-  country_name_key_WB = country_name_key_WB
+  country_name_key_WB    = country_name_key_WB
 )
-
 crosswalk_ecoli <- build_crosswalk_for_one_outcome(
-  outcome_name = "ecoli_free",
-  outcome_df = ecoli_outcome,
+  outcome_name           = "ecoli_free",
+  outcome_df             = ecoli_outcome,
   df_training_covariates = df_covariates_ecoli,
-  country_name_key_WB = country_name_key_WB
+  country_name_key_WB    = country_name_key_WB
 )
-
 crosswalk_improved_source <- build_crosswalk_for_one_outcome(
-  outcome_name = "improved_source",
-  outcome_df = improved_source_outcome,
+  outcome_name           = "improved_source",
+  outcome_df             = improved_source_outcome,
   df_training_covariates = df_covariates_improved_source,
-  country_name_key_WB = country_name_key_WB
+  country_name_key_WB    = country_name_key_WB
 )
-
 crosswalk_availability <- build_crosswalk_for_one_outcome(
-  outcome_name = "availability",
-  outcome_df = availability_outcome,
+  outcome_name           = "availability",
+  outcome_df             = availability_outcome,
   df_training_covariates = df_covariates_availability,
-  country_name_key_WB = country_name_key_WB
+  country_name_key_WB    = country_name_key_WB
 )
-
 crosswalk_accessibility <- build_crosswalk_for_one_outcome(
-  outcome_name = "accessibility",
-  outcome_df = accessibility_outcome,
+  outcome_name           = "accessibility",
+  outcome_df             = accessibility_outcome,
   df_training_covariates = df_covariates_accessibility,
-  country_name_key_WB = country_name_key_WB
+  country_name_key_WB    = country_name_key_WB
 )
 
-# View rows that need manual review.
+# Inspect rows that need manual attention
+crosswalk_SMDW$regions_to_review
 crosswalk_ecoli$regions_to_review
 crosswalk_improved_source$regions_to_review
 crosswalk_availability$regions_to_review
 crosswalk_accessibility$regions_to_review
 ```
 
+## Write covariate region names for crosswalk review
+
 ```{r}
-covariate_region_names <- df_training_covariates_other %>%
-  dplyr::distinct(
-    country,
-    analysis_year,
-    source,
-    HH7_region
-  ) %>%
-  dplyr::arrange(
-    country,
-    analysis_year,
-    source,
-    HH7_region
-  )
+dir.create(CROSSWALK_REVIEW_DIR, recursive = TRUE, showWarnings = FALSE)
 
 readr::write_csv(
-  covariate_region_names,
-  here::here("./data/crosswalk_review/covariate_region_names.csv")
+  df_training_covariates_other %>%
+    dplyr::distinct(country, analysis_year, source, HH7_region) %>%
+    dplyr::arrange(country, analysis_year, source, HH7_region),
+  file.path(CROSSWALK_REVIEW_DIR, "covariate_region_names_other.csv")
+)
+readr::write_csv(
+  df_training_covariates_wq %>%
+    dplyr::distinct(country, analysis_year, source, HH7_region) %>%
+    dplyr::arrange(country, analysis_year, source, HH7_region),
+  file.path(CROSSWALK_REVIEW_DIR, "covariate_region_names_wq.csv")
 )
 ```
 
-```{r}
-# -----------------------------
-# Manual region corrections for e.coli after review
-# -----------------------------
+## Apply manual region name fixes
 
-manual_region_fixes_ecoli <- tribble(
-  ~HH7_region_outcome,                 ~country_cov,              ~correct_region_name,
-  "Ndjamena",                          "Chad",                    "Ville de N'Djamena",
-  "SAB",                               "Guinea-Bissau",           "Bissau",
-  "KIRKUK",                            "Iraq",                    "At-Ta'mim",
-  "SULAIMANIYA",                       "Iraq",                    "As-Sulaymaniyah",
-  "DG Khan",                           "Pakistan",                "Dera Ghazi Khan",
-  "RY Khan",                           "Pakistan",                "Rahim Yar Khan",
-  "TT Singh",                          "Pakistan",                "Toba Tek Singh",
-  "REGIÃO AUTÓNOMA DO PRÍNCIPE",       "São Tomé and Príncipe",   "Príncipe",
-  "ONGO NIUA",                         "Tonga",                   "Niuas",
-  "Ariha & Al Aghwar",                 "Palestina",               "Jericho",
-  "North Gaza",                        "Palestina",               "Gaza ash Shamaliyah",
-  "Cidade de Maputo",                  "Mozambique",              "Maputo City"
-) 
+Known mismatches are resolved via the lookup tables in
+`configuration/manual_region_fixes.R`. Add new entries there (not here)
+when new surveys are incorporated.
 
-
-
-```
+-   `manual_fixes_smdw_ecoli` — used for SMDW composite and E. coli
+    (water-quality survey boundaries; smaller set)
+-   `manual_fixes_sanitation` — used for improved source, availability,
+    accessibility (same survey boundaries as the sanitation pipeline)
 
 ```{r}
-# ============================================================
-# Manual fixes: improved source, availability, accessibility
-# ============================================================
-# These three outcomes use the same household survey region set, so
-# the same region fixes can be applied to all three.
-
-manual_fixes_other_subcomponents <- tibble::tribble(
-  ~HH7_region_outcome,                         ~country_cov,                              ~correct_region_name,
-  
-  # Afghanistan
-  "MAIDAN WARDAK",                             "Afghanistan",                             "Wardak",
-  
-  # Chad
-  "Ndjamena",                                  "Chad",                                    "Ville de N'Djamena",
-  "Ouadda?",                                   "Chad",                                    "Ouaddaï",
-  
-  # Democratic Republic of the Congo
-  "Maindombe",                                 "Democratic Republic of the Congo",        "Maï-Ndombe",
-  
-  # Georgia
-  "KHAKHETI",                                  "Georgia",                                 "Kakheti",
-  
-  # Guinea-Bissau
-  "SAB",                                       "Guinea-Bissau",                           "Bissau",
-  
-  # Iraq
-  "DUHOK",                                     "Iraq",                                    "Dihok",
-  "ERBIL",                                     "Iraq",                                    "Arbil",
-  "THIQAR",                                    "Iraq",                                    "Dhi-Qar",
-  "NAINAWA",                                   "Iraq",                                    "Ninawa",
-  "KARBALAH",                                  "Iraq",                                    "Karbala'",
-  "DIALA",                                     "Iraq",                                    "Diyala",
-  "SALAHADDIN",                                "Iraq",                                    "Sala ad-Din",
-  "ANBAR",                                     "Iraq",                                    "Al-Anbar",
-  "BASRAH",                                    "Iraq",                                    "Al-Basrah",
-  "QADISYAH",                                  "Iraq",                                    "Al-Qadisiyah",
-  "NAJAF",                                     "Iraq",                                    "An-Najaf",
-  "MISAN",                                     "Iraq",                                    "Maysan",
-  "SULAIMANIYA",                               "Iraq",                                    "As-Sulaymaniyah",
-  "MUTHANA",                                   "Iraq",                                    "Al-Muthannia",
-  "KIRKUK",                                    "Iraq",                                    "At-Ta'mim",
-  
-  # Kiribati
-  "LINE AND PHOENIX GROUP",                    "Kiribati",                                "LINE_AND_PHOENIX",
-  
-  # Lao PDR
-  "XAYSOMBOUN",                                "Lao People's Democratic Republic",         "Xaysomboune",
-  "KHAMMUAN",                                  "Lao People's Democratic Republic",         "Khammua",
-  
-  # Lesotho
-  "MOHALES HOEK",                              "Lesotho",                                 "Mohale's Hoek",
-  "QACHAS NEK",                                "Lesotho",                                 "Qacha's Nek",
-  
-  # Malawi
-  "Dowa (Camps)",                              "Malawi",                                  "Dowa",
-  
-  # Mozambique
-  "Cidade de Maputo",                          "Mozambique",                              "Maputo City",
-  
-  # Nepal
-  "Sudurpashchim",                             "Nepal",                                   "Sudur Paschim",
-  
-  # Pakistan
-  "Chaghi",                                    "Pakistan",                                "Chagai",
-  "DG Khan",                                   "Pakistan",                                "Dera Ghazi Khan",
-  "Kachhi (Bolan)",                            "Pakistan",                                "Kachhi",
-  "Bajor",                                     "Pakistan",                                "Bajaur",
-  "TT Singh",                                  "Pakistan",                                "Toba Tek Singh",
-  "RY Khan",                                   "Pakistan",                                "Rahim Yar Khan",
-  "Laki Marwat",                               "Pakistan",                                "Lakki Marwat",
-  "Abbotabad",                                 "Pakistan",                                "Abbottabad",
-  "Nowshehra",                                 "Pakistan",                                "Nowshera",
-  "Sheerani",                                  "Pakistan",                                "Sherani",
-  "Hari Pur",                                  "Pakistan",                                "Haripur",
-  "Torghar",                                   "Pakistan",                                "Tor Ghar",
-  "Kuram",                                     "Pakistan",                                "Kurram",
-  "Sibbi",                                     "Pakistan",                                "Sibi",
-  "Mohmind",                                   "Pakistan",                                "Mohmand",
-  "Kech (Turbat)",                             "Pakistan",                                "Kech",
-  
-  # São Tomé and Príncipe
-  "REGIÃO AUTÓNOMA DO PRÍNCIPE",               "São Tomé and Príncipe",                   "Príncipe",
-  
-  # Tonga
-  "ONGO NIUA",                                 "Tonga",                                   "Niuas",
-  
-  # Tuvalu
-  "Nanumaga",                                  "Tuvalu",                                  "Nanumanga",
-  
-  # Vietnam
-  "NORTH CENTRAL AND CENTRAL COASTAL",          "Vietnam",                                 "NORTH_CENTRAL_AND_COASTAL",
-  
-  # West Bank and Gaza / Palestina
-  "Qalqilia",                                  "Palestina",                               "Qalqilya",
-  "Ariha & Al Aghwar",                         "Palestina",                               "Jericho",
-  "North Gaza",                                "Palestina",                               "Gaza ash Shamaliyah", 
-
-  # Argentina: grouped survey regions sampled with country suffix
-  "CIUDAD Y PARTIDOS DE BUENOS AIRES",                      "Argentina",                  "CIUDAD_Y_PARTIDOS_DE_BUENOS_AIRES_Argentina",
-  "RESTO PROVINCIA DE BUENOS AIRES",                        "Argentina",                  "RESTO_PROVINCIA_DE_BUENOS_AIRES_Argentina",
-  "CUYO",                                                   "Argentina",                  "CUYO_Argentina",
-  "NOA",                                                    "Argentina",                  "NOA_Argentina",
-  "NEA",                                                    "Argentina",                  "NEA_Argentina",
-  "PAMPEANA (EXCLUYE RESTO DE PROVINCIA DE BUENOS AIRES",   "Argentina",                  "PAMPEANA_Argentina",
-  "PATAGÓNICA",                                             "Argentina",                  "PATAGONICA_Argentina",
-  
-  # Nauru: sampled with country suffix
-  # Do not include LOCATION; this was flagged as likely MICS error.
-  "AIWO",                                                   "Nauru",                      "AIWO_Nauru",
-  "ANABAR",                                                 "Nauru",                      "ANABAR_Nauru",
-  "ANETAN",                                                 "Nauru",                      "ANETAN_Nauru",
-  "ANIBARE",                                                "Nauru",                      "ANIBARE_Nauru",
-  "BAITSI",                                                 "Nauru",                      "BAITSI_Nauru",
-  "BOE",                                                    "Nauru",                      "BOE_Nauru",
-  "BUADA",                                                  "Nauru",                      "BUADA_Nauru",
-  "DENIGOMODU",                                             "Nauru",                      "DENIGOMODU_Nauru",
-  "EWA",                                                    "Nauru",                      "EWA_Nauru",
-  "IJUW",                                                   "Nauru",                      "IJUW_Nauru",
-  "MENENG",                                                 "Nauru",                      "MENENG_Nauru",
-  "NIBOK",                                                  "Nauru",                      "NIBOK_Nauru",
-  "UABOE",                                                  "Nauru",                      "UABOE_Nauru",
-  "YAREN",                                                  "Nauru",                      "YAREN_Nauru",
-  
-  # Trinidad and Tobago: RHA regions sampled with country suffix
-  "Eastern RHA",                                            "Trinidad and Tobago",        "Eastern_RHA_Trinidad_and_Tobago",
-  "North-Central RHA",                                      "Trinidad and Tobago",        "North_Central_RHA_Trinidad_and_Tobago",
-  "North-West RHA",                                         "Trinidad and Tobago",        "North_West_RHA_Trinidad_and_Tobago",
-  "South-West RHA",                                         "Trinidad and Tobago",        "South_West_RHA_Trinidad_and_Tobago",
-  "Tobago RHA",                                             "Trinidad and Tobago",        "Tobago_RHA_Trinidad_and_Tobago",
-  
-#North Macedonia
-
-  "EAST",                "North Macedonia",     "EAST_North_Macedonia",
-  "NORTHEAST",           "North Macedonia",     "NORTHEAST_North_Macedonia",
-  "PELAGONIJA",          "North Macedonia",     "PELAGONIJA_North_Macedonia",
-  "POLOG",               "North Macedonia",     "POLOG_North_Macedonia",
-  "SKOPJE",              "North Macedonia",     "SKOPJE_North_Macedonia",
-  "SOUTHEAST",           "North Macedonia",     "SOUTHEAST_North_Macedonia",
-  "SOUTHWEST",           "North Macedonia",     "SOUTHWEST_North_Macedonia",
-  "VARDAR",              "North Macedonia",     "VARDAR_North_Macedonia",
-
-  # Costa Rica: GADM_other regions sampled with country suffix
-  "Alajuela",    "Costa Rica",    "Alajuela_Costa_Rica",
-  "Cartago",     "Costa Rica",    "Cartago_Costa_Rica",
-  "Guanacaste",  "Costa Rica",    "Guanacaste_Costa_Rica",
-  "Heredia",     "Costa Rica",    "Heredia_Costa_Rica",
-  "Limón",       "Costa Rica",    "Limon_Costa_Rica",
-  "Limon",       "Costa Rica",    "Limon_Costa_Rica",
-  "Puntarenas",  "Costa Rica",    "Puntarenas_Costa_Rica",
-  "San José",    "Costa Rica",    "San_Jose_Costa_Rica",
-  "San Jose",    "Costa Rica",    "San_Jose_Costa_Rica",
-
- # Tuvalu
-  "Funafuti",                           "Tuvalu",                           "Funafuti",
-  "Nanumaga",                           "Tuvalu",                           "Nanumanga",
-  "Nanumea",                            "Tuvalu",                           "Nanumea",
-  "Niutao",                             "Tuvalu",                           "Niutao",
-  "Nui",                                "Tuvalu",                           "Nui",
-  "Nukufetau",                          "Tuvalu",                           "Nukufetau",
-  "Vaitupu",                            "Tuvalu",                           "Vaitupu"
-)
-
-
-```
-
-```{r}
-# ------------------------------------------------------------
-# Diagnose countries dropped during covariate filtering
-# ------------------------------------------------------------
-
-diagnose_country_year_filtering <- function(
-    outcome_name,
-    outcome_df,
-    raw_covariates,
-    filtered_covariates,
-    country_name_key_WB
-) {
-  
-  wb_lookup <- build_wb_country_lookup(country_name_key_WB)
-  
-  outcome_country_years <- outcome_df %>%
-    dplyr::transmute(
-      outcome_name = outcome_name,
-      country_outcome,
-      country_key = clean_key(country_outcome),
-      analysis_year = as.integer(analysis_year)
-    ) %>%
-    dplyr::distinct()
-  
-  raw_cov_country_years <- raw_covariates %>%
-    dplyr::transmute(
-      country_cov = country,
-      country_key = clean_key(country),
-      analysis_year = as.integer(analysis_year)
-    ) %>%
-    dplyr::distinct()
-  
-  filtered_cov_country_years <- filtered_covariates %>%
-    dplyr::transmute(
-      country_cov_filtered = country,
-      country_key = clean_key(country),
-      analysis_year = as.integer(analysis_year)
-    ) %>%
-    dplyr::distinct()
-  
-  outcome_country_years %>%
-    dplyr::inner_join(
-      raw_cov_country_years,
-      by = c("country_key", "analysis_year")
-    ) %>%
-    dplyr::anti_join(
-      filtered_cov_country_years,
-      by = c("country_key", "analysis_year")
-    ) %>%
-    dplyr::left_join(
-      wb_lookup,
-      by = c("country_key" = "country_alias_key")
-    ) %>%
-    dplyr::mutate(
-      likely_issue = dplyr::case_when(
-        is.na(country_wb) ~ "country not mapped in build_wb_country_lookup()",
-        TRUE ~ "mapped, check another filtering issue"
-      )
-    ) %>%
-    dplyr::arrange(outcome_name, country_outcome, analysis_year)
-}
-```
-
-```{r}
-country_year_filtering_issues <- dplyr::bind_rows(
-  diagnose_country_year_filtering(
-    outcome_name = "improved_source",
-    outcome_df = improved_source_outcome,
-    raw_covariates = df_training_covariates_other,
-    filtered_covariates = df_covariates_improved_source,
-    country_name_key_WB = country_name_key_WB
-  ),
-  
-  diagnose_country_year_filtering(
-    outcome_name = "availability",
-    outcome_df = availability_outcome,
-    raw_covariates = df_training_covariates_other,
-    filtered_covariates = df_covariates_availability,
-    country_name_key_WB = country_name_key_WB
-  ),
-  
-  diagnose_country_year_filtering(
-    outcome_name = "accessibility",
-    outcome_df = accessibility_outcome,
-    raw_covariates = df_training_covariates_other,
-    filtered_covariates = df_covariates_accessibility,
-    country_name_key_WB = country_name_key_WB
-  ),
-  
-  diagnose_country_year_filtering(
-    outcome_name = "ecoli_free",
-    outcome_df = ecoli_outcome,
-    raw_covariates = df_training_covariates_wq,
-    filtered_covariates = df_covariates_ecoli,
-    country_name_key_WB = country_name_key_WB
-  )
-)
-
-print(country_year_filtering_issues)
-```
-
-```{r}
-
-# ============================================================
-# Apply manual fixes
-# ============================================================
 SMDW_crosswalk_final <- apply_manual_fixes_for_one_outcome(
-  outcome_name = "smdw",
-  crosswalk_results = crosswalk_SMDW,
-  manual_region_fixes = manual_fixes_other_subcomponents
+  outcome_name        = "smdw",
+  crosswalk_results   = crosswalk_SMDW,
+  manual_region_fixes = manual_fixes_smdw_ecoli
 )
-
 ecoli_crosswalk_final <- apply_manual_fixes_for_one_outcome(
-  outcome_name = "ecoli_free",
-  crosswalk_results = crosswalk_ecoli,
-  manual_region_fixes = manual_region_fixes_ecoli
+  outcome_name        = "ecoli_free",
+  crosswalk_results   = crosswalk_ecoli,
+  manual_region_fixes = manual_fixes_smdw_ecoli
 )
-
 improved_source_crosswalk_final <- apply_manual_fixes_for_one_outcome(
-  outcome_name = "improved_source",
-  crosswalk_results = crosswalk_improved_source,
-  manual_region_fixes = manual_fixes_other_subcomponents
+  outcome_name        = "improved_source",
+  crosswalk_results   = crosswalk_improved_source,
+  manual_region_fixes = manual_fixes_sanitation
 )
-
 availability_crosswalk_final <- apply_manual_fixes_for_one_outcome(
-  outcome_name = "availability",
-  crosswalk_results = crosswalk_availability,
-  manual_region_fixes = manual_fixes_other_subcomponents
+  outcome_name        = "availability",
+  crosswalk_results   = crosswalk_availability,
+  manual_region_fixes = manual_fixes_sanitation
 )
-
 accessibility_crosswalk_final <- apply_manual_fixes_for_one_outcome(
-  outcome_name = "accessibility",
-  crosswalk_results = crosswalk_accessibility,
-  manual_region_fixes = manual_fixes_other_subcomponents
+  outcome_name        = "accessibility",
+  crosswalk_results   = crosswalk_accessibility,
+  manual_region_fixes = manual_fixes_sanitation
 )
 ```
 
+## Join outcomes to covariates
+
 ```{r}
-# ============================================================
-# Join each outcome to covariates and write training CSV files
-# ============================================================
 SMDW_training_output <- join_and_save_one_training_dataset(
-  outcome_name = "smdw",
-  outcome_df = SMDW_outcome,
+  outcome_name           = "smdw",
+  outcome_df             = SMDW_outcome,
   df_training_covariates = df_covariates_SMDW,
   region_crosswalk_final = SMDW_crosswalk_final
 )
-
-
 ecoli_training_output <- join_and_save_one_training_dataset(
-  outcome_name = "ecoli_free",
-  outcome_df = ecoli_outcome,
+  outcome_name           = "ecoli_free",
+  outcome_df             = ecoli_outcome,
   df_training_covariates = df_covariates_ecoli,
   region_crosswalk_final = ecoli_crosswalk_final
 )
-
 improved_source_training_output <- join_and_save_one_training_dataset(
-  outcome_name = "improved_source",
-  outcome_df = improved_source_outcome,
+  outcome_name           = "improved_source",
+  outcome_df             = improved_source_outcome,
   df_training_covariates = df_covariates_improved_source,
   region_crosswalk_final = improved_source_crosswalk_final
 )
-
 availability_training_output <- join_and_save_one_training_dataset(
-  outcome_name = "availability",
-  outcome_df = availability_outcome,
+  outcome_name           = "availability",
+  outcome_df             = availability_outcome,
   df_training_covariates = df_covariates_availability,
   region_crosswalk_final = availability_crosswalk_final
 )
-
 accessibility_training_output <- join_and_save_one_training_dataset(
-  outcome_name = "accessibility",
-  outcome_df = accessibility_outcome,
+  outcome_name           = "accessibility",
+  outcome_df             = accessibility_outcome,
   df_training_covariates = df_covariates_accessibility,
   region_crosswalk_final = accessibility_crosswalk_final
 )
 
-# Final model-ready objects in R.
-SMDW_training_with_covariates <- SMDW_training_output$training_with_covariates
-ecoli_training_with_covariates <- ecoli_training_output$training_with_covariates
-improved_source_training_with_covariates <- improved_source_training_output$training_with_covariates
-availability_training_with_covariates <- availability_training_output$training_with_covariates
-accessibility_training_with_covariates <- accessibility_training_output$training_with_covariates
+# Model-ready objects
+SMDW_training            <- SMDW_training_output$training_with_covariates
+ecoli_training           <- ecoli_training_output$training_with_covariates
+improved_source_training <- improved_source_training_output$training_with_covariates
+availability_training    <- availability_training_output$training_with_covariates
+accessibility_training   <- accessibility_training_output$training_with_covariates
 
-
-# Diagnostic objects showing rows that failed to join to covariates.
-ecoli_missing_covariates <- ecoli_training_output$missing_covariates
-improved_source_missing_covariates <- improved_source_training_output$missing_covariates
-availability_missing_covariates <- availability_training_output$missing_covariates
-accessibility_missing_covariates <- accessibility_training_output$missing_covariates
+# Diagnostic: regions that failed to join to covariates
+SMDW_training_output$missing_covariates
+ecoli_training_output$missing_covariates
+improved_source_training_output$missing_covariates
+availability_training_output$missing_covariates
+accessibility_training_output$missing_covariates
 ```
 
+------------------------------------------------------------------------
+
+# 7. Country-level covariates
+
+## GDP per capita and secondary education
+
+Country-year level economic and education indicators from the World Bank
+are joined by standardised country name. (Downloaded on 27 May 2026 from
+<https://databank.worldbank.org/source/world-development-indicators/Type/TABLE/preview/on>)
+
 ```{r}
-# ============================================================
-# Add GDP and secondary education to all SMDW training datasets
-# Uses WB country lookup, but falls back to cleaned country names
-# so countries like Nauru / Trinidad and Tobago are not skipped.
-# ============================================================
-
-# ------------------------------------------------------------
-# 1. Helper: create robust country join key
-# ------------------------------------------------------------
-
-add_country_join_key <- function(df, country_col, country_name_key_WB) {
-  
-  wb_lookup <- build_wb_country_lookup(country_name_key_WB)
-  
-  df %>%
-    dplyr::mutate(
-      country_alias_key = clean_key({{ country_col }})
-    ) %>%
-    dplyr::left_join(
-      wb_lookup,
-      by = "country_alias_key"
-    ) %>%
-    dplyr::mutate(
-      # If country is not in WB lookup, keep cleaned country name as fallback
-      country_join = dplyr::coalesce(country_wb, country_alias_key)
-    ) %>%
-    dplyr::select(-country_alias_key, -country_wb)
-}
-
-
-# ------------------------------------------------------------
-# 2. Read country-year covariates
-# ------------------------------------------------------------
-
-gdp_per_capita_2015 <- readr::read_csv(
-  "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/gdp_per_capita_2015.csv"
-)
-
-secondary_education_years <- readr::read_csv(
-  "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/secondary_education_years.csv"
-)
-
-
-# ------------------------------------------------------------
-# 3. Clean GDP data
-# ------------------------------------------------------------
-
-gdp_clean <- gdp_per_capita_2015 %>%
+gdp_clean <- readr::read_csv(PATH_GDP, show_col_types = FALSE) %>%
   dplyr::rename(
-    country_name = Country.Name,
-    analysis_year = Year,
+    country_name                     = Country.Name,
+    analysis_year                    = Year,
     gdp_per_capita_constant_2015_usd = `GDP per capita (constant 2015 US$)`
   ) %>%
   dplyr::mutate(
-    analysis_year = as.integer(analysis_year),
+    analysis_year                    = as.integer(analysis_year),
     gdp_per_capita_constant_2015_usd = as.numeric(gdp_per_capita_constant_2015_usd)
   ) %>%
-  add_country_join_key(
-    country_col = country_name,
-    country_name_key_WB = country_name_key_WB
+  add_country_join_key_extended(
+    country_col = country_name, country_name_key_WB = country_name_key_WB
   ) %>%
-  dplyr::select(
-    country_join,
-    analysis_year,
-    gdp_per_capita_constant_2015_usd
-  ) %>%
+  dplyr::select(country_join, analysis_year, gdp_per_capita_constant_2015_usd) %>%
   dplyr::distinct()
 
-
-# ------------------------------------------------------------
-# 4. Clean secondary education data
-# ------------------------------------------------------------
-
-education_clean <- secondary_education_years %>%
+education_clean <- readr::read_csv(PATH_EDUCATION, show_col_types = FALSE) %>%
   dplyr::rename(
-    country_name = Country.Name,
-    analysis_year = Year,
+    country_name                       = Country.Name,
+    analysis_year                      = Year,
     secondary_education_duration_years = `Secondary education, duration (years)`
   ) %>%
   dplyr::mutate(
-    analysis_year = as.integer(analysis_year),
+    analysis_year                      = as.integer(analysis_year),
     secondary_education_duration_years = as.numeric(secondary_education_duration_years)
   ) %>%
-  add_country_join_key(
-    country_col = country_name,
-    country_name_key_WB = country_name_key_WB
+  add_country_join_key_extended(
+    country_col = country_name, country_name_key_WB = country_name_key_WB
   ) %>%
-  dplyr::select(
-    country_join,
-    analysis_year,
-    secondary_education_duration_years
-  ) %>%
+  dplyr::select(country_join, analysis_year, secondary_education_duration_years) %>%
   dplyr::distinct()
 
-
-# ------------------------------------------------------------
-# 5. Combine GDP and education into one country-year table
-# ------------------------------------------------------------
-
-country_year_covariates_clean <- gdp_clean %>%
-  dplyr::full_join(
-    education_clean,
-    by = c("country_join", "analysis_year")
-  )
-
-
-# ------------------------------------------------------------
-# 6. Helper to add GDP and education to training data
-# ------------------------------------------------------------
+country_year_covariates <- dplyr::full_join(
+  gdp_clean, education_clean, by = c("country_join", "analysis_year")
+)
 
 add_country_year_covariates <- function(training_df) {
-  
   training_df %>%
-    dplyr::mutate(
-      analysis_year = as.integer(analysis_year)
+    dplyr::mutate(analysis_year = as.integer(analysis_year)) %>%
+    add_country_join_key_extended(
+      country_col = country_outcome, country_name_key_WB = country_name_key_WB
     ) %>%
-    add_country_join_key(
-      country_col = country_outcome,
-      country_name_key_WB = country_name_key_WB
-    ) %>%
-    dplyr::left_join(
-      country_year_covariates_clean,
-      by = c("country_join", "analysis_year")
-    ) %>%
+    dplyr::left_join(country_year_covariates, by = c("country_join", "analysis_year")) %>%
     dplyr::select(-country_join)
 }
 
+SMDW_training            <- add_country_year_covariates(SMDW_training)
+ecoli_training           <- add_country_year_covariates(ecoli_training)
+improved_source_training <- add_country_year_covariates(improved_source_training)
+availability_training    <- add_country_year_covariates(availability_training)
+accessibility_training   <- add_country_year_covariates(accessibility_training)
 
-# ------------------------------------------------------------
-# 7. Add GDP and education to all SMDW outcome datasets
-# ------------------------------------------------------------
-
-SMDW_training_with_covariates <- add_country_year_covariates(
-  SMDW_training_with_covariates
-)
-
-ecoli_training_with_covariates <- add_country_year_covariates(
-  ecoli_training_with_covariates
-)
-
-improved_source_training_with_covariates <- add_country_year_covariates(
-  improved_source_training_with_covariates
-)
-
-availability_training_with_covariates <- add_country_year_covariates(
-  availability_training_with_covariates
-)
-
-accessibility_training_with_covariates <- add_country_year_covariates(
-  accessibility_training_with_covariates
-)
-
-
-# ------------------------------------------------------------
-# 8. Check missing GDP / education after join
-# ------------------------------------------------------------
-
-check_missing_country_year_covariates <- function(training_df, outcome_name) {
-  
-  training_df %>%
-    dplyr::filter(
-      is.na(gdp_per_capita_constant_2015_usd) |
-        is.na(secondary_education_duration_years)
-    ) %>%
-    dplyr::distinct(
-      country_outcome,
-      analysis_year,
-      gdp_per_capita_constant_2015_usd,
-      secondary_education_duration_years
-    ) %>%
-    dplyr::mutate(outcome_type = outcome_name) %>%
-    dplyr::arrange(country_outcome, analysis_year)
-}
-
-missing_country_year_covariates <- dplyr::bind_rows(
-  check_missing_country_year_covariates(ecoli_training_with_covariates, "ecoli_free"),
-  check_missing_country_year_covariates(improved_source_training_with_covariates, "improved_source"),
-  check_missing_country_year_covariates(availability_training_with_covariates, "availability"),
-  check_missing_country_year_covariates(accessibility_training_with_covariates, "accessibility")
-)
-
-print(missing_country_year_covariates)
+gdp_edu_vars <- c("gdp_per_capita_constant_2015_usd", "secondary_education_duration_years")
+check_missing_covariates(SMDW_training,            "smdw",             gdp_edu_vars)
+check_missing_covariates(ecoli_training,           "ecoli_free",       gdp_edu_vars)
+check_missing_covariates(improved_source_training, "improved_source",  gdp_edu_vars)
+check_missing_covariates(availability_training,    "availability",     gdp_edu_vars)
+check_missing_covariates(accessibility_training,   "accessibility",    gdp_edu_vars)
 ```
 
+## Wastewater treatment
+
+Country-level wastewater collection, treatment, and reuse percentages.
+These are static (no year dimension) and joined by country name only.
+(Downloaded on 21 May 2026 from
+<https://doi.pangaea.de/10.1594/PANGAEA.918731>)
+
 ```{r}
-# ============================================================
-# Add country-level wastewater covariates to all SMDW training datasets
-# ============================================================
-
-# ------------------------------------------------------------
-# 1. Read wastewater country-level covariates
-# ------------------------------------------------------------
-
-ww_country_raw <- readr::read_tsv(
-  "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/Country_WWctr_Percentage.txt",
-  show_col_types = FALSE
-)
-
-
-# ------------------------------------------------------------
-# 2. Robust country join helper
-#    Uses WB lookup where possible, falls back to cleaned country names
-# ------------------------------------------------------------
-
-add_country_join_key_country_level <- function(df, country_col, country_name_key_WB) {
-  
-  wb_lookup <- build_wb_country_lookup(country_name_key_WB)
-  
-  df %>%
-    dplyr::select(
-      -dplyr::any_of(c("country_join", "country_alias_key", "country_wb"))
-    ) %>%
-    dplyr::mutate(
-      country_alias_key = clean_key({{ country_col }})
-    ) %>%
-    dplyr::left_join(
-      wb_lookup,
-      by = "country_alias_key"
-    ) %>%
-    dplyr::mutate(
-      country_join_raw = dplyr::coalesce(country_wb, country_alias_key),
-      
-      country_join_raw = dplyr::case_when(
-        country_alias_key == "bolivia plurinational state of" ~ "Bolivia",
-        country_alias_key == "congo dem republic" ~ "Congo, Dem. Rep.",
-        country_alias_key == "congo rep" ~ "Congo, Rep.",
-        country_alias_key == "cote d ivoire" ~ "Cote d'Ivoire",
-        country_alias_key == "iran islamic republic of" ~ "Iran, Islamic Rep.",
-        country_alias_key %in% c("lao peoples democratic republic", "lao people s democratic republic") ~ "Lao PDR",
-        country_alias_key == "macedonia fyr" ~ "North Macedonia",
-        country_alias_key == "sao tome and principe" ~ "Sao Tome and Principe",
-        country_alias_key %in% c("swaziland", "eswatini") ~ "Eswatini",
-        country_alias_key == "tanzania" ~ "Tanzania",
-        country_alias_key == "venezuela bolivarian republic of" ~ "Venezuela, RB",
-        country_alias_key %in% c("viet nam", "vietnam") ~ "Viet Nam",
-        country_alias_key %in% c("west bank gaza", "west bank and gaza") ~ "West Bank and Gaza",
-        TRUE ~ country_join_raw
-      ),
-      
-      country_join = clean_key(country_join_raw)
-    ) %>%
-    dplyr::select(-country_alias_key, -country_wb, -country_join_raw)
-}
-
-
-# ------------------------------------------------------------
-# 3. Clean wastewater country-level covariates
-# ------------------------------------------------------------
-
-ww_country_clean <- ww_country_raw %>%
+ww_country_clean <- readr::read_tsv(PATH_WASTEWATER, show_col_types = FALSE) %>%
   dplyr::rename(
-    ww_country_name = Country,
-    ww_region = Region,
+    ww_country_name            = Country,
+    ww_region                  = Region,
     ww_economic_classification = Economic_Classification,
-    ww_collection_percent = WWc_Percent,
-    ww_treatment_percent = WWt_Percent,
-    ww_reuse_percent = WWr_Percent
+    ww_collection_percent      = WWc_Percent,
+    ww_treatment_percent       = WWt_Percent,
+    ww_reuse_percent           = WWr_Percent
   ) %>%
-  dplyr::mutate(
-    ww_collection_percent = as.numeric(ww_collection_percent),
-    ww_treatment_percent = as.numeric(ww_treatment_percent),
-    ww_reuse_percent = as.numeric(ww_reuse_percent)
-  ) %>%
-  add_country_join_key_country_level(
-    country_col = ww_country_name,
-    country_name_key_WB = country_name_key_WB
-  ) %>%
-  dplyr::select(
-    country_join,
-    ww_country_name,
-    ww_region,
-    ww_economic_classification,
-    ww_collection_percent,
-    ww_treatment_percent,
-    ww_reuse_percent
+  dplyr::mutate(across(ends_with("_percent"), as.numeric)) %>%
+  add_country_join_key_extended(
+    country_col = ww_country_name, country_name_key_WB = country_name_key_WB
   ) %>%
   dplyr::distinct(country_join, .keep_all = TRUE)
 
-
-# ------------------------------------------------------------
-# 4. Helper to add wastewater covariates to training data
-# ------------------------------------------------------------
-
-add_ww_country_covariates <- function(training_df) {
-  
+add_ww_covariates <- function(training_df) {
   training_df %>%
-    dplyr::select(
-      -dplyr::any_of(c(
-        "country_join",
-        "ww_country_name",
-        "ww_region",
-        "ww_economic_classification",
-        "ww_collection_percent",
-        "ww_treatment_percent",
-        "ww_reuse_percent"
-      ))
-    ) %>%
-    add_country_join_key_country_level(
-      country_col = country_outcome,
-      country_name_key_WB = country_name_key_WB
+    dplyr::select(-dplyr::any_of(c(
+      "country_join", "ww_country_name", "ww_region",
+      "ww_economic_classification",
+      "ww_collection_percent", "ww_treatment_percent", "ww_reuse_percent"
+    ))) %>%
+    add_country_join_key_extended(
+      country_col = country_outcome, country_name_key_WB = country_name_key_WB
     ) %>%
     dplyr::left_join(
-      ww_country_clean,
+      ww_country_clean %>% dplyr::select(
+        country_join, ww_region, ww_economic_classification,
+        ww_collection_percent, ww_treatment_percent, ww_reuse_percent
+      ),
       by = "country_join"
     ) %>%
     dplyr::select(-country_join)
 }
 
+SMDW_training            <- add_ww_covariates(SMDW_training)
+ecoli_training           <- add_ww_covariates(ecoli_training)
+improved_source_training <- add_ww_covariates(improved_source_training)
+availability_training    <- add_ww_covariates(availability_training)
+accessibility_training   <- add_ww_covariates(accessibility_training)
 
-# ------------------------------------------------------------
-# 5. Add wastewater covariates to all SMDW training datasets
-# ------------------------------------------------------------
-
-SMDW_training_with_covariates <- add_ww_country_covariates(
-  SMDW_training_with_covariates
-)
-
-ecoli_training_with_covariates <- add_ww_country_covariates(
-  ecoli_training_with_covariates
-)
-
-improved_source_training_with_covariates <- add_ww_country_covariates(
-  improved_source_training_with_covariates
-)
-
-availability_training_with_covariates <- add_ww_country_covariates(
-  availability_training_with_covariates
-)
-
-accessibility_training_with_covariates <- add_ww_country_covariates(
-  accessibility_training_with_covariates
-)
-
-
-# ------------------------------------------------------------
-# 6. Check missing wastewater covariates after join
-# ------------------------------------------------------------
-
-check_missing_ww_covariates <- function(training_df, outcome_name) {
-  
-  training_df %>%
-    dplyr::filter(
-      is.na(ww_collection_percent) |
-        is.na(ww_treatment_percent) |
-        is.na(ww_reuse_percent)
-    ) %>%
-    dplyr::distinct(
-      country_outcome,
-      ww_country_name,
-      ww_collection_percent,
-      ww_treatment_percent,
-      ww_reuse_percent
-    ) %>%
-    dplyr::mutate(outcome_type = outcome_name) %>%
-    dplyr::arrange(country_outcome)
-}
-
-missing_ww_covariates <- dplyr::bind_rows(
-  check_missing_ww_covariates(ecoli_training_with_covariates, "ecoli_free"),
-  check_missing_ww_covariates(improved_source_training_with_covariates, "improved_source"),
-  check_missing_ww_covariates(availability_training_with_covariates, "availability"),
-  check_missing_ww_covariates(accessibility_training_with_covariates, "accessibility")
-)
-
-print(missing_ww_covariates)
-
-# ------------------------------------------------------------
-# Manually assign Kosovo ww_region
-# ------------------------------------------------------------
-
+# Kosovo has no wastewater record; assign region manually
 fix_ww_region_manual <- function(training_df) {
   training_df %>%
-    dplyr::mutate(
-      ww_region = dplyr::case_when(
-        country_outcome == "Kosovo" & is.na(ww_region) ~ "Eastern Europe & Central Asia",
-        TRUE ~ ww_region
-      )
-    )
+    dplyr::mutate(ww_region = dplyr::if_else(
+      country_outcome == "Kosovo" & is.na(ww_region),
+      "Eastern Europe & Central Asia", ww_region
+    ))
 }
 
-SMDW_training_with_covariates <- fix_ww_region_manual(SMDW_training_with_covariates)
-ecoli_training_with_covariates <- fix_ww_region_manual(ecoli_training_with_covariates)
-improved_source_training_with_covariates <- fix_ww_region_manual(improved_source_training_with_covariates)
-availability_training_with_covariates <- fix_ww_region_manual(availability_training_with_covariates)
-accessibility_training_with_covariates <- fix_ww_region_manual(accessibility_training_with_covariates)
+SMDW_training            <- fix_ww_region_manual(SMDW_training)
+ecoli_training           <- fix_ww_region_manual(ecoli_training)
+improved_source_training <- fix_ww_region_manual(improved_source_training)
+availability_training    <- fix_ww_region_manual(availability_training)
+accessibility_training   <- fix_ww_region_manual(accessibility_training)
+
+ww_vars <- c("ww_collection_percent", "ww_treatment_percent", "ww_reuse_percent")
+check_missing_covariates(SMDW_training,            "smdw",            ww_vars)
+check_missing_covariates(ecoli_training,           "ecoli_free",      ww_vars)
+check_missing_covariates(improved_source_training, "improved_source", ww_vars)
+check_missing_covariates(availability_training,    "availability",    ww_vars)
+check_missing_covariates(accessibility_training,   "accessibility",   ww_vars)
 ```
 
+## WGI governance indicators
+
+Six World Governance Indicators are joined by country and year.
+(Downloaded on 27 May 2026 from
+<https://databank.worldbank.org/source/worldwide-governance-indicators/Type/TABLE/preview/on>)
+
 ```{r}
-# ============================================================
-# Add WGI governance indicators to all SMDW training datasets
-# ============================================================
-
-# ------------------------------------------------------------
-# 1. Read WGI data
-# ------------------------------------------------------------
-
-wgi_raw <- df.WGI_lmics
-
-# ------------------------------------------------------------
-# 2. Define indicators to keep
-# ------------------------------------------------------------
-
 indicator_map <- c(
   "Government Effectiveness - Governance score (0-100)" = "governance_effectiveness",
   "Control of Corruption - Governance score (0-100)"    = "control_of_corruption",
@@ -1365,362 +914,359 @@ indicator_map <- c(
   "Voice and Accountability - Governance score (0-100)" = "voice_and_accountability"
 )
 
-# ------------------------------------------------------------
-# 3. Robust country join key
-#    Uses WB lookup where possible, otherwise falls back to cleaned name
-# ------------------------------------------------------------
-
-add_country_join_key_wgi <- function(df, country_col, country_name_key_WB) {
-  
-  wb_lookup <- build_wb_country_lookup(country_name_key_WB)
-  
-  df %>%
-    dplyr::select(
-      -dplyr::any_of(c("country_join", "country_alias_key", "country_wb"))
-    ) %>%
-    dplyr::mutate(
-      country_alias_key = clean_key({{ country_col }})
-    ) %>%
-    dplyr::left_join(
-      wb_lookup,
-      by = "country_alias_key"
-    ) %>%
-    dplyr::mutate(
-      country_join_raw = dplyr::coalesce(country_wb, country_alias_key),
-      
-      country_join_raw = dplyr::case_when(
-        country_alias_key == "bolivia plurinational state of" ~ "Bolivia",
-        country_alias_key == "congo dem republic" ~ "Congo, Dem. Rep.",
-        country_alias_key == "congo rep" ~ "Congo, Rep.",
-        country_alias_key == "cote d ivoire" ~ "Cote d'Ivoire",
-        country_alias_key == "iran islamic republic of" ~ "Iran, Islamic Rep.",
-        country_alias_key %in% c("lao peoples democratic republic", "lao people s democratic republic") ~ "Lao PDR",
-        country_alias_key == "macedonia fyr" ~ "North Macedonia",
-        country_alias_key == "sao tome and principe" ~ "Sao Tome and Principe",
-        country_alias_key %in% c("swaziland", "eswatini") ~ "Eswatini",
-        country_alias_key == "tanzania" ~ "Tanzania",
-        country_alias_key == "venezuela bolivarian republic of" ~ "Venezuela, RB",
-        country_alias_key %in% c("viet nam", "vietnam") ~ "Viet Nam",
-        country_alias_key %in% c("west bank gaza", "west bank and gaza") ~ "West Bank and Gaza",
-        TRUE ~ country_join_raw
-      ),
-      
-      country_join = clean_key(country_join_raw)
-    ) %>%
-    dplyr::select(-country_alias_key, -country_wb, -country_join_raw)
-}
-
-# ------------------------------------------------------------
-# 4. Clean WGI data: wide years -> long country-year table
-# ------------------------------------------------------------
-
-wgi_clean <- wgi_raw %>%
+wgi_clean <- df_wgi_lmics %>%
   dplyr::filter(`Series.Name` %in% names(indicator_map)) %>%
-  dplyr::mutate(
-    indicator = unname(indicator_map[`Series.Name`])
-  ) %>%
+  dplyr::mutate(indicator = unname(indicator_map[`Series.Name`])) %>%
   tidyr::pivot_longer(
-    cols = dplyr::matches("^X20[0-9]{2}$"),
-    names_to = "analysis_year",
+    cols      = dplyr::matches("^X20[0-9]{2}$"),
+    names_to  = "analysis_year",
     values_to = "value"
   ) %>%
   dplyr::mutate(
     analysis_year = as.integer(stringr::str_remove(analysis_year, "^X")),
-    value = as.numeric(value)
+    value         = as.numeric(value)
   ) %>%
-  add_country_join_key_wgi(
-    country_col = `Country.Name`,
-    country_name_key_WB = country_name_key_WB
+  add_country_join_key_extended(
+    country_col = `Country.Name`, country_name_key_WB = country_name_key_WB
   ) %>%
-  dplyr::select(
-    country_join,
-    analysis_year,
-    indicator,
-    value
-  ) %>%
-  tidyr::pivot_wider(
-    names_from = indicator,
-    values_from = value
-  ) %>%
+  dplyr::select(country_join, analysis_year, indicator, value) %>%
+  tidyr::pivot_wider(names_from = indicator, values_from = value) %>%
   dplyr::distinct()
 
-# ------------------------------------------------------------
-# 5. Helper to add WGI indicators to any training dataset
-# ------------------------------------------------------------
-
 add_wgi_covariates <- function(training_df) {
-  
   training_df %>%
-    dplyr::select(
-      -dplyr::any_of(c(
-        "country_join",
-        "governance_effectiveness",
-        "control_of_corruption",
-        "political_stability",
-        "regulatory_quality",
-        "rule_of_law",
-        "voice_and_accountability"
-      ))
+    dplyr::select(-dplyr::any_of(c("country_join", unname(indicator_map)))) %>%
+    dplyr::mutate(analysis_year = as.integer(analysis_year)) %>%
+    add_country_join_key_extended(
+      country_col = country_outcome, country_name_key_WB = country_name_key_WB
     ) %>%
-    dplyr::mutate(
-      analysis_year = as.integer(analysis_year)
-    ) %>%
-    add_country_join_key_wgi(
-      country_col = country_outcome,
+    dplyr::left_join(wgi_clean, by = c("country_join", "analysis_year")) %>%
+    dplyr::select(-country_join)
+}
+
+SMDW_training            <- add_wgi_covariates(SMDW_training)
+ecoli_training           <- add_wgi_covariates(ecoli_training)
+improved_source_training <- add_wgi_covariates(improved_source_training)
+availability_training    <- add_wgi_covariates(availability_training)
+accessibility_training   <- add_wgi_covariates(accessibility_training)
+
+check_missing_covariates(SMDW_training,            "smdw",            unname(indicator_map))
+check_missing_covariates(ecoli_training,           "ecoli_free",      unname(indicator_map))
+check_missing_covariates(improved_source_training, "improved_source", unname(indicator_map))
+check_missing_covariates(availability_training,    "availability",    unname(indicator_map))
+check_missing_covariates(accessibility_training,   "accessibility",   unname(indicator_map))
+```
+
+------------------------------------------------------------------------
+
+## World Bank Income Groups
+
+Downloaded from the World Bank website on 13 June 2026
+(<https://datahelpdesk.worldbank.org/knowledgebase/articles/906519-world-bank-country-and-lending-groups>)
+
+```{r}
+col_names_vec <- c(
+  "country_code", "country_name",
+  as.character(suppressWarnings(as.integer(as.numeric(unlist(oghist_raw[6, 3:40])))))
+)
+
+oghist_countries <- oghist_raw[12:nrow(oghist_raw), 1:40]
+names(oghist_countries) <- col_names_vec
+
+target_years <- as.character(2015:2024)
+
+income_group_clean <- oghist_countries %>%
+  dplyr::select(country_code, country_name, dplyr::all_of(target_years)) %>%
+  dplyr::filter(!is.na(country_code), !is.na(country_name)) %>%
+  tidyr::pivot_longer(
+    cols      = dplyr::all_of(target_years),
+    names_to  = "analysis_year",
+    values_to = "wb_income_group"
+  ) %>%
+  dplyr::mutate(
+    analysis_year   = as.integer(analysis_year),
+    wb_income_group = dplyr::if_else(wb_income_group == "..", NA_character_, wb_income_group)
+  )
+
+add_income_group_covariates <- function(training_df) {
+  training_df %>%
+    dplyr::select(-dplyr::any_of(c("country_join", "wb_income_group"))) %>%
+    dplyr::mutate(analysis_year = as.integer(analysis_year)) %>%
+    add_country_join_key_extended(
+      country_col         = country_outcome,
       country_name_key_WB = country_name_key_WB
     ) %>%
     dplyr::left_join(
-      wgi_clean,
+      income_group_clean %>%
+        add_country_join_key_extended(
+          country_col         = country_name,
+          country_name_key_WB = country_name_key_WB
+        ) %>%
+        dplyr::select(country_join, analysis_year, wb_income_group),
       by = c("country_join", "analysis_year")
     ) %>%
     dplyr::select(-country_join)
 }
 
-# ------------------------------------------------------------
-# 6. Add WGI indicators to all SMDW training datasets
-# ------------------------------------------------------------
+SMDW_training            <- add_income_group_covariates(SMDW_training)
+ecoli_training           <- add_income_group_covariates(ecoli_training)
+improved_source_training <- add_income_group_covariates(improved_source_training)
+availability_training    <- add_income_group_covariates(availability_training)
+accessibility_training   <- add_income_group_covariates(accessibility_training)
 
-SMDW_training_with_covariates <- add_wgi_covariates(
-  SMDW_training_with_covariates
-)
-
-ecoli_training_with_covariates <- add_wgi_covariates(
-  ecoli_training_with_covariates
-)
-
-improved_source_training_with_covariates <- add_wgi_covariates(
-  improved_source_training_with_covariates
-)
-
-availability_training_with_covariates <- add_wgi_covariates(
-  availability_training_with_covariates
-)
-
-accessibility_training_with_covariates <- add_wgi_covariates(
-  accessibility_training_with_covariates
-)
-
-# ------------------------------------------------------------
-# 7. Check missing WGI values after join
-# ------------------------------------------------------------
-
-check_missing_wgi_covariates <- function(training_df, outcome_name) {
-  
+# Diagnostics: rows missing income group
+check_missing_income_group <- function(training_df, outcome_name) {
   training_df %>%
-    dplyr::filter(
-      is.na(governance_effectiveness) |
-        is.na(control_of_corruption) |
-        is.na(political_stability) |
-        is.na(regulatory_quality) |
-        is.na(rule_of_law) |
-        is.na(voice_and_accountability)
-    ) %>%
-    dplyr::distinct(
-      country_outcome,
-      analysis_year,
-      governance_effectiveness,
-      control_of_corruption,
-      political_stability,
-      regulatory_quality,
-      rule_of_law,
-      voice_and_accountability
-    ) %>%
+    dplyr::filter(is.na(wb_income_group)) %>%
+    dplyr::distinct(country_outcome, analysis_year) %>%
     dplyr::mutate(outcome_type = outcome_name) %>%
     dplyr::arrange(country_outcome, analysis_year)
 }
 
-missing_wgi_covariates <- dplyr::bind_rows(
-  check_missing_wgi_covariates(ecoli_training_with_covariates, "ecoli_free"),
-  check_missing_wgi_covariates(improved_source_training_with_covariates, "improved_source"),
-  check_missing_wgi_covariates(availability_training_with_covariates, "availability"),
-  check_missing_wgi_covariates(accessibility_training_with_covariates, "accessibility")
+missing_income_group <- dplyr::bind_rows(
+  check_missing_income_group(SMDW_training,            "smdw"),
+  check_missing_income_group(ecoli_training,           "ecoli_free"),
+  check_missing_income_group(improved_source_training, "improved_source"),
+  check_missing_income_group(availability_training,    "availability"),
+  check_missing_income_group(accessibility_training,   "accessibility")
 )
-
-print(missing_wgi_covariates)
-
-
-
+print(missing_income_group)
 ```
 
-```{r}
-# ------------------------------------------------------------
-# Write final SMDW training datasets to CSV
-# ------------------------------------------------------------
+## JMP Indicators
 
-output_dir <- here::here("./data/training_subcomponents")
+Extracts country-level estimates and regional classifications from the
+JMP 2025 global dataset (downloaded on 13 June 2026 from
+<https://washdata.org/data/downloads>) and joins them to the training
+data by country and year.
 
-dir.create(
-  path = output_dir,
-  recursive = TRUE,
-  showWarnings = FALSE
-)
+Two sheets are used:
 
-readr::write_csv(
-  SMDW_training_with_covariates,
-  file.path(output_dir, "smdw_training_with_covariates.csv")
-)
+-   **Sanitation sheet** — provides iso3, sdg_region, fragile_context,
+    and country-level sanitation estimates used as contextual covariates
+    across all SMDW outcomes.
+-   **Water sheet** — provides drinking water estimates specific to the
+    SMDW outcomes: at least basic, accessible on premises, available
+    when needed, free from contamination, piped, and non-piped.
 
-readr::write_csv(
-  ecoli_training_with_covariates,
-  file.path(output_dir, "ecoli_free_training_with_covariates.csv")
-)
-
-readr::write_csv(
-  improved_source_training_with_covariates,
-  file.path(output_dir, "improved_source_training_with_covariates.csv")
-)
-
-readr::write_csv(
-  availability_training_with_covariates,
-  file.path(output_dir, "availability_training_with_covariates.csv")
-)
-
-readr::write_csv(
-  accessibility_training_with_covariates,
-  file.path(output_dir, "accessibility_training_with_covariates.csv")
-)
-
-
-```
+Time-invariant fields (iso3, sdg_region, fragile_context) are carried
+forward from any available survey year to fill gaps where a specific
+year is missing.
 
 ```{r}
-# ------------------------------------------------------------
-# ww_region overview across all SMDW outcomes
-# ------------------------------------------------------------
-
-ww_region_summary_all_outcomes <- dplyr::bind_rows(
-  ecoli_training_with_covariates %>%
-    dplyr::mutate(outcome_type = "ecoli_free"),
-  improved_source_training_with_covariates %>%
-    dplyr::mutate(outcome_type = "improved_source"),
-  availability_training_with_covariates %>%
-    dplyr::mutate(outcome_type = "availability"),
-  accessibility_training_with_covariates %>%
-    dplyr::mutate(outcome_type = "accessibility")
-) %>%
-  dplyr::count(outcome_type, ww_region, name = "n_observations") %>%
-  dplyr::group_by(outcome_type) %>%
-  dplyr::mutate(
-    percent_observations = round(100 * n_observations / sum(n_observations), 2)
-  ) %>%
-  dplyr::ungroup() %>%
-  dplyr::arrange(outcome_type, desc(n_observations))
-
-print(ww_region_summary_all_outcomes)
-```
-
-```{r}
-# ============================================================
-# Plot distribution of observations across ww_region by outcome
-# ============================================================
-
-# ------------------------------------------------------------
-# 1. Combine all outcome training datasets
-# ------------------------------------------------------------
-
-ww_region_plot_data <- dplyr::bind_rows(
-  ecoli_training_with_covariates %>%
-    dplyr::mutate(outcome_type = "E. coli free"),
-  
-  improved_source_training_with_covariates %>%
-    dplyr::mutate(outcome_type = "Improved source"),
-  
-  availability_training_with_covariates %>%
-    dplyr::mutate(outcome_type = "Availability"),
-  
-  accessibility_training_with_covariates %>%
-    dplyr::mutate(outcome_type = "Accessibility")
-) %>%
-  dplyr::mutate(
-    ww_region = dplyr::if_else(
-      is.na(ww_region),
-      "Missing ww_region",
-      ww_region
-    )
-  ) %>%
-  dplyr::count(outcome_type, ww_region, name = "n_observations") %>%
-  dplyr::group_by(outcome_type) %>%
-  dplyr::mutate(
-    percent_observations = 100 * n_observations / sum(n_observations)
-  ) %>%
-  dplyr::ungroup()
-
-
-# ------------------------------------------------------------
-# 2. One plot per outcome: number of observations
-# ------------------------------------------------------------
-
-plot_ww_region_counts <- function(outcome_name) {
-  
-  ww_region_plot_data %>%
-    dplyr::filter(outcome_type == outcome_name) %>%
-    ggplot2::ggplot(
-      ggplot2::aes(
-        x = forcats::fct_reorder(ww_region, n_observations),
-        y = n_observations
-      )
-    ) +
-    ggplot2::geom_col() +
-    ggplot2::coord_flip() +
-    ggplot2::labs(
-      title = paste("Distribution across wastewater regions:", outcome_name),
-      x = "Wastewater region",
-      y = "Number of observations"
-    ) +
-    ggplot2::theme_minimal()
+# ── Helper: parse a numeric-or-bounded JMP cell ─────────────────────────────
+parse_jmp_pct <- function(x) {
+  dplyr::case_when(
+    stringr::str_starts(x, "<") ~ 0,
+    stringr::str_starts(x, ">") ~ 100,
+    TRUE                        ~ suppressWarnings(as.numeric(x))
+  )
 }
 
-
-plot_ww_region_counts("E. coli free")
-plot_ww_region_counts("Improved source")
-plot_ww_region_counts("Availability")
-plot_ww_region_counts("Accessibility")
-```
-
-```{r}
-ecoli_training_with_covariates_gdp %>%
-  dplyr::filter(is.na(gdp_per_capita_constant_2015_usd)) %>%
-  dplyr::distinct(country_outcome, analysis_year) %>%
-  dplyr::arrange(country_outcome, analysis_year)
-```
-
-```{r}
-readr::write_csv(
-  ecoli_training_with_covariates_gdp,
-  here::here("./data/training_subcomponents/ecoli_free_training_with_covariates_exact_only.csv")
-)
-```
-
-```{r}
-# ============================================================
-# Summarise final training datasets
-# ============================================================
-
-training_summary <- dplyr::bind_rows(
-  summarise_training_dataset(ecoli_training_with_covariates),
-  summarise_training_dataset(improved_source_training_with_covariates),
-  summarise_training_dataset(availability_training_with_covariates),
-  summarise_training_dataset(accessibility_training_with_covariates)
+# ── Sanitation sheet ─────────────────────────────────────────────────────────
+# Columns (1-indexed): 1 country, 2 year, 17 sanitation_basic, 20 open_defecation,
+#                      52 iso3, 53 sdg_region, 59 fragile_context
+jmp_san_cols <- c(
+  country_name     = 1,
+  analysis_year    = 2,
+  sanitation_basic = 17,
+  open_defecation  = 20,
+  iso3             = 52,
+  sdg_region       = 53,
+  fragile_context  = 59
 )
 
-training_summary
+jmp_san_clean <- jmp_raw_sanitation[4:nrow(jmp_raw_sanitation), unname(jmp_san_cols)] %>%
+  purrr::set_names(names(jmp_san_cols)) %>%
+  dplyr::filter(!is.na(country_name), !is.na(analysis_year)) %>%
+  dplyr::mutate(
+    analysis_year    = as.integer(analysis_year),
+    sanitation_basic = parse_jmp_pct(sanitation_basic),
+    open_defecation  = parse_jmp_pct(open_defecation)
+  )
 
+# Country-level lookup for time-invariant fields (iso3, sdg_region, fragile_context)
+jmp_country_meta <- jmp_san_clean %>%
+  dplyr::group_by(country_name) %>%
+  dplyr::summarise(
+    iso3            = dplyr::first(iso3[!is.na(iso3)]),
+    sdg_region      = dplyr::first(sdg_region[!is.na(sdg_region)]),
+    fragile_context = dplyr::first(fragile_context[!is.na(fragile_context)]),
+    .groups = "drop"
+  ) %>%
+  add_country_join_key_extended(
+    country_col         = country_name,
+    country_name_key_WB = country_name_key_WB
+  ) %>%
+  dplyr::select(country_join, iso3, sdg_region, fragile_context)
 
-# Check missing covariate rows after joining.
-missing_covariate_summary <- dplyr::bind_rows(
-  ecoli_missing_covariates %>%
-    dplyr::mutate(outcome_type = "ecoli_free"),
-  
-  improved_source_missing_covariates %>%
-    dplyr::mutate(outcome_type = "improved_source"),
-  
-  availability_missing_covariates %>%
-    dplyr::mutate(outcome_type = "availability"),
-  
-  accessibility_missing_covariates %>%
-    dplyr::mutate(outcome_type = "accessibility")
+# Year-varying sanitation estimates
+jmp_san_estimates <- jmp_san_clean %>%
+  dplyr::select(country_name, analysis_year, sanitation_basic, open_defecation) %>%
+  add_country_join_key_extended(
+    country_col         = country_name,
+    country_name_key_WB = country_name_key_WB
+  ) %>%
+  dplyr::select(country_join, analysis_year, sanitation_basic, open_defecation)
+
+# ── Water sheet ──────────────────────────────────────────────────────────────
+# Columns (1-indexed): 1 country, 2 year,
+#   15 (O)  at least basic,
+#   38 (AL) accessible on premises,
+#   39 (AM) available when needed,
+#   40 (AN) free from contamination,
+#   42 (AP) piped,
+#   43 (AQ) non-piped
+jmp_water_cols <- c(
+  country_name                          = 1,
+  analysis_year                         = 2,
+  drinking_water_basic                  = 15,
+  drinking_water_accessible_on_premises = 38,
+  drinking_water_available_when_needed  = 39,
+  drinking_water_free_from_contamination = 40,
+  drinking_water_piped                  = 42,
+  drinking_water_non_piped              = 43
+)
+
+jmp_water_vars <- c(
+  "drinking_water_basic", "drinking_water_accessible_on_premises",
+  "drinking_water_available_when_needed", "drinking_water_free_from_contamination",
+  "drinking_water_piped", "drinking_water_non_piped"
+)
+
+jmp_water_estimates <- jmp_raw_water[4:nrow(jmp_raw_water), unname(jmp_water_cols)] %>%
+  purrr::set_names(names(jmp_water_cols)) %>%
+  dplyr::filter(!is.na(country_name), !is.na(analysis_year)) %>%
+  dplyr::mutate(
+    analysis_year = as.integer(analysis_year),
+    dplyr::across(dplyr::all_of(jmp_water_vars), parse_jmp_pct)
+  ) %>%
+  add_country_join_key_extended(
+    country_col         = country_name,
+    country_name_key_WB = country_name_key_WB
+  ) %>%
+  dplyr::select(country_join, analysis_year, dplyr::all_of(jmp_water_vars))
+
+# ── Join all JMP covariates into training datasets ───────────────────────────
+add_jmp_covariates <- function(training_df) {
+  training_df %>%
+    dplyr::select(-dplyr::any_of(c(
+      "country_join",
+      "sanitation_basic", "open_defecation",
+      "iso3", "sdg_region", "fragile_context",
+      jmp_water_vars
+    ))) %>%
+    dplyr::mutate(analysis_year = as.integer(analysis_year)) %>%
+    add_country_join_key_extended(
+      country_col         = country_outcome,
+      country_name_key_WB = country_name_key_WB
+    ) %>%
+    dplyr::left_join(jmp_san_estimates,   by = c("country_join", "analysis_year")) %>%
+    dplyr::left_join(jmp_water_estimates, by = c("country_join", "analysis_year")) %>%
+    dplyr::left_join(jmp_country_meta,    by = "country_join") %>%
+    dplyr::select(-country_join)
+}
+
+SMDW_training            <- add_jmp_covariates(SMDW_training)
+ecoli_training           <- add_jmp_covariates(ecoli_training)
+improved_source_training <- add_jmp_covariates(improved_source_training)
+availability_training    <- add_jmp_covariates(availability_training)
+accessibility_training   <- add_jmp_covariates(accessibility_training)
+
+# Manual patch for countries whose names don't match JMP
+patch_jmp_meta <- function(training_df) {
+  training_df %>%
+    dplyr::mutate(
+      iso3 = dplyr::case_when(
+        country_outcome == "Kosovo"    & is.na(iso3) ~ "XKX",
+        country_outcome == "Palestina" & is.na(iso3) ~ "PSE",
+        country_outcome == "Tanzania"  & is.na(iso3) ~ "TZA",
+        TRUE                                         ~ iso3
+      ),
+      sdg_region = dplyr::case_when(
+        country_outcome == "Kosovo"    & is.na(sdg_region) ~ "Europe and Northern America",
+        country_outcome == "Palestina" & is.na(sdg_region) ~ "Northern Africa and Western Asia",
+        country_outcome == "Tanzania"  & is.na(sdg_region) ~ "Sub-Saharan Africa",
+        TRUE                                               ~ sdg_region
+      )
+    )
+}
+
+SMDW_training            <- patch_jmp_meta(SMDW_training)
+ecoli_training           <- patch_jmp_meta(ecoli_training)
+improved_source_training <- patch_jmp_meta(improved_source_training)
+availability_training    <- patch_jmp_meta(availability_training)
+accessibility_training   <- patch_jmp_meta(accessibility_training)
+
+# Diagnostics
+jmp_check_vars <- c("drinking_water_basic", "sanitation_basic", "iso3", "sdg_region")
+
+check_missing_jmp <- function(training_df, outcome_name) {
+  training_df %>%
+    dplyr::filter(dplyr::if_any(dplyr::all_of(jmp_check_vars), is.na)) %>%
+    dplyr::distinct(country_outcome, analysis_year,
+                    dplyr::across(dplyr::all_of(jmp_check_vars))) %>%
+    dplyr::mutate(outcome_type = outcome_name) %>%
+    dplyr::arrange(country_outcome, analysis_year)
+}
+
+missing_jmp <- dplyr::bind_rows(
+  check_missing_jmp(SMDW_training,            "smdw"),
+  check_missing_jmp(ecoli_training,           "ecoli_free"),
+  check_missing_jmp(improved_source_training, "improved_source"),
+  check_missing_jmp(availability_training,    "availability"),
+  check_missing_jmp(accessibility_training,   "accessibility")
+)
+print(missing_jmp)
+```
+
+------------------------------------------------------------------------
+
+# 8. Output
+
+## Write training CSVs
+
+Final training datasets are written to `data/training_subcomponents/`.
+
+```{r}
+dir.create(OUTPUT_DIR, recursive = TRUE, showWarnings = FALSE)
+
+readr::write_csv(SMDW_training,
+  file.path(OUTPUT_DIR, "smdw_training_with_covariates.csv"))
+readr::write_csv(ecoli_training,
+  file.path(OUTPUT_DIR, "ecoli_free_training_with_covariates.csv"))
+readr::write_csv(improved_source_training,
+  file.path(OUTPUT_DIR, "improved_source_training_with_covariates.csv"))
+readr::write_csv(availability_training,
+  file.path(OUTPUT_DIR, "availability_training_with_covariates.csv"))
+readr::write_csv(accessibility_training,
+  file.path(OUTPUT_DIR, "accessibility_training_with_covariates.csv"))
+
+message("Written: smdw_training_with_covariates.csv")
+message("Written: ecoli_free_training_with_covariates.csv")
+message("Written: improved_source_training_with_covariates.csv")
+message("Written: availability_training_with_covariates.csv")
+message("Written: accessibility_training_with_covariates.csv")
+```
+
+## Summary: wastewater region distribution
+
+A quick check on regional representation in the final training data.
+
+```{r}
+dplyr::bind_rows(
+  SMDW_training            %>% dplyr::mutate(outcome_type = "smdw"),
+  ecoli_training           %>% dplyr::mutate(outcome_type = "ecoli_free"),
+  improved_source_training %>% dplyr::mutate(outcome_type = "improved_source"),
+  availability_training    %>% dplyr::mutate(outcome_type = "availability"),
+  accessibility_training   %>% dplyr::mutate(outcome_type = "accessibility")
 ) %>%
-  dplyr::count(outcome_type, name = "n_missing_covariate_rows")
-
-missing_covariate_summary
+  dplyr::mutate(ww_region = dplyr::if_else(
+    is.na(ww_region), "Missing ww_region", ww_region
+  )) %>%
+  dplyr::count(outcome_type, ww_region, name = "n_observations") %>%
+  dplyr::group_by(outcome_type) %>%
+  dplyr::mutate(percent = round(100 * n_observations / sum(n_observations), 2)) %>%
+  dplyr::ungroup() %>%
+  dplyr::arrange(outcome_type, desc(n_observations))
 ```

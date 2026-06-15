@@ -6,14 +6,13 @@ library(haven)
 library(surveytoolbox)
 library(survey)
 
-source("~/Documents/GitHub/mapping_sanitation_access_LMICs/functions/extract_label_dhs_variables.R")
-source("~/Documents/GitHub/mapping_sanitation_access_LMICs/functions/extract_mics_variables.R")
+source(here::here("functions/extract_label_dhs_variables.R"))
+source(here::here("configuration/paths.R"))
 
-
-PATH_TO_SURVEYS_DHS_water_quality <- "~/switchdrive/Eawag/WorldBankProject/HH_surveys/HH_survey_data/HH_DHS_water_quality/"
-PATH_TO_SURVEYS_DHS_other <- "~/switchdrive/Eawag/WorldBankProject/HH_surveys/HH_survey_data/HH_DHS_other/"
-
-country_name_key_WB <- read_csv("data/country_name_key_WB.csv")
+country_name_key_WB <- readr::read_csv(
+  here::here("data/country_name_key_WB.csv"),
+  show_col_types = FALSE
+)
 
 loadSurveys(PATH_TO_SURVEYS_DHS_water_quality)
 
@@ -66,9 +65,9 @@ for (survey_name in DHS_surveys) {
 # Extract DHS HH7 / HV024 region labels from raw files
 # ------------------------------------------------------------
 
-hh_CotedIvoire_HH7extract_DHS <- extractDHSAreaLabels(CIHR81FL)
-hh_Malawi_HH7extract_DHS <- extractDHSAreaLabels(MWPR81FL)
-hh_Mozambique_HH7extract_DHS <- extractDHSAreaLabels(MZHR81FL)
+hh_CotedIvoire_HH7extract_DHS <- extractDHSAreaLabels(CIHR81FL, candidates = c("SHDISTRICT", "HV024"))
+hh_Malawi_HH7extract_DHS      <- extractDHSAreaLabels(MWPR81FL, candidates = c("SHDISTRICT", "HV024"))
+hh_Mozambique_HH7extract_DHS  <- extractDHSAreaLabels(MZHR81FL, candidates = c("SHDISTRICT", "HV024"))
 
 # ------------------------------------------------------------
 # Replace HH7 codes with region names
@@ -145,7 +144,7 @@ df.DHS.SMDW_Labeled <- df.DHS.SMDW_Labeled %>%
 
 write.csv(
   df.DHS.SMDW_Labeled,
-  "~/switchdrive/Eawag/WorldBankProject//HH_surveys/HH_survey_data/df_SMDW_DHS.csv",
+  here::here("outputs/00_raw_household_data/df.SMDW_wq_DHS.csv"),
   fileEncoding = "UTF-8",
   row.names = FALSE
 )
@@ -361,33 +360,49 @@ read_dhs_other_minimal <- function(file_path) {
 # ------------------------------------------------------------
 
 dhs_other_files <- list.files(
-  path = PATH_TO_SURVEYS_DHS_other,
-  pattern = "\\.sav$",
-  full.names = TRUE,
+  path        = PATH_TO_SURVEYS_DHS_other,
+  pattern     = "\\.sav$",
+  full.names  = TRUE,
   ignore.case = TRUE
 )
 
-DHS_other_index_sampled <- tibble::tibble(
-  file_path = dhs_other_files,
-  file_name = basename(dhs_other_files),
-  survey_id = toupper(tools::file_path_sans_ext(basename(dhs_other_files))),
-  dhs_prefix = stringr::str_sub(survey_id, 1, 2)
-) %>%
-  dplyr::left_join(dhs_country_lookup, by = "dhs_prefix") %>%
-  dplyr::filter(!is.na(country))
+mis_files <- list.files(
+  path        = PATH_TO_SURVEYS_MIS,
+  pattern     = "\\.sav$",
+  full.names  = TRUE,
+  ignore.case = TRUE
+)
 
+# Combine DHS and MIS files; where both exist for a country, keep MIS only
+# (mirrors the logic in 01_compile_dhs_sanitation_data.R)
+DHS_other_index_sampled <- dplyr::bind_rows(
+  tibble::tibble(file_path = dhs_other_files, survey_type = "DHS"),
+  tibble::tibble(file_path = mis_files,       survey_type = "MIS")
+) %>%
+  dplyr::mutate(
+    file_name  = basename(file_path),
+    survey_id  = toupper(tools::file_path_sans_ext(basename(file_path))),
+    dhs_prefix = stringr::str_sub(survey_id, 1, 2)
+  ) %>%
+  dplyr::left_join(dhs_country_lookup, by = "dhs_prefix") %>%
+  dplyr::filter(!is.na(country)) %>%
+  dplyr::group_by(country) %>%
+  dplyr::filter(
+    dplyr::n_distinct(survey_type) == 1 | survey_type == "MIS"
+  ) %>%
+  dplyr::ungroup()
 
 if (nrow(DHS_other_index_sampled) == 0) {
   stop(
-    "No DHS_other files matched dhs_country_lookup. ",
+    "No DHS_other/MIS files matched dhs_country_lookup. ",
     "Check DHS file prefixes and sampled_iso2_codes."
   )
 }
 
-message("DHS_other files that will be processed:")
+message("DHS/MIS other files that will be processed:")
 print(
   DHS_other_index_sampled %>%
-    dplyr::select(file_name, survey_id, dhs_prefix, country)
+    dplyr::select(file_name, survey_id, dhs_prefix, country, survey_type)
 )
 
 
@@ -401,15 +416,21 @@ process_one_dhs_other_file <- function(file_path, survey_id, country_name) {
   
   dhs_raw <- read_dhs_other_minimal(file_path)
   
-  # Extract DHS variables excluding WQ27.
-  # This also adds the country column using country_name.
-  # Use HV024 for Cambodia because region labels are stored there.
-  # For other countries, keep the existing default order.
-  area_candidates <- if (country_name == "Cambodia") {
-    c("HV024", "SHDISTRICT")
-  } else {
-    c("SHDISTRICT", "HV024")
-  }
+  # Select area variable candidates per country, matching the logic used in
+  # 01_compile_dhs_sanitation_data.R so region boundaries are consistent.
+  # - Gambia/Rwanda/Cambodia: HV024 first (province/district labels stored there)
+  # - Nigeria: state then district
+  # - Sierra Leone: SHDIST then SHDISTRICT
+  # - Uganda: HV024 only (province level; SHDISTRICT gives 116 districts with
+  #   no matching covariate boundaries)
+  # - Default: SHDISTRICT then HV024
+  area_candidates <- dplyr::case_when(
+    country_name %in% c("Cambodia", "Gambia", "Rwanda") ~ list(c("HV024", "SHDISTRICT")),
+    country_name == "Nigeria"                            ~ list(c("SHSTATE", "SHDISTRICT", "HV024")),
+    country_name == "Sierra Leone"                       ~ list(c("SHDIST", "SHDISTRICT", "HV024")),
+    country_name == "Uganda"                             ~ list(c("HV024")),
+    TRUE                                                 ~ list(c("SHDISTRICT", "HV024"))
+  ) %>% .[[1]]
   
   dhs_other <- extractDHSOtherSurveyVariables(
     dhs_raw,
@@ -597,7 +618,7 @@ print(countries_to_check_with_raw_column_status, n=26)
 
 write.csv(
   df.DHS.other_Labeled,
-  "~/switchdrive/Eawag/WorldBankProject/HH_surveys/HH_survey_data/df_other_DHS_SMDW.csv",
+  here::here("outputs/00_raw_household_data/df.SMDW_other_DHS.csv"),
   fileEncoding = "UTF-8",
   row.names = FALSE
 )
@@ -623,12 +644,12 @@ df_region_summary_DHS <- df.DHS.SMDW_Labeled %>%
     `number of households with data on water quality (WQ27)` = households_with_WQ27
   )
 
-write.csv(
-  df_region_summary_DHS,
-  "X/HH_surveys/HH_survey_data/regionalSummary_DHSquality.csv",
-  fileEncoding = "UTF-8",
-  row.names = FALSE
-)
+#write.csv(
+ # df_region_summary_DHS,
+  #"X/HH_surveys/HH_survey_data/regionalSummary_DHSquality.csv",
+  #fileEncoding = "UTF-8",
+  #row.names = FALSE
+#)
 
 # ------------------------------------------------------------
 # Optional survey design for WQ27 estimates
@@ -742,12 +763,12 @@ df_region_summary_DHS_SE <- df_wq_se_DHS %>%
     `design effect` = DEff.WQ27
   )
 
-write.csv(
-  df_region_summary_DHS_SE,
-  "X/HH_surveys/HH_survey_data/regionalSummary_DHSquality_SE.csv",
-  fileEncoding = "UTF-8",
-  row.names = FALSE
-)
+#write.csv(
+ # df_region_summary_DHS_SE,
+  #"X/HH_surveys/HH_survey_data/regionalSummary_DHSquality_SE.csv",
+  #fileEncoding = "UTF-8",
+  #row.names = FALSE
+#)
 
 
 
@@ -793,7 +814,7 @@ value_labels <- imap_dfr(dhs, function(x, varname) {
 
 
 # ---- 6. Write files you can upload/share ----
-write_csv(var_dictionary, "dhs_variable_dictionary.csv")
-write_csv(value_labels, "dhs_value_labels.csv")
+#write_csv(var_dictionary, "dhs_variable_dictionary.csv")
+#write_csv(value_labels, "dhs_value_labels.csv")
 
 
