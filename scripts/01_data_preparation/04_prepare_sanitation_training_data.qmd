@@ -55,9 +55,11 @@ PATH_COUNTRY_KEY       <- here::here("data/country_name_key_WB.csv")
 PATH_GDP               <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/gdp_per_capita_2015.csv"
 PATH_EDUCATION         <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/secondary_education_years.csv"
 PATH_WASTEWATER        <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/Country_WWctr_Percentage.txt"
+PATH_TO_REGION_AREAS <- here::here("outputs/02_boundary_files/other_surveys/region_areas_km2.csv")
 
 OUTPUT_DIR             <- here::here("data/training_subcomponents") #writing training data into this file
 CROSSWALK_REVIEW_DIR   <- here::here("outputs/01_matching_regions/crosswalk_review")
+
 ```
 
 ------------------------------------------------------------------------
@@ -273,6 +275,27 @@ df_training_covariates_sanitation <- make_training_covariates(
 )
 ```
 
+```{r}
+# Load region area data and join to covariates
+df_region_areas <- readr::read_csv(PATH_TO_REGION_AREAS) %>%
+  dplyr::rename(HH7_region = HH7_region) %>%
+  dplyr::mutate(HH7_region = stringr::str_trim(HH7_region)) %>%
+  dplyr::select(country, analysis_year, HH7_region, area_km2) %>%
+  dplyr::group_by(country, analysis_year, HH7_region) %>%
+  dplyr::slice(1) %>%
+  dplyr::ungroup()
+
+df_training_covariates_sanitation <- df_training_covariates_sanitation %>%
+  dplyr::left_join(
+    df_region_areas,
+    by = c("country", "analysis_year", "HH7_region" = "HH7_region")
+  )
+
+# Check how many rows are missing area after join
+cat("Regions missing area_km2:", sum(is.na(df_training_covariates_sanitation$area_km2)), "\n")
+
+```
+
 ## Check for duplicate covariate keys
 
 Duplicate country–region–year keys would cause row inflation on joining
@@ -475,6 +498,12 @@ open_defecation_training  <- open_defecation_training_output$training_with_covar
 
 basic_sanitation_training_output$missing_covariates
 open_defecation_training_output$missing_covariates
+```
+
+```{r}
+
+
+
 ```
 
 ------------------------------------------------------------------------
