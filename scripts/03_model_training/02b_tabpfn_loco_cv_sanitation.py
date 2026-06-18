@@ -123,39 +123,72 @@ COUNTRY_LEVEL_FEATURES = [
     "sanitation_basic", "open_defecation",
 ]
 
+# -------------------------------------------------------
+# SETUP: Define which features (input variables) to use
+# -------------------------------------------------------
+
+# Combine satellite/earth observation features with country-level statistics
+# into one master list called ALL_FEATURES_K100.
+# Think of this as the full "menu" of information the model can learn from.
 ALL_FEATURES_K100 = ALL_EO_FEATURES + COUNTRY_LEVEL_FEATURES
 
+# These are the different "sizes" of feature shortlists we want to test.
+# k=5 means only 5 representative variables; k=100 means use all of them.
+# The goal is to find the smallest set that still predicts well.
 K_VALUES = [5, 10, 15, 20, 30, 45, 90, 100]
 
 
 def load_feature_set(k):
-    """Load representative variables for cluster k. k=100 returns full list."""
+    """
+    Load the list of input variables for a given shortlist size k.
+    - If k=100, return the full feature list (no shortlisting needed).
+    - Otherwise, read a pre-saved CSV file that lists the best k variables
+      chosen by a prior clustering analysis (run separately in 01_cluster_analysis.qmd).
+    - Any variables in the file that aren't in our master list are dropped with a warning.
+    """
     if k == 100:
         return ALL_FEATURES_K100
+
+    # Build the file path for this shortlist size
     path = os.path.join(CLUSTER_DIR, f"representative_variables_k{k}.csv")
+
+    # Stop with a clear error if the file hasn't been generated yet
     if not os.path.exists(path):
         raise FileNotFoundError(
             f"Cluster file not found: {path}\nRun 01_cluster_analysis.qmd first."
         )
+
+    # Read the CSV and extract the column of variable names, dropping any blanks
     features = pd.read_csv(path)["representative_variable"].dropna().tolist()
-    valid    = [f for f in features if f in ALL_FEATURES_K100]
-    dropped  = set(features) - set(valid)
+
+    # Keep only variables that actually exist in our master feature list
+    valid   = [f for f in features if f in ALL_FEATURES_K100]
+    dropped = set(features) - set(valid)
+
+    # Warn the user if any variables were silently removed
     if dropped:
         warnings.warn(f"k={k}: features not in ALL_FEATURES_K100 dropped: {dropped}")
+
     return valid
 
 
+# Build a dictionary that maps each shortlist label (e.g. "k20") to its feature list.
+# Example: feature_sets["k20"] = [list of 20 variable names]
 feature_sets = {f"k{k}": load_feature_set(k) for k in K_VALUES}
 
+# Print a summary so we can confirm everything loaded correctly
 print("Feature sets loaded:")
 for label, feats in feature_sets.items():
     print(f"  {label}: {len(feats)} features")
 
 
 # -------------------------------------------------------
-# 4.  Tasks
+# 4.  Tasks — define what we are predicting
 # -------------------------------------------------------
 
+# Two separate prediction tasks, each pointing to its own training data file.
+# "basic_sanitation" excludes Indonesia (data quality issue).
+# "open_defecation" uses all available countries.
 TASKS = {
     "basic_sanitation": {
         "filename":          "basic_sanitation_training_with_covariates.csv",
@@ -171,11 +204,22 @@ TASKS = {
 
 
 # -------------------------------------------------------
-# 5.  Data preparation
+# 5.  Data preparation — clean the training data
 # -------------------------------------------------------
 
 def prepare_model_data(df, feature_cols, exclude_countries=None):
-    """Clean and structure one training dataframe."""
+    """
+    Takes a raw training spreadsheet and prepares it for modelling:
+    1. Removes rows from excluded countries.
+    2. Keeps only the columns (variables) we need.
+    3. Converts all feature and target columns to numbers.
+    4. Drops rows missing critical values (target, location, year, weight).
+    5. Drops rows where the survey weight is zero or negative (unusable).
+    6. Removes duplicate rows (same country + year + region + target value).
+    7. Assigns each country a numeric fold ID for cross-validation.
+    """
+
+    # Step 1: Remove excluded countries by checking the outcome column name
     if exclude_countries:
         for country in exclude_countries:
             mask = df[OUTCOME_COL].astype(str).str.startswith(country, na=False)
@@ -184,11 +228,13 @@ def prepare_model_data(df, feature_cols, exclude_countries=None):
                 print(f"  Removed {n} {country} rows")
             df = df[~mask].copy()
 
+    # Step 2: Only keep feature columns that actually exist in this dataset
     valid_features = [c for c in feature_cols if c in df.columns]
     n_skipped = len(feature_cols) - len(valid_features)
     if n_skipped:
         warnings.warn(f"  {n_skipped} feature(s) not in data — skipped")
 
+    # Step 3: Select only the columns we need (features + metadata columns)
     keep = valid_features + [
         TARGET_COL, COUNTRY_COL, REGION_COL, YEAR_COL,
         WEIGHT_COL, SDG_COL, INCOME_COL,
@@ -196,21 +242,25 @@ def prepare_model_data(df, feature_cols, exclude_countries=None):
     keep     = [c for c in keep if c in df.columns]
     model_df = df[keep].copy()
 
+    # Step 4: Convert feature/target/weight columns to numeric (non-numeric → NaN)
     for col in valid_features + [TARGET_COL, WEIGHT_COL]:
         if col in model_df.columns:
             model_df[col] = pd.to_numeric(model_df[col], errors="coerce")
 
+    # Step 5 & 6: Drop rows with missing essentials or zero/negative weights
     model_df = model_df.dropna(
         subset=[TARGET_COL, COUNTRY_COL, REGION_COL, YEAR_COL, WEIGHT_COL]
     ).copy()
     model_df = model_df[model_df[WEIGHT_COL] > 0].copy()
+
+    # Step 7: Remove exact duplicates across key identifying columns
     model_df = model_df.drop_duplicates(
         subset=[COUNTRY_COL, YEAR_COL, REGION_COL, TARGET_COL]
     ).copy()
 
-    if model_df[COUNTRY_COL].nunique() < 2:
-        raise ValueError("Need at least two countries for CV.")
 
+    # Assign a unique integer ID (fold number) to each country, used later
+    # when we hold out one country at a time during cross-validation
     country_lookup = (
         model_df[[COUNTRY_COL]]
         .drop_duplicates()
@@ -223,14 +273,20 @@ def prepare_model_data(df, feature_cols, exclude_countries=None):
 
 
 # -------------------------------------------------------
-# 6.  Metrics helpers
+# 6.  Metrics helpers — measure how accurate predictions are
 # -------------------------------------------------------
 
 def compute_metrics(y_true, y_pred):
-    """Unweighted metrics — used for feature set comparison."""
-    r      = y_true - y_pred
-    ss_res = np.sum(r ** 2)
-    ss_tot = np.sum((y_true - np.mean(y_true)) ** 2)
+    """
+    Calculate three standard accuracy measures (no survey weights applied):
+    - MAE  (Mean Absolute Error):  average size of prediction mistakes
+    - RMSE (Root Mean Squared Error): similar to MAE but penalises large errors more
+    - R²   (R-squared): 1 = perfect predictions, 0 = no better than guessing the mean
+    Used during the feature-set comparison stage.
+    """
+    r      = y_true - y_pred          # residuals (errors)
+    ss_res = np.sum(r ** 2)           # sum of squared errors
+    ss_tot = np.sum((y_true - np.mean(y_true)) ** 2)  # total variance in the data
     return {
         "mae":  float(np.mean(np.abs(r))),
         "rmse": float(np.sqrt(np.mean(r ** 2))),
@@ -240,8 +296,13 @@ def compute_metrics(y_true, y_pred):
 
 
 def compute_metrics_full(y_true, y_pred, weights):
-    """Weighted and unweighted metrics — used for final LOCO-CV."""
-    has_var = len(np.unique(y_true)) > 1
+    """
+    Calculate both weighted and unweighted accuracy measures.
+    Weighted metrics give more importance to data points from larger surveys
+    (larger PSU weight = represents more people).
+    Used for the final cross-validation evaluation.
+    """
+    has_var = len(np.unique(y_true)) > 1  # can't compute R² if all values identical
     return {
         "weighted_mae":    mean_absolute_error(y_true, y_pred, sample_weight=weights),
         "weighted_rmse":   mean_squared_error(y_true, y_pred, sample_weight=weights) ** 0.5,
@@ -253,14 +314,22 @@ def compute_metrics_full(y_true, y_pred, weights):
 
 
 # -------------------------------------------------------
-# 7.  TabPFN fit helper
+# 7.  TabPFN fit helper — train the machine learning model
 # -------------------------------------------------------
 
 def clear_memory():
+    # Free up RAM after each model is trained — important when running many folds
     gc.collect()
 
 
 def fit_tabpfn(model, X_train, y_train, sample_weight):
+    """
+    Train a TabPFN model (a type of AI/neural network designed for small tabular data).
+    - First tries to pass survey weights so larger surveys have more influence.
+    - If the installed version of TabPFN doesn't support weights, trains without them.
+    Returns the trained model and a flag indicating whether weights were used.
+    """
+    # Check whether this version of TabPFN accepts a sample_weight argument
     try:
         params = inspect.signature(model.fit).parameters
         supports_sw = "sample_weight" in params or any(
@@ -272,10 +341,11 @@ def fit_tabpfn(model, X_train, y_train, sample_weight):
     if supports_sw:
         try:
             model.fit(X_train, y_train, sample_weight=sample_weight)
-            return model, True
+            return model, True   # weights were used
         except TypeError:
             pass
 
+    # Fall back to training without weights
     model.fit(X_train, y_train)
     return model, False
 
@@ -283,18 +353,23 @@ def fit_tabpfn(model, X_train, y_train, sample_weight):
 # -------------------------------------------------------
 # 8.  Stratified fold sampler
 #
-# Mirrors 01_modelling_sanitation_RF.qmd:
-# - Stratum targets from prediction space (SDG region proportions)
-# - Sample whole countries per stratum without replacement
-# - Exclude high-income countries (wb_income_group == 'H')
-# - N_REPEATS independent folds, shared across both outcomes
+# Decides which countries go into each "held-out" test fold.
+# Mirrors the approach used in 01_modelling_sanitation_RF.qmd:
+# - Ensure each fold reflects the geographic mix of the prediction space
+#   (proportional to SDG region composition of prediction dataset)
+# - Sample whole countries (not individual rows) per region
+# - Exclude high-income countries from test folds
+# - Create N_REPEATS=5 independent folds, shared across both outcomes
 # -------------------------------------------------------
 
-N_REPEATS     = 5
-FOLD_FRACTION = 0.15
+N_REPEATS     = 5     # number of independent test folds to create
+FOLD_FRACTION = 0.15  # each fold holds out ~15% of the training data
 
+# Load the prediction-space dataset to work out what regional mix to target
 pred_cov = pd.read_csv(PRED_COVARIATES_PATH)
 
+# Count how many prediction regions fall in each SDG geographic region
+# and convert to proportions — this is our "target" mix for each fold
 stratum_targets = (
     pred_cov[pred_cov[SDG_COL].notna()]
     .groupby(SDG_COL, as_index=False)
@@ -303,12 +378,15 @@ stratum_targets = (
     .assign(fraction=lambda d: d["n_pred_regions"] / d["n_pred_regions"].sum())
 )
 
-# Country strata from basic sanitation training data
+# Load basic sanitation training data to learn country→region mappings
+# (Indonesia already excluded here to match Section 5)
 _bs_raw = pd.read_csv(os.path.join(DATA_DIR, TASKS["basic_sanitation"]["filename"]))
 _bs_raw = _bs_raw[
     ~_bs_raw[OUTCOME_COL].astype(str).str.startswith("Indonesia", na=False)
 ]
 
+# Build a table: one row per country, with its SDG region, income group,
+# and how many sub-national regions it contributes to training data
 country_strata = (
     _bs_raw
     .groupby(COUNTRY_COL, as_index=False)
@@ -321,6 +399,7 @@ country_strata = (
 
 total_train_regions = int(country_strata["n_regions"].sum())
 
+# Calculate how many regions from each SDG zone should appear in each fold
 stratum_targets["n_in_fold"] = (
     stratum_targets["fraction"] * FOLD_FRACTION * total_train_regions
 ).round().astype(int)
@@ -331,12 +410,13 @@ print(stratum_targets.sort_values("n_pred_regions", ascending=False).to_string(i
 
 def sample_held_out_countries(country_strata, stratum_targets, seed_i=1):
     """
-    Sample whole countries into the held-out fold, stratum by stratum.
-    - High-income countries excluded from folds.
-    - Countries drawn without replacement within each stratum.
-    - Stops when cumulative regions >= n_in_fold for that stratum.
+    Randomly select which countries go into one held-out test fold.
+    - Works region by region (SDG zones), sampling whole countries at a time.
+    - Stops adding countries once enough regions have been collected for that zone.
+    - High-income countries (wb_income_group == 'H') are never held out.
+    - seed_i controls randomness — different seeds give different folds.
     """
-    rng      = np.random.default_rng(seed_i)
+    rng      = np.random.default_rng(seed_i)  # reproducible random number generator
     held_out = []
     eligible = country_strata[country_strata["wb_income_group"] != "H"].copy()
 
@@ -344,6 +424,7 @@ def sample_held_out_countries(country_strata, stratum_targets, seed_i=1):
         stratum  = row[SDG_COL]
         target_n = int(row["n_in_fold"])
 
+        # Get all eligible countries in this SDG region
         pool = (eligible[eligible["sdg_region"] == stratum]
                 .copy().reset_index(drop=True))
         if len(pool) == 0 or target_n == 0:
@@ -352,6 +433,7 @@ def sample_held_out_countries(country_strata, stratum_targets, seed_i=1):
         sampled_n = 0
         sampled   = []
 
+        # Keep drawing countries until we hit the regional target count
         while sampled_n < target_n and len(pool) > 0:
             idx    = int(rng.integers(0, len(pool)))
             chosen = pool.loc[idx, COUNTRY_COL]
@@ -369,11 +451,13 @@ def sample_held_out_countries(country_strata, stratum_targets, seed_i=1):
     return held_out
 
 
+# Generate the 5 independent folds (each with a different random seed)
 fold_country_lists = [
     sample_held_out_countries(country_strata, stratum_targets, seed_i=i)
     for i in range(1, N_REPEATS + 1)
 ]
 
+# Print a summary showing how many countries and regions ended up in each fold
 print("\nFold diagnostics:")
 for i, countries in enumerate(fold_country_lists, 1):
     n_reg = int(_bs_raw[_bs_raw[COUNTRY_COL].isin(countries)].shape[0])
@@ -382,17 +466,23 @@ for i, countries in enumerate(fold_country_lists, 1):
 
 
 # -------------------------------------------------------
-# 9.  Feature set comparison (stratified CV)
+# 9.  Feature set comparison — find the best shortlist size
 # -------------------------------------------------------
 
 def run_one_fold(training_df, held_out_countries, features):
-    """Train on non-held-out, predict on held-out. Return unweighted metrics."""
+    """
+    Train a model on all countries EXCEPT the held-out ones,
+    then test it on the held-out countries.
+    Returns unweighted accuracy metrics (or None if the test set is empty).
+    This is the core "train on some, test on others" evaluation loop.
+    """
     train_df = training_df[~training_df[COUNTRY_COL].isin(held_out_countries)].copy()
     test_df  = training_df[ training_df[COUNTRY_COL].isin(held_out_countries)].copy()
 
     if len(test_df) == 0:
         return None
 
+    # Use only features that exist in both train and test sets
     valid = [f for f in features if f in train_df.columns]
     X_tr  = train_df[valid].to_numpy(dtype=float)
     y_tr  = train_df[TARGET_COL].to_numpy(dtype=float)
@@ -400,6 +490,7 @@ def run_one_fold(training_df, held_out_countries, features):
     X_te  = test_df[valid].to_numpy(dtype=float)
     y_te  = test_df[TARGET_COL].to_numpy(dtype=float)
 
+    # Remove any rows that contain missing values in the feature columns
     train_mask = ~np.isnan(X_tr).any(axis=1)
     test_mask  = ~np.isnan(X_te).any(axis=1)
     X_tr, y_tr, w_tr = X_tr[train_mask], y_tr[train_mask], w_tr[train_mask]
@@ -408,16 +499,23 @@ def run_one_fold(training_df, held_out_countries, features):
     if len(X_tr) == 0 or len(X_te) == 0:
         return None
 
+    # Normalise weights so they average to 1 (helps model training stability)
     w_tr_norm = w_tr / w_tr.mean()
     model = TabPFNRegressor()
     model, _ = fit_tabpfn(model, X_tr, y_tr, sample_weight=w_tr_norm)
     preds = np.asarray(model.predict(X_te)).reshape(-1)
 
-    del model; clear_memory()
+    del model; clear_memory()  # free RAM immediately after use
     return compute_metrics(y_te, preds)
 
 
 def run_feature_set_comparison(training_df, outcome_name):
+    """
+    For each feature shortlist size (k5, k10, ..., k100):
+      - Run all 5 test folds
+      - Average the accuracy metrics across folds
+    Returns a summary table so we can choose the best k.
+    """
     print(f"\n== Feature set comparison: {outcome_name} ==")
     rows = []
 
@@ -430,12 +528,13 @@ def run_feature_set_comparison(training_df, outcome_name):
             if result is not None:
                 result["repeat_i"] = i + 1
                 repeat_results.append(result)
-            print(".", end="", flush=True)
+            print(".", end="", flush=True)  # progress dots
         print()
 
         if not repeat_results:
             continue
 
+        # Summarise across the 5 folds: mean and standard deviation of each metric
         rep_df = pd.DataFrame(repeat_results)
         rows.append({
             "outcome":     outcome_name,
@@ -453,6 +552,7 @@ def run_feature_set_comparison(training_df, outcome_name):
     return pd.DataFrame(rows)
 
 
+# Load and clean both training datasets, then run the comparison
 print("\nLoading training data for feature set comparison...")
 _bs_df, _ = prepare_model_data(
     pd.read_csv(os.path.join(DATA_DIR, TASKS["basic_sanitation"]["filename"])),
@@ -471,9 +571,10 @@ cv_comparison = pd.concat([comparison_bs, comparison_od], ignore_index=True)
 
 
 # -------------------------------------------------------
-# 10. Comparison results
+# 10. Print and save feature set comparison results
 # -------------------------------------------------------
 
+# Display the comparison table sorted by R² (best at top for each outcome)
 print("\nStratified CV — feature set comparison:")
 print(
     cv_comparison
@@ -481,6 +582,7 @@ print(
     .to_string(index=False)
 )
 
+# Save the table to a CSV file for later reference
 cv_comparison.to_csv(
     os.path.join(OUTPUT_DIR, "tabpfn_feature_set_cv_comparison.csv"),
     index=False,
@@ -489,21 +591,24 @@ print(f"\nSaved: {OUTPUT_DIR}/tabpfn_feature_set_cv_comparison.csv")
 
 
 # -------------------------------------------------------
-# 11. [MANUAL] Select final k per outcome
+# 11. [MANUAL STEP] Choose the final feature shortlist size
 #
-# Inspect the table above, set the two values below,
-# then run Sections 12 and 13.
+# Look at the table printed above.
+# Set the two k values below to whatever performed best,
+# then continue running from Section 12 onwards.
 # -------------------------------------------------------
 
-FINAL_K_BASIC_SANITATION = 100   # e.g. 20
-FINAL_K_OPEN_DEFECATION  = 100   # e.g. 15
+FINAL_K_BASIC_SANITATION = 100   # <-- change this after reviewing Section 10 output
+FINAL_K_OPEN_DEFECATION  = 100   # <-- change this after reviewing Section 10 output
 
+# Safety check: both values must be set before continuing
 if FINAL_K_BASIC_SANITATION is None or FINAL_K_OPEN_DEFECATION is None:
     raise ValueError(
         "Set FINAL_K_BASIC_SANITATION and FINAL_K_OPEN_DEFECATION "
         "before running Sections 12 and 13."
     )
 
+# Look up the actual feature lists for the chosen k values
 final_features_bs = feature_sets[f"k{FINAL_K_BASIC_SANITATION}"]
 final_features_od = feature_sets[f"k{FINAL_K_OPEN_DEFECATION}"]
 
@@ -514,18 +619,27 @@ print(f"Open defecation:  k={FINAL_K_OPEN_DEFECATION} "
 
 
 # -------------------------------------------------------
-# 12. LOCO-CV helper
+# 12. LOCO-CV helper — Leave-One-Country-Out cross-validation
 # -------------------------------------------------------
 
 def run_loco_cv(model_df, feature_cols, outcome_name, final_k):
-    """PSU-weighted LOCO-CV with TabPFN. Reports weighted + unweighted metrics."""
+    """
+    Full LOCO-CV: train on all countries except one, predict for that one country,
+    then rotate through every country in turn.
+    This gives an honest estimate of how well the model generalises to unseen countries.
+
+    Returns:
+    - fold_df:    per-country accuracy metrics
+    - overall_df: single-row summary across all countries
+    - oof_df:     the actual predicted vs observed values for every row
+    """
     X       = model_df[feature_cols].to_numpy(dtype=float)
     y       = model_df[TARGET_COL].to_numpy(dtype=float)
-    groups  = model_df["country_fold"].to_numpy()
+    groups  = model_df["country_fold"].to_numpy()   # country IDs used to split folds
     weights = model_df[WEIGHT_COL].to_numpy(dtype=float)
 
-    oof_preds   = np.full(len(model_df), np.nan)
-    logo        = LeaveOneGroupOut()
+    oof_preds   = np.full(len(model_df), np.nan)   # will store all out-of-fold predictions
+    logo        = LeaveOneGroupOut()                # sklearn splitter: one country out each time
     fold_rows   = []
     used_sw_all = []
 
@@ -538,17 +652,18 @@ def run_loco_cv(model_df, feature_cols, outcome_name, final_k):
         X_tr, y_tr   = X[train_idx], y[train_idx]
         X_val, y_val = X[val_idx],   y[val_idx]
         w_tr         = weights[train_idx]
-        w_tr_norm    = w_tr / w_tr.mean()
+        w_tr_norm    = w_tr / w_tr.mean()   # normalise weights
 
         model = TabPFNRegressor()
         model, used_sw = fit_tabpfn(model, X_tr, y_tr, sample_weight=w_tr_norm)
         used_sw_all.append(used_sw)
 
         preds = np.asarray(model.predict(X_val)).reshape(-1)
-        oof_preds[val_idx] = preds
+        oof_preds[val_idx] = preds   # store predictions in the correct row positions
 
         del model; clear_memory()
 
+        # Record per-country accuracy stats
         fold_rows.append({
             "outcome":          outcome_name,
             "fold":             fold,
@@ -558,6 +673,7 @@ def run_loco_cv(model_df, feature_cols, outcome_name, final_k):
             **compute_metrics(y_val, preds),
         })
 
+    # Sanity check: every row should have received a prediction
     if np.isnan(oof_preds).any():
         raise RuntimeError(
             f"Missing OOF predictions: {np.isnan(oof_preds).sum()} rows"
@@ -565,6 +681,7 @@ def run_loco_cv(model_df, feature_cols, outcome_name, final_k):
 
     fold_df = pd.DataFrame(fold_rows)
 
+    # Single summary row with overall weighted and unweighted metrics
     overall_df = pd.DataFrame([{
         "outcome":               outcome_name,
         "model":                 "TabPFN",
@@ -576,13 +693,14 @@ def run_loco_cv(model_df, feature_cols, outcome_name, final_k):
         **compute_metrics_full(y, oof_preds, weights),
     }])
 
+    # Build a detailed row-level output file with predicted vs observed values
     oof_df = model_df[
         [COUNTRY_COL, REGION_COL, YEAR_COL, TARGET_COL, WEIGHT_COL, "country_fold"]
     ].copy()
     oof_df.insert(0, "outcome", outcome_name)
     oof_df["pred_tabpfn"]      = oof_preds
-    oof_df["error_tabpfn"]     = oof_df[TARGET_COL] - oof_preds
-    oof_df["abs_error_tabpfn"] = np.abs(oof_df[TARGET_COL] - oof_preds)
+    oof_df["error_tabpfn"]     = oof_df[TARGET_COL] - oof_preds         # signed error
+    oof_df["abs_error_tabpfn"] = np.abs(oof_df[TARGET_COL] - oof_preds) # unsigned error
 
     return fold_df, overall_df, oof_df
 
@@ -595,22 +713,26 @@ print(f"\n{'='*60}")
 print(f"Final model: basic_sanitation  (k={FINAL_K_BASIC_SANITATION})")
 print(f"{'='*60}")
 
+# Reload and clean the data using only the final chosen feature set
 bs_model_df, bs_features = prepare_model_data(
     pd.read_csv(os.path.join(DATA_DIR, TASKS["basic_sanitation"]["filename"])),
     feature_cols=final_features_bs,
     exclude_countries=TASKS["basic_sanitation"]["exclude_countries"],
 )
 
+# Run the full LOCO-CV and get results
 bs_fold_df, bs_overall_df, bs_oof_df = run_loco_cv(
     bs_model_df, bs_features, "basic_sanitation", FINAL_K_BASIC_SANITATION
 )
 
+# Print summary metrics to screen
 print("\n  LOCO-CV metrics:")
 print(bs_overall_df[[
     "outcome", "feature_set", "n_rows", "n_features", "n_countries",
     "unweighted_mae", "unweighted_rmse", "unweighted_r2",
 ]].to_string(index=False))
 
+# Save three CSV output files: per-country, overall summary, and row-level predictions
 _prefix = TASKS["basic_sanitation"]["output_prefix"]
 bs_fold_df.to_csv(
     os.path.join(OUTPUT_DIR,
@@ -630,7 +752,7 @@ bs_oof_df.to_csv(
 
 
 # -------------------------------------------------------
-# 14. Final model — open defecation
+# 14. Final model — open defecation (same process as Section 13)
 # -------------------------------------------------------
 
 print(f"\n{'='*60}")
@@ -672,9 +794,10 @@ od_oof_df.to_csv(
 
 
 # -------------------------------------------------------
-# 15. Combined summary
+# 15. Combined summary — merge both outcomes into one table
 # -------------------------------------------------------
 
+# Stack the two outcome summaries and save as a single file
 summary_df = pd.concat([bs_overall_df, od_overall_df], ignore_index=True)
 summary_path = os.path.join(OUTPUT_DIR, "sanitation_tabpfn_loco_summary.csv")
 summary_df.to_csv(summary_path, index=False)
@@ -690,14 +813,17 @@ print(f"\nSaved: {summary_path}")
 
 
 # -------------------------------------------------------
-# 16. TabPFN quantile predictions (LOCO CV)
+# 16. Quantile predictions — estimate uncertainty ranges
 #
-# Re-runs LOCO CV requesting quantile outputs from TabPFN.
-# Raw model quantiles — not coverage-guaranteed.
-# If TabPFN does not expose quantile output for the client
-# version in use, the fold is skipped with a warning.
+# Re-runs LOCO-CV but asks TabPFN to output prediction intervals
+# (e.g. "we think the true value is between 30% and 60%") rather than
+# a single point estimate.
+# These are raw model intervals — not statistically guaranteed.
+# If this version of TabPFN doesn't support quantile output, the section
+# is skipped with a warning.
 # -------------------------------------------------------
 
+# The percentile levels we want: 5th, 10th, 25th, 50th (median), 75th, 90th, 95th
 QUANTILE_LEVELS = [0.05, 0.10, 0.25, 0.50, 0.75, 0.90, 0.95]
 
 QUANTILE_TASKS = {
@@ -716,6 +842,12 @@ QUANTILE_TASKS = {
 
 def run_loco_cv_tabpfn_quantiles(model_df, feature_cols, outcome_name,
                                  quantiles=None):
+    """
+    Same LOCO-CV loop as Section 12, but requests multiple quantile predictions
+    per data point instead of a single value.
+    Also computes empirical coverage: how often does the true value actually
+    fall inside the predicted interval? (Ideally 90% for a 90% interval.)
+    """
     if quantiles is None:
         quantiles = QUANTILE_LEVELS
 
@@ -725,7 +857,7 @@ def run_loco_cv_tabpfn_quantiles(model_df, feature_cols, outcome_name,
     weights = model_df[WEIGHT_COL].to_numpy(dtype=float)
 
     n_q   = len(quantiles)
-    oof_q = np.full((len(model_df), n_q), np.nan)
+    oof_q = np.full((len(model_df), n_q), np.nan)  # one column per quantile level
     logo  = LeaveOneGroupOut()
 
     for fold, (train_idx, val_idx) in enumerate(
@@ -742,11 +874,13 @@ def run_loco_cv_tabpfn_quantiles(model_df, feature_cols, outcome_name,
         model = TabPFNRegressor()
         model, _ = fit_tabpfn(model, X_tr, y_tr, sample_weight=w_tr_norm)
 
+        # Ask TabPFN for quantile outputs instead of a single prediction
         try:
             q_preds = model.predict(
                 X_val, output_type="quantiles", quantiles=quantiles,
             )
             q_preds = np.asarray(q_preds)
+            # Ensure shape is (n_rows, n_quantiles) — transpose if needed
             if q_preds.ndim == 2 and q_preds.shape[0] == n_q and q_preds.shape[1] != n_q:
                 q_preds = q_preds.T
         except (TypeError, AttributeError) as exc:
@@ -758,6 +892,7 @@ def run_loco_cv_tabpfn_quantiles(model_df, feature_cols, outcome_name,
         oof_q[val_idx] = q_preds
         del model; clear_memory()
 
+    # Build column names like "q05", "q10", ..., "q95"
     q_col_names = [f"q{int(q * 100):02d}" for q in quantiles]
     oof_df = model_df[
         [COUNTRY_COL, REGION_COL, YEAR_COL, TARGET_COL, WEIGHT_COL, "country_fold"]
@@ -766,18 +901,21 @@ def run_loco_cv_tabpfn_quantiles(model_df, feature_cols, outcome_name,
     for i, col in enumerate(q_col_names):
         oof_df[col] = oof_q[:, i]
 
+    # Compute interval coverage: for each held-out country, check how often
+    # the observed value falls inside the 80% and 90% prediction intervals
     coverage_rows = []
     for (country, fold_id), grp in oof_df.groupby([COUNTRY_COL, "country_fold"]):
         y_g = grp[TARGET_COL].to_numpy(dtype=float)
         w_g = grp[WEIGHT_COL].to_numpy(dtype=float)
         for lo_q, hi_q, label in [
-            ("q05", "q95", "90pct"), ("q10", "q90", "80pct"),
+            ("q05", "q95", "90pct"),   # 90% prediction interval
+            ("q10", "q90", "80pct"),   # 80% prediction interval
         ]:
             if lo_q not in grp.columns or hi_q not in grp.columns:
                 continue
             lo      = grp[lo_q].to_numpy(dtype=float)
             hi      = grp[hi_q].to_numpy(dtype=float)
-            covered = (y_g >= lo) & (y_g <= hi)
+            covered = (y_g >= lo) & (y_g <= hi)  # True if true value is inside interval
             coverage_rows.append({
                 "outcome":            outcome_name,
                 "country_fold":       int(fold_id),
@@ -798,16 +936,19 @@ print(f"\n{'='*60}")
 print("Section 16 — TabPFN quantile predictions (LOCO CV)")
 print(f"{'='*60}")
 
+# Run quantile LOCO-CV for both outcomes and save results
 for outcome_name, cfg in QUANTILE_TASKS.items():
     print(f"\n  Outcome: {outcome_name}")
     try:
         q_oof_df, q_cov_df = run_loco_cv_tabpfn_quantiles(
             cfg["model_df"], cfg["features"], outcome_name
         )
+        # Save row-level quantile predictions
         q_oof_df.to_csv(
             os.path.join(OUTPUT_DIR, f"{cfg['prefix']}_tabpfn_quantile_oof.csv"),
             index=False,
         )
+        # Save per-country coverage diagnostics
         q_cov_df.to_csv(
             os.path.join(OUTPUT_DIR,
                          f"{cfg['prefix']}_tabpfn_quantile_coverage_by_country.csv"),
@@ -824,23 +965,26 @@ for outcome_name, cfg in QUANTILE_TASKS.items():
 
 
 # -------------------------------------------------------
-# 17. Diagnostic plots for TabPFN quantile predictions
+# 17. Diagnostic plots for quantile predictions
 #
-# Loads quantile OOF CSVs saved in Section 16.
-# Can be re-run independently after Section 16 completes.
+# Produces four charts to assess how reliable the uncertainty
+# intervals are. Can be re-run independently once Section 16
+# has saved its output files.
 #
-# Plot A: Interval width vs prediction error
-# Plot B: Observed vs predicted (q50) with 90 % PI bars
-# Plot C: Calibration diagram (reliability plot)
-# Plot D: Residuals vs observed with PI error bars
+# Plot A: Are wider intervals associated with larger errors?
+# Plot B: Observed vs predicted (median) with 90% interval bars
+# Plot C: Calibration — do 90% intervals actually capture 90% of truth?
+# Plot D: Residuals vs observed with interval error bars
 # -------------------------------------------------------
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 
+# Create an output folder for plots if it doesn't already exist
 PLOT_DIR = os.path.join(OUTPUT_DIR, "plots")
 os.makedirs(PLOT_DIR, exist_ok=True)
 
+# Display labels and colours for each outcome
 OUTCOME_CFG = {
     "basic_sanitation": {"label": "Basic sanitation", "colour": "#2166ac"},
     "open_defecation":  {"label": "Open defecation",  "colour": "#d6604d"},
@@ -851,17 +995,22 @@ Q_COL_NAMES = [f"q{int(q * 100):02d}" for q in Q_LEVELS]
 
 
 def load_quantile_oof(prefix):
+    """
+    Load the quantile prediction CSV saved in Section 16.
+    Adds derived columns for error, 80% interval width, and 90% interval width.
+    """
     path = os.path.join(OUTPUT_DIR, f"{prefix}_tabpfn_quantile_oof.csv")
     if not os.path.exists(path):
         raise FileNotFoundError(f"Quantile OOF file not found: {path}")
     df = pd.read_csv(path)
-    df["error"]    = df["q50"] - df[TARGET_COL]
-    df["width_80"] = df["q90"] - df["q10"]
-    df["width_90"] = df["q95"] - df["q05"]
-    df["w_norm"]   = df[WEIGHT_COL] / df[WEIGHT_COL].mean()
+    df["error"]    = df["q50"] - df[TARGET_COL]    # median prediction minus truth
+    df["width_80"] = df["q90"] - df["q10"]          # width of 80% interval
+    df["width_90"] = df["q95"] - df["q05"]          # width of 90% interval
+    df["w_norm"]   = df[WEIGHT_COL] / df[WEIGHT_COL].mean()  # normalised weight for dot size
     return df
 
 
+# Load available quantile files; skip with a warning if missing
 dfs = {}
 for name, cfg in OUTCOME_CFG.items():
     prefix = TASKS[name]["output_prefix"]
@@ -876,19 +1025,23 @@ if not dfs:
 else:
 
     # ── Plot A: interval width vs prediction error ────────────────────────────
+    # If the model is well-calibrated, it should produce wider intervals exactly
+    # when it is also making larger errors (uncertainty correlates with difficulty).
     fig, axes = plt.subplots(1, len(dfs), figsize=(6 * len(dfs), 5))
     if len(dfs) == 1:
         axes = [axes]
 
     for ax, (name, df) in zip(axes, dfs.items()):
         cfg = OUTCOME_CFG[name]
-        s   = np.clip(df["w_norm"].to_numpy() * 18, 2, 120)
+        s   = np.clip(df["w_norm"].to_numpy() * 18, 2, 120)  # dot size ∝ survey weight
 
+        # Scatter: each dot is one sub-national region
         ax.scatter(df["error"], df["width_90"], s=s, alpha=0.45,
                    linewidths=0, color=cfg["colour"], label="90 % PI", zorder=3)
         ax.scatter(df["error"], df["width_80"], s=s, alpha=0.30,
                    linewidths=0, color=cfg["colour"], label="80 % PI", zorder=2)
 
+        # Overlay a weighted running-average trend line for each interval width
         for width_col, ls, lbl in [
             ("width_90", "-",  "90 % — weighted trend"),
             ("width_80", "--", "80 % — weighted trend"),
@@ -904,7 +1057,7 @@ else:
             ax.plot(binned["error_mid"], binned["width_mean"],
                     lw=2, ls=ls, color="black", label=lbl, zorder=5)
 
-        ax.axvline(0, color="grey", lw=1.0, ls=":", zorder=4)
+        ax.axvline(0, color="grey", lw=1.0, ls=":", zorder=4)  # zero-error reference line
         ax.set_xlabel("Prediction error  (q50 − observed)", fontsize=11)
         ax.set_ylabel("Prediction interval width", fontsize=11)
         ax.set_title(cfg["label"], fontsize=12, fontweight="bold")
@@ -922,7 +1075,9 @@ else:
     print(f"Saved: {out_a}")
 
 
-    # ── Plot B: observed vs predicted (q50) with 90 % PI bars ────────────────
+    # ── Plot B: observed vs predicted with 90% interval bars ─────────────────
+    # Each dot is a sub-national region. Vertical bars show the 90% interval.
+    # Dots near the diagonal dashed line = accurate predictions.
     fig, axes = plt.subplots(1, len(dfs), figsize=(6 * len(dfs), 5))
     if len(dfs) == 1:
         axes = [axes]
@@ -936,6 +1091,7 @@ else:
         w      = df[WEIGHT_COL].to_numpy(dtype=float)
         s      = np.clip(df["w_norm"].to_numpy() * 18, 2, 120)
 
+        # Error bars extend from the median prediction to the 5th/95th quantiles
         yerr_lo = np.clip(y_pred - lo, 0, None)
         yerr_hi = np.clip(hi - y_pred, 0, None)
 
@@ -948,7 +1104,7 @@ else:
         lims = [min(y_obs.min(), y_pred.min()) - 0.02,
                 max(y_obs.max(), y_pred.max()) + 0.02]
         ax.plot(lims, lims, color="black", lw=1.2, ls="--",
-                zorder=4, label="y = x")
+                zorder=4, label="y = x")  # perfect-prediction reference line
         ax.set_xlim(lims); ax.set_ylim(lims)
 
         ax.set_xlabel("Observed proportion", fontsize=11)
@@ -970,6 +1126,9 @@ else:
 
 
     # ── Plot C: calibration diagram ───────────────────────────────────────────
+    # A perfectly calibrated model's line should follow the diagonal.
+    # If the line curves below diagonal → overconfident (intervals too narrow).
+    # If the line curves above diagonal → underconfident (intervals too wide).
     fig, ax = plt.subplots(figsize=(6, 6))
 
     for name, df in dfs.items():
@@ -981,6 +1140,7 @@ else:
             print(f"  Skipping calibration for {name} — missing: {missing}")
             continue
 
+        # For each quantile level, compute the fraction of true values below it
         empirical = []
         for q, col in zip(Q_LEVELS, Q_COL_NAMES):
             below = (y < df[col].to_numpy(dtype=float)).astype(float)
@@ -989,6 +1149,7 @@ else:
         ax.plot(Q_LEVELS, empirical, marker="o", markersize=6, lw=2,
                 color=cfg["colour"], label=cfg["label"], zorder=3)
 
+        # Annotate the 90th percentile coverage value
         emp_90 = empirical[Q_LEVELS.index(0.90)]
         ax.annotate(
             f"{emp_90:.2f}",
@@ -1000,6 +1161,7 @@ else:
 
     ax.plot([0, 1], [0, 1], color="black", lw=1.2, ls="--",
             zorder=2, label="Perfect calibration")
+    # Shade regions to label overconfident vs underconfident zones
     ax.fill_between([0, 1], [0, 1], [1, 1], alpha=0.06, color="steelblue")
     ax.fill_between([0, 1], [0, 0], [0, 1], alpha=0.06, color="tomato")
     ax.text(0.72, 0.60, "Overconfident", fontsize=8,
@@ -1025,6 +1187,9 @@ else:
 
 
     # ── Plot D: residuals vs observed ─────────────────────────────────────────
+    # Residual = median prediction minus truth.
+    # Ideally scattered randomly around zero across all observed values.
+    # A systematic trend (e.g. always over-predicting at high values) suggests bias.
     fig, axes = plt.subplots(1, len(dfs), figsize=(6 * len(dfs), 5))
     if len(dfs) == 1:
         axes = [axes]
@@ -1033,8 +1198,8 @@ else:
         cfg      = OUTCOME_CFG[name]
         obs      = df[TARGET_COL].to_numpy(dtype=float)
         resid    = df["error"].to_numpy(dtype=float)
-        lo_resid = df["q05"].to_numpy(dtype=float) - obs
-        hi_resid = df["q95"].to_numpy(dtype=float) - obs
+        lo_resid = df["q05"].to_numpy(dtype=float) - obs  # lower interval as residual
+        hi_resid = df["q95"].to_numpy(dtype=float) - obs  # upper interval as residual
         w        = df[WEIGHT_COL].to_numpy(dtype=float)
         s        = np.clip(df["w_norm"].to_numpy() * 18, 2, 120)
 
@@ -1047,6 +1212,7 @@ else:
         ax.scatter(obs, resid, s=s, color=cfg["colour"],
                    alpha=0.55, zorder=2, linewidths=0)
 
+        # Overlay a simple running average to highlight any systematic trend
         sort_idx = np.argsort(obs)
         obs_s    = obs[sort_idx]
         resid_s  = resid[sort_idx]
@@ -1057,7 +1223,7 @@ else:
                 alpha=0.7, label="Running mean")
 
         ax.axhline(0,      color="black", lw=1.2, ls="--", label="Zero residual")
-        ax.axhline( 0.10,  color="grey",  lw=0.5, ls=":",  alpha=0.5)
+        ax.axhline( 0.10,  color="grey",  lw=0.5, ls=":",  alpha=0.5)  # ±10% guide lines
         ax.axhline(-0.10,  color="grey",  lw=0.5, ls=":",  alpha=0.5)
         ax.set_xlim(0, 1)
         ax.set_xlabel("Observed proportion", fontsize=11)
