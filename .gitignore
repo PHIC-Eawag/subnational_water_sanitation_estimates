@@ -133,18 +133,26 @@ data/training_subcomponents/*
 # =========================
 # Outputs
 # =========================
-outputs/01_matching_regions*
-!outputs/01_matching_regions.gitkeep
+outputs/00_raw_household_data/*
+!outputs/00_raw_household_data/.gitkeep
 
-outputs/02_boundary_files*
-!outputs/02_boundary_files.gitkeep
+outputs/01_matching_regions/*
+!outputs/01_matching_regions/.gitkeep
 
-outputs/03_sampled_features*
-!outputs/03_sampled_features.gitkeep
+outputs/02_boundary_files/*
+!outputs/02_boundary_files/.gitkeep
 
-outputs/04_model_performance*
-!outputs/04_sampled_features.gitkeep
+outputs/03_sampled_features/*
+!outputs/03_sampled_features/.gitkeep
 
+outputs/03b_cluster_analysis/*
+!outputs/03b_cluster_analysis/.gitkeep
+
+outputs/04_model_performance/*
+!outputs/04_model_performance/.gitkeep
+
+outputs/diagnostics/*
+!outputs/models/.gitkeep
 # =========================
 # Logs / temporary files
 # =========================
@@ -156,3 +164,4 @@ outputs/04_model_performance*
 .DS_Store
 **/.DS_Store
 .DS_Store
+.env
