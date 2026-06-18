@@ -28,3 +28,5 @@ this repository by running pip install -r requirements.txt.
 
 In Positron or RStudio, make sure the interpreter is set 
 to the project-specific Python environment and that R uses the restored renv library.
+
+## Project folder overview
