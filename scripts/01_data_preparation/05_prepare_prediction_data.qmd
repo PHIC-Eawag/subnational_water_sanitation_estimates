@@ -34,7 +34,7 @@ PREDICTION_YEAR <- 2024L
 
 ```{r}
 # ── GEE-sampled covariates ───────────────────────────────────────────────────
-FILE_NONPOP_PRED     <- here::here("data/features/worldbank_sampled_pred_v1.0.csv")
+FILE_NONPOP_PRED     <- here::here("outputs/03_sampled_features/nonpop_prediction_v2.csv")
 PATH_TO_POP_SUMS_PRED <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/pop_sums_prediction"
 
 # ── Country-level covariates ─────────────────────────────────────────────────

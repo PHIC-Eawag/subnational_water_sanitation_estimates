@@ -8,8 +8,8 @@ editor: visual
 
 Two outcomes modelled:
 
-- **Basic sanitation**: household uses an improved facility (WS11 == 2) that is not shared (WS15 == 0)
-- **Open defecation**: household has no facility (WS11 == 0)
+-   **Basic sanitation**: household uses an improved facility (WS11 == 2) that is not shared (WS15 == 0)
+-   **Open defecation**: household has no facility (WS11 == 0)
 
 ```{r}
 # ============================================================

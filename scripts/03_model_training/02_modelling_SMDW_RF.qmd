@@ -1,0 +1,995 @@
+---
+title: "SMDW RF Models — Feature Set Comparison & Final Models"
+subtitle: "smdw, ecoli_free, improved_source, availability, accessibility"
+
+---
+
+# 1. Setup
+
+## Parameters
+
+```{r}
+# ── Feature set comparison ────────────────────────────────────────────────────
+K_VALUES           <- c(5, 10, 15, 20, 30, 45, 90, 104)  # 104 = full SMDW set
+N_TREES_COMPARISON <- 100
+N_REPEATS          <- 5
+FOLD_FRACTION      <- 0.15
+
+# ── Final models — set manually after inspecting Section 4 results ────────────
+FINAL_K_SMDW            <- 20   # e.g. 20
+FINAL_K_ECOLI_FREE      <- 15   # e.g. 15
+FINAL_K_IMPROVED_SOURCE <- 90   # e.g. 30
+FINAL_K_AVAILABILITY    <- 90   # e.g. 20
+FINAL_K_ACCESSIBILITY   <- 90   # e.g. 20
+
+N_TREES_FINAL <- 500
+SEED          <- 123
+```
+
+## Libraries
+
+```{r}
+library(tidyverse)
+library(here)
+library(h2o)
+library(svglite)
+library(viridis)
+library(forcats)
+```
+
+## Paths
+
+```{r}
+TRAINING_DIR         <- here::here("data/training_subcomponents")
+CLUSTER_OUTPUT_DIR   <- here::here("outputs/03b_cluster_analysis/smdw")
+PRED_COVARIATES_PATH <- here::here("data/prediction/prediction_covariates_2024.csv")
+OUTPUT_DIR           <- here::here("outputs/04_model_performance")
+FIGURE_DIR           <- file.path(OUTPUT_DIR, "figures")
+dir.create(FIGURE_DIR, recursive = TRUE, showWarnings = FALSE)
+```
+
+------------------------------------------------------------------------
+
+# 2. Data
+
+## Column name constants
+
+```{r}
+OUTCOME_COL <- "outcome_value"
+WEIGHT_COL  <- "n_psu_weight_scaled"
+COUNTRY_COL <- "country_cov"
+SDG_COL     <- "sdg_region"
+INCOME_COL  <- "wb_income_group"
+```
+
+## Load training data
+
+Two survey pools with different country sets:
+
+- **WQ pool** (smdw, ecoli_free): water-quality surveys; Pakistan
+  excluded.
+- **Other pool** (improved_source, availability, accessibility):
+  other household surveys; no exclusions.
+
+```{r}
+remove_pakistan <- function(df) {
+  df %>%
+    dplyr::filter(!stringr::str_detect(
+      stringr::str_to_lower(country_outcome), "^pakistan"
+    ))
+}
+
+# ── WQ pool ──────────────────────────────────────────────────────────────────
+smdw_df <- readr::read_csv(
+  file.path(TRAINING_DIR, "smdw_training_with_covariates.csv"),
+  show_col_types = FALSE
+) %>% remove_pakistan()
+
+ecoli_df <- readr::read_csv(
+  file.path(TRAINING_DIR, "ecoli_free_training_with_covariates.csv"),
+  show_col_types = FALSE
+) %>% remove_pakistan()
+
+# ── Other pool ────────────────────────────────────────────────────────────────
+improved_source_df <- readr::read_csv(
+  file.path(TRAINING_DIR, "improved_source_training_with_covariates.csv"),
+  show_col_types = FALSE
+)
+
+availability_df <- readr::read_csv(
+  file.path(TRAINING_DIR, "availability_training_with_covariates.csv"),
+  show_col_types = FALSE
+)
+
+accessibility_df <- readr::read_csv(
+  file.path(TRAINING_DIR, "accessibility_training_with_covariates.csv"),
+  show_col_types = FALSE
+)
+```
+
+## Full feature list (k = 104)
+
+```{r}
+all_EO_features <- c(
+  "CGIAR_Aridity_Index", "CGIAR_PET",
+  "CHELSA_BIO_Annual_Mean_Temperature", "CHELSA_BIO_Annual_Precipitation",
+  "CHELSA_BIO_Precipitation_Seasonality",
+  "CHELSA_BIO_Precipitation_of_Coldest_Quarter",
+  "CHELSA_BIO_Precipitation_of_Driest_Month",
+  "CHELSA_BIO_Precipitation_of_Driest_Quarter",
+  "CHELSA_BIO_Precipitation_of_Warmest_Quarter",
+  "CHELSA_BIO_Precipitation_of_Wettest_Month",
+  "CHELSA_BIO_Precipitation_of_Wettest_Quarter",
+  "CHELSA_BIO_Temperature_Annual_Range", "CHELSA_BIO_Temperature_Seasonality",
+  "CIFOR_TropicalPeatlandExtent", "CSP_Global_Human_Modification",
+  "ConsensusLandCoverClass_Barren",
+  "ConsensusLandCoverClass_Cultivated_and_Managed_Vegetation",
+  "ConsensusLandCoverClass_Deciduous_Broadleaf_Trees",
+  "ConsensusLandCoverClass_Evergreen_Broadleaf_Trees",
+  "ConsensusLandCoverClass_Evergreen_Deciduous_Needleleaf_Trees",
+  "ConsensusLandCoverClass_Herbaceous_Vegetation",
+  "ConsensusLandCoverClass_Mixed_Other_Trees",
+  "ConsensusLandCoverClass_Open_Water",
+  "ConsensusLandCoverClass_Regularly_Flooded_Vegetation",
+  "ConsensusLandCoverClass_Shrubs", "ConsensusLandCoverClass_Snow_Ice",
+  "ConsensusLandCoverClass_Urban_Builtup",
+  "ConsensusLandCover_Human_Development_Percentage",
+  "CrowtherLab_Tree_Density", "EarthEnvCloudCover_CloudForestPrediction",
+  "EarthEnvTexture_CoOfVar_EVI", "EarthEnvTexture_Contrast_EVI",
+  "EarthEnvTexture_Correlation_EVI", "EarthEnvTexture_Dissimilarity_EVI",
+  "EarthEnvTexture_Entropy_EVI", "EarthEnvTexture_Evenness_EVI",
+  "EarthEnvTexture_Homogeneity_EVI", "EarthEnvTexture_Maximum_EVI",
+  "EarthEnvTexture_Range_EVI", "EarthEnvTexture_Shannon_Index",
+  "EarthEnvTexture_Simpson_Index", "EarthEnvTexture_Std_EVI",
+  "EarthEnvTexture_Uniformity_EVI", "EarthEnvTexture_Variance_EVI",
+  "EarthEnvTopoMed_1stOrderPartialDerivEW",
+  "EarthEnvTopoMed_1stOrderPartialDerivNS",
+  "EarthEnvTopoMed_Eastness", "EarthEnvTopoMed_Elevation",
+  "EarthEnvTopoMed_Roughness", "EarthEnvTopoMed_Slope",
+  "EarthEnvTopoMed_TerrainRuggednessIndex", "EarthEnvTopoMed_TopoPositionIndex",
+  "EsaCci_BurntAreasProbability",
+  "FanEtAl_Depth_to_Water_Table_AnnualMean",
+  "FanEtAl_Depth_to_Water_Table_AnnualSD",
+  "GHS_Population_Density", "GLW3_RuminantsDistribution_downsampled10km",
+  "GPWv4_Population_Density", "GiriEtAl_MangrovesExtent",
+  "MODIS_EVI", "MODIS_NDVI", "MODIS_NPP",
+  "PelletierEtAl_SoilAndSedimentaryDepositThicknesses",
+  "SG_Absolute_depth_to_bedrock", "SG_Bulk_density_015cm",
+  "SG_Depth_to_bedrock", "SG_H2O_Capacity_015cm",
+  "SG_Saturated_H2O_Content_015cm",
+  "TootchiEtAl_WetlandsRegularlyFlooded", "WCS_Human_Footprint_2009",
+  "chirps_annual_precipitation", "era5_temperature_2m",
+  "ghsl_built_surface", "ghsl_population", "ghsl_urban_frac",
+  "jrc_building_height", "map_friction", "modis_evi", "modis_ndvi",
+  "runoff_max_annualmax", "runoff_min_annualmin",
+  "temperature_2m_max_annualmax", "viirs_average",
+  "worldpop", "worldpop_sum", "ghsl_population_sum", "area_km2"
+)
+
+country_level_features <- c(
+  "gdp_per_capita_constant_2015_usd", "secondary_education_duration_years",
+  "ww_collection_percent", "ww_treatment_percent", "ww_reuse_percent",
+  "control_of_corruption", "governance_effectiveness", "political_stability",
+  "regulatory_quality", "rule_of_law", "voice_and_accountability",
+  "sanitation_basic", "open_defecation"
+)
+
+jmp_water_features <- c(
+  "drinking_water_accessible_on_premises",
+  "drinking_water_available_when_needed",
+  "drinking_water_free_from_contamination",
+  "drinking_water_piped",
+  "drinking_water_non_piped"
+)
+
+all_features_k104 <- c(all_EO_features, country_level_features, jmp_water_features)
+
+cat("Full SMDW feature set (k = 104):", length(all_features_k104), "features\n")
+```
+
+## Load cluster feature sets
+
+```{r}
+load_feature_set <- function(k, full_features = all_features_k104) {
+  if (k == 104) return(full_features)
+
+  path <- file.path(CLUSTER_OUTPUT_DIR,
+                    paste0("representative_variables_k", k, ".csv"))
+  if (!file.exists(path)) {
+    stop("Cluster file not found: ", path,
+         "\nRun 01_cluster_analysis.qmd first.")
+  }
+
+  reps <- readr::read_csv(path, show_col_types = FALSE) %>%
+    dplyr::pull(representative_variable)
+
+  not_found <- setdiff(reps, full_features)
+  if (length(not_found) > 0) {
+    warning("k=", k, ": variables not in full feature set dropped:\n",
+            paste(" -", not_found, collapse = "\n"))
+  }
+
+  intersect(reps, full_features)
+}
+
+feature_sets <- purrr::set_names(
+  purrr::map(K_VALUES, load_feature_set),
+  paste0("k", K_VALUES)
+)
+
+purrr::imap_dfr(feature_sets, ~ tibble::tibble(k = .y, n_features = length(.x))) %>%
+  knitr::kable(caption = "Features per cluster k")
+```
+
+------------------------------------------------------------------------
+
+# 3. Stratified fold samplers
+
+Folds are defined at the country level to prevent data leakage. Two
+separate fold lists are generated — one per survey pool — because the
+country sets differ between WQ and Other surveys.
+
+Target proportions come from the prediction dataset (SDG region). High-
+income countries are excluded from held-out folds.
+
+```{r}
+pred_covariates <- readr::read_csv(PRED_COVARIATES_PATH, show_col_types = FALSE)
+
+stratum_targets_from <- function(training_df) {
+  total <- nrow(training_df)
+  pred_covariates %>%
+    dplyr::filter(!is.na(sdg_region)) %>%
+    dplyr::count(sdg_region, name = "n_pred_regions") %>%
+    dplyr::mutate(
+      fraction  = n_pred_regions / sum(n_pred_regions),
+      n_in_fold = round(fraction * FOLD_FRACTION * total)
+    )
+}
+
+country_strata_from <- function(training_df) {
+  training_df %>%
+    dplyr::group_by(country = .data[[COUNTRY_COL]]) %>%
+    dplyr::summarise(
+      sdg_region      = dplyr::first(.data[[SDG_COL]]),
+      wb_income_group = dplyr::first(.data[[INCOME_COL]]),
+      n_regions       = dplyr::n(),
+      .groups         = "drop"
+    )
+}
+
+sample_held_out_countries <- function(country_strata, stratum_targets, seed_i = 1) {
+  set.seed(seed_i)
+  eligible <- country_strata %>%
+    dplyr::filter(wb_income_group != "H")
+  held_out <- character(0)
+
+  for (stratum in stratum_targets$sdg_region) {
+    target_n <- stratum_targets$n_in_fold[stratum_targets$sdg_region == stratum]
+    pool     <- eligible %>% dplyr::filter(sdg_region == stratum)
+    if (nrow(pool) == 0 || target_n == 0) next
+
+    sampled_n <- 0
+    sampled   <- character(0)
+    remaining <- pool
+
+    while (sampled_n < target_n && nrow(remaining) > 0) {
+      idx       <- sample(nrow(remaining), size = 1)
+      chosen    <- remaining$country[idx]
+      sampled   <- c(sampled, chosen)
+      sampled_n <- sampled_n + remaining$n_regions[idx]
+      remaining <- remaining[-idx, ]
+    }
+
+    if (sampled_n < target_n) {
+      warning("Stratum '", stratum, "': only ", sampled_n,
+              " regions available, target was ", target_n, ".")
+    }
+    held_out <- c(held_out, sampled)
+  }
+  held_out
+}
+```
+
+## WQ pool folds (smdw, ecoli_free)
+
+```{r}
+stratum_targets_wq <- stratum_targets_from(smdw_df)
+country_strata_wq  <- country_strata_from(smdw_df)
+
+set.seed(SEED)
+fold_country_lists_wq <- purrr::map(
+  seq_len(N_REPEATS),
+  ~ sample_held_out_countries(country_strata_wq, stratum_targets_wq, seed_i = .x)
+)
+
+purrr::imap_dfr(fold_country_lists_wq, function(countries, i) {
+  fold_regions <- smdw_df %>% dplyr::filter(.data[[COUNTRY_COL]] %in% countries)
+  tibble::tibble(
+    repeat_i     = i,
+    n_countries  = length(countries),
+    n_regions    = nrow(fold_regions),
+    pct_of_total = round(100 * nrow(fold_regions) / nrow(smdw_df), 1)
+  )
+}) %>% knitr::kable(caption = "WQ pool fold diagnostics")
+```
+
+## Other pool folds (improved_source, availability, accessibility)
+
+```{r}
+stratum_targets_other <- stratum_targets_from(improved_source_df)
+country_strata_other  <- country_strata_from(improved_source_df)
+
+set.seed(SEED)
+fold_country_lists_other <- purrr::map(
+  seq_len(N_REPEATS),
+  ~ sample_held_out_countries(country_strata_other, stratum_targets_other, seed_i = .x)
+)
+
+purrr::imap_dfr(fold_country_lists_other, function(countries, i) {
+  fold_regions <- improved_source_df %>%
+    dplyr::filter(.data[[COUNTRY_COL]] %in% countries)
+  tibble::tibble(
+    repeat_i     = i,
+    n_countries  = length(countries),
+    n_regions    = nrow(fold_regions),
+    pct_of_total = round(100 * nrow(fold_regions) / nrow(improved_source_df), 1)
+  )
+}) %>% knitr::kable(caption = "Other pool fold diagnostics")
+```
+
+## Fold distribution plots
+
+```{r}
+plot_fold_distributions <- function(training_df, fold_country_lists, pool_label) {
+  pred_dist_income <- pred_covariates %>%
+    dplyr::filter(!is.na(.data[[INCOME_COL]])) %>%
+    dplyr::count(.data[[INCOME_COL]], name = "n") %>%
+    dplyr::rename(wb_income_group = 1) %>%
+    dplyr::mutate(pct = 100 * n / sum(n), source = "Prediction space")
+
+  pred_dist_sdg <- pred_covariates %>%
+    dplyr::filter(!is.na(.data[[SDG_COL]])) %>%
+    dplyr::count(.data[[SDG_COL]], name = "n") %>%
+    dplyr::rename(sdg_region = 1) %>%
+    dplyr::mutate(pct = 100 * n / sum(n), source = "Prediction space")
+
+  fold_dist_income <- purrr::imap_dfr(fold_country_lists, function(countries, i) {
+    training_df %>%
+      dplyr::filter(.data[[COUNTRY_COL]] %in% countries,
+                    !is.na(.data[[INCOME_COL]])) %>%
+      dplyr::count(.data[[INCOME_COL]], name = "n") %>%
+      dplyr::rename(wb_income_group = 1) %>%
+      dplyr::mutate(pct = 100 * n / sum(n), source = paste0("Fold ", i))
+  })
+
+  fold_dist_sdg <- purrr::imap_dfr(fold_country_lists, function(countries, i) {
+    training_df %>%
+      dplyr::filter(.data[[COUNTRY_COL]] %in% countries,
+                    !is.na(.data[[SDG_COL]])) %>%
+      dplyr::count(.data[[SDG_COL]], name = "n") %>%
+      dplyr::rename(sdg_region = 1) %>%
+      dplyr::mutate(pct = 100 * n / sum(n), source = paste0("Fold ", i))
+  })
+
+  p_income <- dplyr::bind_rows(pred_dist_income, fold_dist_income) %>%
+    dplyr::mutate(is_pred = source == "Prediction space") %>%
+    ggplot2::ggplot(ggplot2::aes(x = wb_income_group, y = pct)) +
+    ggplot2::geom_col(
+      data = ~ dplyr::filter(.x, !is_pred),
+      mapping = ggplot2::aes(group = source),
+      position = ggplot2::position_dodge(width = 0.7),
+      width = 0.6, fill = "black", alpha = 0.5
+    ) +
+    ggplot2::geom_col(
+      data = ~ dplyr::filter(.x, is_pred),
+      width = 0.6, fill = "steelblue", alpha = 0.85
+    ) +
+    ggplot2::labs(
+      title    = paste(pool_label, "— income group distribution"),
+      subtitle = "Blue = prediction space, black = individual folds",
+      x = "World Bank income group", y = "% of regions"
+    ) +
+    ggplot2::theme_bw(base_size = 10) +
+    ggplot2::theme(legend.position = "none")
+
+  p_sdg <- dplyr::bind_rows(pred_dist_sdg, fold_dist_sdg) %>%
+    dplyr::mutate(
+      is_pred    = source == "Prediction space",
+      sdg_region = stringr::str_wrap(sdg_region, width = 20)
+    ) %>%
+    ggplot2::ggplot(ggplot2::aes(x = sdg_region, y = pct)) +
+    ggplot2::geom_col(
+      data = ~ dplyr::filter(.x, !is_pred),
+      mapping = ggplot2::aes(group = source),
+      position = ggplot2::position_dodge(width = 0.7),
+      width = 0.6, fill = "black", alpha = 0.5
+    ) +
+    ggplot2::geom_col(
+      data = ~ dplyr::filter(.x, is_pred),
+      width = 0.6, fill = "steelblue", alpha = 0.85
+    ) +
+    ggplot2::labs(
+      title    = paste(pool_label, "— SDG region distribution"),
+      subtitle = "Blue = prediction space, black = individual folds",
+      x = NULL, y = "% of regions"
+    ) +
+    ggplot2::theme_bw(base_size = 10) +
+    ggplot2::theme(
+      legend.position = "none",
+      axis.text.x     = ggplot2::element_text(angle = 35, hjust = 1)
+    )
+
+  list(income = p_income, sdg = p_sdg)
+}
+
+plots_wq    <- plot_fold_distributions(smdw_df,           fold_country_lists_wq,    "WQ pool")
+plots_other <- plot_fold_distributions(improved_source_df, fold_country_lists_other, "Other pool")
+
+plots_wq$income;    plots_wq$sdg
+plots_other$income; plots_other$sdg
+```
+
+------------------------------------------------------------------------
+
+# 4. Feature set comparison (stratified CV)
+
+## H2O initialisation
+
+```{r}
+h2o::h2o.init(nthreads = -1, max_mem_size = "12G")
+h2o::h2o.no_progress()
+```
+
+## CV helpers
+
+```{r}
+compute_metrics <- function(df) {
+  r      <- df$observed - df$predicted
+  ss_res <- sum(r ^ 2)
+  ss_tot <- sum((df$observed - mean(df$observed)) ^ 2)
+  tibble::tibble(
+    mae  = mean(abs(r)),
+    rmse = sqrt(mean(r ^ 2)),
+    r2   = 1 - ss_res / ss_tot,
+    n    = nrow(df)
+  )
+}
+
+run_one_fold <- function(training_df, held_out_countries, features,
+                         outcome_col = OUTCOME_COL,
+                         weight_col  = WEIGHT_COL,
+                         country_col = COUNTRY_COL,
+                         ntrees      = N_TREES_COMPARISON,
+                         seed        = SEED) {
+  train_df <- training_df %>%
+    dplyr::filter(!.data[[country_col]] %in% held_out_countries) %>%
+    dplyr::select(dplyr::all_of(c(features, outcome_col, weight_col))) %>%
+    tidyr::drop_na(dplyr::all_of(c(outcome_col, weight_col)))
+
+  test_df <- training_df %>%
+    dplyr::filter(.data[[country_col]] %in% held_out_countries) %>%
+    dplyr::select(dplyr::all_of(c(features, outcome_col))) %>%
+    tidyr::drop_na(dplyr::all_of(outcome_col))
+
+  if (nrow(test_df) == 0) return(NULL)
+
+  valid_features <- intersect(features, names(train_df))
+  train_h2o      <- h2o::as.h2o(train_df)
+  test_h2o       <- h2o::as.h2o(test_df)
+
+  rf <- h2o::h2o.randomForest(
+    x              = valid_features,
+    y              = outcome_col,
+    training_frame = train_h2o,
+    ntrees         = ntrees,
+    weights_column = weight_col,
+    seed           = seed
+  )
+
+  preds <- h2o::h2o.predict(rf, test_h2o) %>%
+    as.data.frame() %>%
+    dplyr::pull(predict)
+
+  h2o::h2o.rm(rf@model_id)
+  h2o::h2o.rm(train_h2o)
+  h2o::h2o.rm(test_h2o)
+
+  compute_metrics(tibble::tibble(
+    observed  = test_df[[outcome_col]],
+    predicted = preds
+  ))
+}
+
+run_feature_set_comparison <- function(training_df, outcome_name, fold_country_lists) {
+  message("== ", outcome_name, " ==")
+  purrr::imap_dfr(feature_sets, function(features, k_label) {
+    message("  ", k_label, " (", length(features), " features)")
+    repeat_metrics <- purrr::imap_dfr(fold_country_lists, function(countries, rep_i) {
+      result <- run_one_fold(training_df, countries, features, seed = SEED + rep_i)
+      if (is.null(result)) return(NULL)
+      dplyr::mutate(result, repeat_i = rep_i)
+    })
+    repeat_metrics %>%
+      dplyr::summarise(
+        mean_mae  = mean(mae,  na.rm = TRUE), sd_mae  = sd(mae,  na.rm = TRUE),
+        mean_rmse = mean(rmse, na.rm = TRUE), sd_rmse = sd(rmse, na.rm = TRUE),
+        mean_r2   = mean(r2,   na.rm = TRUE), sd_r2   = sd(r2,   na.rm = TRUE),
+        n_repeats = dplyr::n()
+      ) %>%
+      dplyr::mutate(outcome = outcome_name, feature_set = k_label,
+                    n_features = length(features))
+  })
+}
+```
+
+## Run comparison
+
+```{r}
+# WQ pool
+comparison_smdw  <- run_feature_set_comparison(smdw_df,  "smdw",      fold_country_lists_wq)
+comparison_ecoli <- run_feature_set_comparison(ecoli_df, "ecoli_free", fold_country_lists_wq)
+
+# Other pool
+comparison_improved    <- run_feature_set_comparison(improved_source_df, "improved_source", fold_country_lists_other)
+comparison_avail       <- run_feature_set_comparison(availability_df,    "availability",    fold_country_lists_other)
+comparison_access      <- run_feature_set_comparison(accessibility_df,   "accessibility",   fold_country_lists_other)
+
+cv_comparison_results <- dplyr::bind_rows(
+  comparison_smdw, comparison_ecoli,
+  comparison_improved, comparison_avail, comparison_access
+)
+
+readr::write_csv(
+  cv_comparison_results,
+  file.path(OUTPUT_DIR, "smdw_feature_set_cv_comparison.csv")
+)
+```
+
+## Results
+
+```{r}
+cv_comparison_results %>%
+  dplyr::select(outcome, feature_set, n_features,
+                mean_r2, sd_r2, mean_mae, sd_mae, mean_rmse, sd_rmse) %>%
+  dplyr::arrange(outcome, desc(mean_r2)) %>%
+  knitr::kable(digits = 3, caption = "Stratified CV results by feature set")
+```
+
+```{r}
+cv_comparison_results %>%
+  dplyr::mutate(feature_set = forcats::fct_reorder(feature_set, n_features)) %>%
+  ggplot2::ggplot(ggplot2::aes(
+    x = feature_set, y = mean_r2,
+    ymin = mean_r2 - sd_r2, ymax = mean_r2 + sd_r2,
+    colour = outcome, group = outcome
+  )) +
+  ggplot2::geom_line() +
+  ggplot2::geom_point(size = 2) +
+  ggplot2::geom_errorbar(width = 0.2, alpha = 0.5) +
+  ggplot2::labs(
+    title  = "Stratified CV performance by feature set — SMDW outcomes",
+    x      = "Feature set (k clusters)",
+    y      = "Mean R² (±1 SD across repeats)",
+    colour = "Outcome"
+  ) +
+  ggplot2::theme_bw(base_size = 10)
+```
+
+------------------------------------------------------------------------
+
+# 5. Select final models
+
+**MANUAL STEP** — inspect results above, set all five `FINAL_K_*`
+values in the Parameters chunk (Section 1), then re-run from here.
+
+```{r}
+final_ks <- list(
+  smdw            = FINAL_K_SMDW,
+  ecoli_free      = FINAL_K_ECOLI_FREE,
+  improved_source = FINAL_K_IMPROVED_SOURCE,
+  availability    = FINAL_K_AVAILABILITY,
+  accessibility   = FINAL_K_ACCESSIBILITY
+)
+
+if (any(purrr::map_lgl(final_ks, is.null))) {
+  stop("Set all five FINAL_K_* values before continuing.")
+}
+
+purrr::iwalk(final_ks, function(k, name) {
+  feats <- feature_sets[[paste0("k", k)]]
+  cat(name, "— k =", k, "|", length(feats), "features\n")
+})
+```
+
+------------------------------------------------------------------------
+
+# 6. Final models: LOCO-CV
+
+```{r}
+prepare_loco_data <- function(training_df, features, outcome_name) {
+  model_features <- intersect(features, names(training_df))
+
+  training_df %>%
+    dplyr::mutate(
+      country_fold = as.factor(as.integer(factor(.data[[COUNTRY_COL]])))
+    ) %>%
+    dplyr::select(
+      dplyr::all_of(model_features),
+      dplyr::all_of(OUTCOME_COL),
+      dplyr::all_of(WEIGHT_COL),
+      country_fold,
+      country_outcome,
+      HH7_region_outcome,
+      analysis_year,
+      sdg_region,
+      wb_income_group,
+      ww_region
+    ) %>%
+    tidyr::drop_na(
+      dplyr::all_of(OUTCOME_COL),
+      dplyr::all_of(WEIGHT_COL)
+    ) %>%
+    list(data = ., features = model_features, outcome_name = outcome_name)
+}
+
+run_rf_loco <- function(loco_input, final_k, ntrees = N_TREES_FINAL, seed = SEED) {
+  train_data     <- loco_input$data
+  model_features <- loco_input$features
+  outcome_name   <- loco_input$outcome_name
+
+  train_h2o <- h2o::as.h2o(
+    train_data,
+    destination_frame = paste0("loco_train_", outcome_name)
+  )
+
+  rf_model <- h2o::h2o.randomForest(
+    x                                     = model_features,
+    y                                     = OUTCOME_COL,
+    training_frame                        = train_h2o,
+    ntrees                                = ntrees,
+    mtries                                = -1,
+    sample_rate                           = 0.632,
+    fold_column                           = "country_fold",
+    weights_column                        = WEIGHT_COL,
+    seed                                  = seed,
+    keep_cross_validation_predictions     = TRUE,
+    keep_cross_validation_fold_assignment = TRUE
+  )
+
+  cv_preds <- h2o::h2o.getFrame(
+    rf_model@model$cross_validation_holdout_predictions_frame_id$name
+  ) %>% as.data.frame()
+
+  cv_eval <- train_data %>%
+    dplyr::mutate(
+      predicted = cv_preds$predict,
+      observed  = .data[[OUTCOME_COL]]
+    )
+
+  metrics <- tibble::tibble(
+    outcome_name = outcome_name,
+    feature_set  = paste0("k", final_k),
+    n_features   = length(model_features),
+    n_rows       = nrow(train_data),
+    n_countries  = dplyr::n_distinct(train_data[[COUNTRY_COL]]),
+    loco_r2      = as.numeric(h2o::h2o.r2(rf_model,   xval = TRUE)),
+    loco_mae     = as.numeric(h2o::h2o.mae(rf_model,  xval = TRUE)),
+    loco_rmse    = as.numeric(h2o::h2o.rmse(rf_model, xval = TRUE))
+  )
+
+  var_imp <- h2o::h2o.varimp(rf_model) %>%
+    as.data.frame() %>%
+    dplyr::mutate(outcome_name = outcome_name)
+
+  list(
+    model    = rf_model,
+    cv_eval  = cv_eval,
+    metrics  = metrics,
+    varimp   = var_imp,
+    features = model_features,
+    final_k  = final_k
+  )
+}
+
+print_and_save_svg <- function(plot_obj, filename, width = 8, height = 6) {
+  print(plot_obj)
+  ggplot2::ggsave(
+    filename = file.path(FIGURE_DIR, filename),
+    plot     = plot_obj,
+    device   = svglite::svglite,
+    width    = width, height = height, units = "in"
+  )
+}
+
+plot_pred_obs <- function(cv_eval, training_df, plot_title) {
+  region_meta <- training_df %>%
+    dplyr::distinct(country_outcome, HH7_region_outcome, analysis_year,
+                    sdg_region, ww_region)
+
+  cv_eval %>%
+    dplyr::left_join(region_meta,
+                     by = c("country_outcome", "HH7_region_outcome",
+                            "analysis_year")) %>%
+    dplyr::mutate(
+      sdg_region = dplyr::coalesce(sdg_region.x, sdg_region.y),
+      ww_region  = dplyr::coalesce(ww_region.x,  ww_region.y)
+    ) %>%
+    ggplot2::ggplot(ggplot2::aes(
+      x      = observed,
+      y      = predicted,
+      colour = sdg_region,
+      size   = .data[[WEIGHT_COL]]
+    )) +
+    ggplot2::geom_point(shape = 1, alpha = 0.8) +
+    ggplot2::coord_cartesian(xlim = c(0, 1), ylim = c(0, 1)) +
+    ggplot2::geom_abline(slope = 1, intercept = 0, linetype = "dashed") +
+    ggplot2::labs(
+      title  = plot_title,
+      x      = "Observed proportion",
+      y      = "Predicted proportion",
+      colour = "SDG region",
+      size   = "PSU weight"
+    ) +
+    ggplot2::theme_minimal(base_size = 9)
+}
+```
+
+## SMDW
+
+```{r}
+h2o::h2o.removeAll()
+
+loco_smdw <- prepare_loco_data(
+  smdw_df, feature_sets[[paste0("k", FINAL_K_SMDW)]], "smdw"
+) %>% run_rf_loco(final_k = FINAL_K_SMDW)
+
+print(loco_smdw$metrics)
+readr::write_csv(loco_smdw$metrics,
+  file.path(OUTPUT_DIR, paste0("loco_metrics_smdw_k", FINAL_K_SMDW, ".csv")))
+
+plot_loco_smdw <- plot_pred_obs(loco_smdw$cv_eval, smdw_df,
+  paste0("SMDW — LOCO-CV (k = ", FINAL_K_SMDW, ")"))
+plot_loco_smdw
+print_and_save_svg(plot_loco_smdw,
+  paste0("loco_pred_obs_smdw_k", FINAL_K_SMDW, ".svg"), width = 7, height = 5)
+```
+
+## E. coli-free
+
+```{r}
+h2o::h2o.removeAll()
+
+loco_ecoli <- prepare_loco_data(
+  ecoli_df, feature_sets[[paste0("k", FINAL_K_ECOLI_FREE)]], "ecoli_free"
+) %>% run_rf_loco(final_k = FINAL_K_ECOLI_FREE)
+
+print(loco_ecoli$metrics)
+readr::write_csv(loco_ecoli$metrics,
+  file.path(OUTPUT_DIR, paste0("loco_metrics_ecoli_free_k", FINAL_K_ECOLI_FREE, ".csv")))
+
+plot_loco_ecoli <- plot_pred_obs(loco_ecoli$cv_eval, ecoli_df,
+  paste0("E. coli-free — LOCO-CV (k = ", FINAL_K_ECOLI_FREE, ")"))
+plot_loco_ecoli
+print_and_save_svg(plot_loco_ecoli,
+  paste0("loco_pred_obs_ecoli_free_k", FINAL_K_ECOLI_FREE, ".svg"), width = 7, height = 5)
+```
+
+## Improved source
+
+```{r}
+h2o::h2o.removeAll()
+
+loco_improved <- prepare_loco_data(
+  improved_source_df, feature_sets[[paste0("k", FINAL_K_IMPROVED_SOURCE)]], "improved_source"
+) %>% run_rf_loco(final_k = FINAL_K_IMPROVED_SOURCE)
+
+print(loco_improved$metrics)
+readr::write_csv(loco_improved$metrics,
+  file.path(OUTPUT_DIR, paste0("loco_metrics_improved_source_k", FINAL_K_IMPROVED_SOURCE, ".csv")))
+
+plot_loco_improved <- plot_pred_obs(loco_improved$cv_eval, improved_source_df,
+  paste0("Improved source — LOCO-CV (k = ", FINAL_K_IMPROVED_SOURCE, ")"))
+plot_loco_improved
+print_and_save_svg(plot_loco_improved,
+  paste0("loco_pred_obs_improved_source_k", FINAL_K_IMPROVED_SOURCE, ".svg"), width = 7, height = 5)
+```
+
+## Availability
+
+```{r}
+h2o::h2o.removeAll()
+
+loco_avail <- prepare_loco_data(
+  availability_df, feature_sets[[paste0("k", FINAL_K_AVAILABILITY)]], "availability"
+) %>% run_rf_loco(final_k = FINAL_K_AVAILABILITY)
+
+print(loco_avail$metrics)
+readr::write_csv(loco_avail$metrics,
+  file.path(OUTPUT_DIR, paste0("loco_metrics_availability_k", FINAL_K_AVAILABILITY, ".csv")))
+
+plot_loco_avail <- plot_pred_obs(loco_avail$cv_eval, availability_df,
+  paste0("Availability — LOCO-CV (k = ", FINAL_K_AVAILABILITY, ")"))
+plot_loco_avail
+print_and_save_svg(plot_loco_avail,
+  paste0("loco_pred_obs_availability_k", FINAL_K_AVAILABILITY, ".svg"), width = 7, height = 5)
+```
+
+## Accessibility
+
+```{r}
+h2o::h2o.removeAll()
+
+loco_access <- prepare_loco_data(
+  accessibility_df, feature_sets[[paste0("k", FINAL_K_ACCESSIBILITY)]], "accessibility"
+) %>% run_rf_loco(final_k = FINAL_K_ACCESSIBILITY)
+
+print(loco_access$metrics)
+readr::write_csv(loco_access$metrics,
+  file.path(OUTPUT_DIR, paste0("loco_metrics_accessibility_k", FINAL_K_ACCESSIBILITY, ".csv")))
+
+plot_loco_access <- plot_pred_obs(loco_access$cv_eval, accessibility_df,
+  paste0("Accessibility — LOCO-CV (k = ", FINAL_K_ACCESSIBILITY, ")"))
+plot_loco_access
+print_and_save_svg(plot_loco_access,
+  paste0("loco_pred_obs_accessibility_k", FINAL_K_ACCESSIBILITY, ".svg"), width = 7, height = 5)
+```
+
+## Combined LOCO-CV metrics
+
+```{r}
+loco_metrics_all <- dplyr::bind_rows(
+  loco_smdw$metrics, loco_ecoli$metrics, loco_improved$metrics,
+  loco_avail$metrics, loco_access$metrics
+)
+print(loco_metrics_all)
+readr::write_csv(loco_metrics_all,
+  file.path(OUTPUT_DIR, "smdw_loco_metrics_all_outcomes.csv"))
+```
+
+------------------------------------------------------------------------
+
+# 7. SHAP values (final models only)
+
+```{r}
+feature_label_map <- c(
+  "worldpop"                               = "WorldPop population density",
+  "worldpop_sum"                           = "WorldPop population sum",
+  "ghsl_population"                        = "GHSL population density",
+  "ghsl_population_sum"                    = "GHSL population sum",
+  "GHS_Population_Density"                 = "GHS population density",
+  "GPWv4_Population_Density"               = "GPWv4 population density",
+  "ghsl_built_surface"                     = "Built surface fraction",
+  "ghsl_urban_frac"                        = "Urban fraction",
+  "jrc_building_height"                    = "Building height",
+  "viirs_average"                          = "Night-time lights",
+  "gdp_per_capita_constant_2015_usd"       = "GDP per capita",
+  "secondary_education_duration_years"     = "Secondary education duration",
+  "ww_collection_percent"                  = "Wastewater collection",
+  "ww_treatment_percent"                   = "Wastewater treatment",
+  "ww_reuse_percent"                       = "Wastewater reuse",
+  "control_of_corruption"                  = "Control of corruption",
+  "governance_effectiveness"               = "Government effectiveness",
+  "political_stability"                    = "Political stability",
+  "regulatory_quality"                     = "Regulatory quality",
+  "rule_of_law"                            = "Rule of law",
+  "voice_and_accountability"               = "Voice and accountability",
+  "sanitation_basic"                       = "JMP basic sanitation (national)",
+  "open_defecation"                        = "JMP open defecation (national)",
+  "drinking_water_accessible_on_premises"  = "JMP water accessible on premises",
+  "drinking_water_available_when_needed"   = "JMP water available when needed",
+  "drinking_water_free_from_contamination" = "JMP water free from contamination",
+  "drinking_water_piped"                   = "JMP piped water",
+  "drinking_water_non_piped"               = "JMP non-piped water",
+  "CGIAR_Aridity_Index"                    = "Aridity index",
+  "CGIAR_PET"                              = "Potential evapotranspiration",
+  "CHELSA_BIO_Annual_Mean_Temperature"     = "Annual mean temperature",
+  "CHELSA_BIO_Annual_Precipitation"        = "Annual precipitation",
+  "EarthEnvTopoMed_Elevation"              = "Elevation",
+  "EarthEnvTopoMed_Slope"                  = "Slope",
+  "FanEtAl_Depth_to_Water_Table_AnnualMean" = "Depth to water table",
+  "map_friction"                           = "Travel friction",
+  "WCS_Human_Footprint_2009"               = "Human footprint",
+  "CSP_Global_Human_Modification"          = "Human modification"
+)
+
+label_feature <- function(x) {
+  x      <- as.character(x)
+  mapped <- dplyr::recode(x, !!!feature_label_map, .default = NA_character_)
+  dplyr::if_else(
+    is.na(mapped),
+    stringr::str_replace_all(x, "_", " ") %>% stringr::str_squish(),
+    mapped
+  )
+}
+
+make_shap_plot <- function(loco_result, y_lab, sample_n = 2000) {
+  outcome_name <- loco_result$outcome_name
+  final_k      <- loco_result$final_k
+
+  shap_df <- loco_result$cv_eval %>%
+    dplyr::select(dplyr::all_of(loco_result$features))
+
+  if (nrow(shap_df) > sample_n) {
+    set.seed(SEED)
+    shap_df <- shap_df %>% dplyr::slice_sample(n = sample_n)
+  }
+
+  shap_h2o <- h2o::as.h2o(shap_df,
+                            destination_frame = paste0("shap_", outcome_name))
+  raw_plot  <- h2o::h2o.shap_summary_plot(loco_result$model, shap_h2o)
+
+  plot_data <- raw_plot[["data"]] %>%
+    dplyr::mutate(
+      feature       = label_feature(as.character(feature)),
+      mean_abs_shap = mean(abs(contribution), na.rm = TRUE),
+      .by           = feature
+    )
+
+  ggplot2::ggplot(
+    dplyr::mutate(plot_data,
+                  feature = forcats::fct_reorder(feature, mean_abs_shap)),
+    ggplot2::aes(x = feature, y = contribution, colour = normalized_value)
+  ) +
+    ggplot2::geom_hline(yintercept = 0, linetype = "dashed") +
+    ggplot2::geom_point(
+      position = h2o:::position_jitter_density(),
+      alpha = 0.5, size = 1.2
+    ) +
+    ggplot2::scale_colour_gradientn(
+      colours = viridis::viridis_pal()(9),
+      breaks  = c(0, 1), labels = c("low", "high"), limits = c(0, 1)
+    ) +
+    ggplot2::coord_flip() +
+    ggplot2::labs(
+      title  = paste("SHAP:", outcome_name, "(k =", final_k, ")"),
+      y      = y_lab, x = "",
+      colour = "Normalised\nfeature value"
+    ) +
+    ggplot2::theme_bw(base_size = 9)
+}
+```
+
+```{r}
+shap_smdw <- make_shap_plot(loco_smdw,
+  "SHAP contribution to SMDW prediction")
+shap_ecoli <- make_shap_plot(loco_ecoli,
+  "SHAP contribution to E. coli-free prediction")
+shap_improved <- make_shap_plot(loco_improved,
+  "SHAP contribution to improved source prediction")
+shap_avail <- make_shap_plot(loco_avail,
+  "SHAP contribution to availability prediction")
+shap_access <- make_shap_plot(loco_access,
+  "SHAP contribution to accessibility prediction")
+
+shap_smdw; shap_ecoli; shap_improved; shap_avail; shap_access
+```
+
+```{r}
+print_and_save_svg(shap_smdw,
+  paste0("shap_smdw_k", FINAL_K_SMDW, ".svg"), width = 9, height = 6)
+print_and_save_svg(shap_ecoli,
+  paste0("shap_ecoli_free_k", FINAL_K_ECOLI_FREE, ".svg"), width = 9, height = 6)
+print_and_save_svg(shap_improved,
+  paste0("shap_improved_source_k", FINAL_K_IMPROVED_SOURCE, ".svg"), width = 9, height = 6)
+print_and_save_svg(shap_avail,
+  paste0("shap_availability_k", FINAL_K_AVAILABILITY, ".svg"), width = 9, height = 6)
+print_and_save_svg(shap_access,
+  paste0("shap_accessibility_k", FINAL_K_ACCESSIBILITY, ".svg"), width = 9, height = 6)
+```
+
+------------------------------------------------------------------------
+
+# 8. Save final models
+
+```{r}
+model_dir <- here::here("outputs/models")
+dir.create(model_dir, recursive = TRUE, showWarnings = FALSE)
+
+h2o::h2o.saveModel(loco_smdw$model,     path = model_dir, force = TRUE)
+h2o::h2o.saveModel(loco_ecoli$model,    path = model_dir, force = TRUE)
+h2o::h2o.saveModel(loco_improved$model, path = model_dir, force = TRUE)
+h2o::h2o.saveModel(loco_avail$model,    path = model_dir, force = TRUE)
+h2o::h2o.saveModel(loco_access$model,   path = model_dir, force = TRUE)
+
+message("Models saved to: ", model_dir)
+```

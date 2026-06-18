@@ -63,8 +63,8 @@ PATH_GDP          <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates
 PATH_EDUCATION    <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/secondary_education_years.csv"
 PATH_WASTEWATER   <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/Country_WWctr_Percentage.txt"
 
-PATH_TO_REGION_AREAS_WQ    <- here::here("outputs/02_boundary_files/water_quality_surveys/region_areas_km2.csv")
-PATH_TO_REGION_AREAS_OTHER <- here::here("outputs/02_boundary_files/other_surveys/region_areas_km2.csv")
+PATH_TO_REGION_AREAS_WQ    <- here::here("outputs/03_sampled_features/water_quality_region_areas_km2.csv")
+PATH_TO_REGION_AREAS_OTHER <- here::here("outputs/03_sampled_features/other_surveys_region_areas_km2.csv")
 
 # ── Outputs ──────────────────────────────────────────────────────────────────
 OUTPUT_DIR           <- here::here("data/training_subcomponents")
@@ -384,11 +384,11 @@ load_region_areas <- function(path) {
     dplyr::ungroup()
 }
 
-#df_region_areas_wq    <- load_region_areas(PATH_TO_REGION_AREAS_WQ)
-#df_region_areas_other <- load_region_areas(PATH_TO_REGION_AREAS_OTHER)
+df_region_areas_wq    <- load_region_areas(PATH_TO_REGION_AREAS_WQ)
+df_region_areas_other <- load_region_areas(PATH_TO_REGION_AREAS_OTHER)
 
-#df_training_covariates_wq <- df_training_covariates_wq %>%
-  #dplyr::left_join(df_region_areas_wq, by = c("country", "analysis_year", "HH7_region"))
+df_training_covariates_wq <- df_training_covariates_wq %>%
+  dplyr::left_join(df_region_areas_wq, by = c("country", "analysis_year", "HH7_region"))
 
 df_training_covariates_other <- df_training_covariates_other %>%
   dplyr::left_join(df_region_areas_other, by = c("country", "analysis_year", "HH7_region"))
