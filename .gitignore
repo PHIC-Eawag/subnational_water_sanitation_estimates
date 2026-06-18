@@ -46,6 +46,14 @@ vignettes/*.pdf
 # RStudio Connect folder
 rsconnect/
 
+
+# Excel files
+*.xls
+*.xlsx
+*.xlsm
+*.xlsb
+*.xltx
+*.xltm
 # =========================
 # Quarto
 # =========================
@@ -165,3 +173,4 @@ outputs/diagnostics/*
 **/.DS_Store
 .DS_Store
 .env
+
