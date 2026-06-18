@@ -211,28 +211,39 @@ Representative variables per cluster, selected manually in
 k = 103 uses the full feature set above (no cluster file needed).
 
 ```{r}
+# Load the representative variable list for a given shortlist size k.
+# - k = 99 is a special code meaning "use the full feature set" (no shortlisting).
+# - For any other k, reads the CSV saved by the cluster analysis script and
+#   returns only variables that also exist in the master feature list.
 load_feature_set <- function(k, full_features = all_features_k103) {
   if (k == 99) return(full_features)  # 99 = full sanitation feature set
 
+  # Build the path to the CSV saved during cluster analysis for this k
   path <- file.path(CLUSTER_OUTPUT_DIR,
                     paste0("representative_variables_k", k, ".csv"))
 
+  # Stop with a clear message if the cluster file hasn't been generated yet
   if (!file.exists(path)) {
     stop("Cluster feature file not found: ", path,
          "\nRun 01_cluster_analysis.qmd first.")
   }
 
+  # Read the CSV, extract the variable names, and drop any that are not
+  # in the master feature list (guards against stale or mismatched files)
   readr::read_csv(path, show_col_types = FALSE) %>%
     dplyr::pull(representative_variable) %>%
-    intersect(full_features)   # keep only features in our full list
+    intersect(full_features)
 }
 
-# Load all feature sets and report sizes
+# Run load_feature_set() for every k in K_VALUES and store results in a named list.
+# Example: feature_sets[["k20"]] contains the 20 representative variable names.
 feature_sets <- purrr::set_names(
   purrr::map(K_VALUES, load_feature_set),
   paste0("k", K_VALUES)
 )
 
+# Print a summary table showing how many variables were loaded for each k —
+# useful to confirm all cluster files were found and none were unexpectedly empty
 purrr::imap_dfr(feature_sets, ~ tibble::tibble(k = .y, n_features = length(.x))) %>%
   knitr::kable(caption = "Features per cluster k")
 ```
@@ -251,7 +262,7 @@ distribution the model will predict into.
 
 ## Country region counts
 
-Countries are sampled with probability proportional to their number of
+Countries regions are sampled with probability proportional to their number of
 training regions (probability-proportional-to-size sampling). Larger
 countries are therefore more likely to be drawn, which naturally fills
 the fold target in fewer draws.
@@ -302,6 +313,10 @@ pred_covariates %>%
 
 ```{r}
 # ── Stratum targets from prediction space ─────────────────────────────────────
+# Count how many prediction-space regions fall in each SDG geographic zone,
+# then convert to proportions. Use those proportions to set a target number
+# of training regions to hold out per zone per fold — this ensures each test
+# fold mirrors the geographic mix of the places we ultimately want to predict.
 stratum_targets <- pred_covariates %>%
   dplyr::filter(!is.na(sdg_region)) %>%
   dplyr::count(sdg_region, name = "n_pred_regions") %>%
@@ -314,6 +329,9 @@ cat("Target regions per stratum per fold:\n")
 print(stratum_targets %>% dplyr::arrange(desc(n_pred_regions)))
 
 # ── Country stratum lookup ────────────────────────────────────────────────────
+# Build a one-row-per-country reference table recording each country's
+# SDG region, World Bank income group, and how many sub-national regions
+# it contributes to the training data. Used by the fold sampler below.
 country_strata <- basic_sanitation_df %>%
   dplyr::group_by(country = .data[[COUNTRY_COL]]) %>%
   dplyr::summarise(
@@ -327,6 +345,9 @@ country_strata <- basic_sanitation_df %>%
 # For each stratum, sample whole countries without replacement until the
 # cumulative region count reaches n_in_fold for that stratum.
 # Countries are drawn with equal probability within each stratum.
+# High-income countries (wb_income_group == "H") are never held out —
+# they are always kept in training because the model is intended for
+# lower- and middle-income settings.
 # If a stratum has fewer training regions than targeted, all its countries
 # are held out and a warning is issued.
 
@@ -335,18 +356,21 @@ sample_held_out_countries <- function(
     stratum_targets,
     seed_i = 1
 ) {
-  set.seed(seed_i)
+  set.seed(seed_i)   # different seed per fold repeat produces independent folds
 
   held_out <- character(0)
 
+  # Remove high-income countries from the pool before sampling
   eligible_countries <- country_strata %>%
     dplyr::filter(wb_income_group != "H")
 
   for (stratum in stratum_targets$sdg_region) {
 
+    # How many regions should this stratum contribute to the fold?
     target_n <- stratum_targets$n_in_fold[stratum_targets$sdg_region == stratum]
 
-  stratum_countries <- eligible_countries %>%
+    # All eligible countries in this SDG zone
+    stratum_countries <- eligible_countries %>%
       dplyr::filter(sdg_region == stratum)
 
     if (nrow(stratum_countries) == 0 || target_n == 0) next
@@ -355,6 +379,8 @@ sample_held_out_countries <- function(
     sampled_n <- 0
     remaining <- stratum_countries
 
+    # Keep drawing countries one at a time (without replacement) until
+    # enough sub-national regions have been accumulated for this stratum
     while (sampled_n < target_n && nrow(remaining) > 0) {
       idx     <- sample(nrow(remaining), size = 1)
       chosen  <- remaining$country[idx]
@@ -363,6 +389,7 @@ sample_held_out_countries <- function(
       remaining <- remaining[-idx, ]
     }
 
+    # Warn if the stratum ran out of countries before reaching the target
     if (sampled_n < target_n) {
       warning("Stratum '", stratum, "': only ", sampled_n,
               " regions available, target was ", target_n,
@@ -376,6 +403,8 @@ sample_held_out_countries <- function(
 }
 
 # ── Generate folds ────────────────────────────────────────────────────────────
+# Create N_REPEATS independent held-out country lists, each using a different
+# random seed so the folds are not correlated with one another.
 set.seed(SEED)
 fold_country_lists <- purrr::map(
   seq_len(N_REPEATS),
@@ -383,6 +412,10 @@ fold_country_lists <- purrr::map(
 )
 
 # ── Diagnostics ───────────────────────────────────────────────────────────────
+# For each fold, report how many countries and regions were held out,
+# what percentage of the total training data that represents, and how many
+# SDG zones are covered. Ideally all folds should be similar in size (~15%)
+# and cover multiple strata.
 fold_diagnostics <- purrr::imap_dfr(fold_country_lists, function(countries, i) {
   fold_regions <- basic_sanitation_df %>%
     dplyr::filter(.data[[COUNTRY_COL]] %in% countries)
@@ -585,24 +618,37 @@ This loop runs `length(K_VALUES) × N_REPEATS` models per outcome.
 Expect this to take some time.
 
 ```{r}
+# Run the feature set comparison for one outcome (e.g. basic sanitation).
+# For every shortlist size (k5, k10, ...) and every fold repeat:
+#   - Train on all countries except the held-out ones
+#   - Predict on the held-out countries
+#   - Record accuracy metrics
+# Then average the metrics across the N_REPEATS folds to get a stable estimate
+# of how well each shortlist size performs for this outcome.
 run_feature_set_comparison <- function(training_df, outcome_name) {
 
   message("== ", outcome_name, " ==")
 
+  # Loop over every feature shortlist size
   purrr::imap_dfr(feature_sets, function(features, k_label) {
     message("  Feature set ", k_label, " (", length(features), " features)")
 
+    # Loop over the N_REPEATS independent folds and collect per-fold metrics.
+    # A different random seed per repeat ensures any stochasticity in the model
+    # does not systematically favour one fold over another.
     repeat_metrics <- purrr::imap_dfr(fold_country_lists, function(countries, rep_i) {
       result <- run_one_fold(
-        training_df       = training_df,
+        training_df        = training_df,
         held_out_countries = countries,
-        features          = features,
-        seed              = SEED + rep_i
+        features           = features,
+        seed               = SEED + rep_i
       )
-      if (is.null(result)) return(NULL)
+      if (is.null(result)) return(NULL)   # skip fold if test set was empty
       dplyr::mutate(result, repeat_i = rep_i)
     })
 
+    # Summarise across folds: mean and SD for each accuracy metric.
+    # SD tells us how stable the performance is across different held-out sets.
     repeat_metrics %>%
       dplyr::summarise(
         mean_mae  = mean(mae,  na.rm = TRUE),
@@ -613,6 +659,8 @@ run_feature_set_comparison <- function(training_df, outcome_name) {
         sd_r2     = sd(r2,     na.rm = TRUE),
         n_repeats = dplyr::n()
       ) %>%
+      # Tag each row with the outcome name, shortlist label, and feature count
+      # so results from different outcomes and k values can be compared in one table
       dplyr::mutate(
         outcome      = outcome_name,
         feature_set  = k_label,
@@ -621,6 +669,7 @@ run_feature_set_comparison <- function(training_df, outcome_name) {
   })
 }
 
+# Run the comparison separately for each outcome
 comparison_basic_sanitation <- run_feature_set_comparison(
   basic_sanitation_df, "basic_sanitation"
 )
@@ -628,11 +677,13 @@ comparison_open_defecation <- run_feature_set_comparison(
   open_defecation_df, "open_defecation"
 )
 
+# Stack both outcome results into a single table for easy side-by-side comparison
 cv_comparison_results <- dplyr::bind_rows(
   comparison_basic_sanitation,
   comparison_open_defecation
 )
 
+# Save to CSV so the results can be reviewed before selecting the final k values
 readr::write_csv(
   cv_comparison_results,
   file.path(OUTPUT_DIR, "feature_set_cv_comparison.csv")
