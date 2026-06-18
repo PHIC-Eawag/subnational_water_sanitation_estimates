@@ -159,8 +159,11 @@ outputs/03b_cluster_analysis/*
 outputs/04_model_performance/*
 !outputs/04_model_performance/.gitkeep
 
-outputs/diagnostics/*
+outputs/models/*
 !outputs/models/.gitkeep
+
+outputs/diagnostics/*
+!outputs/diagnostics/.gitkeep
 # =========================
 # Logs / temporary files
 # =========================
