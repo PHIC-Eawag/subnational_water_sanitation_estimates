@@ -43,7 +43,7 @@ hh_Cuba$country                      <- "Cuba"
 hh_DominicanRepublic$country         <- "Dominican Republic"
 hh_DRCongo$country                   <- "DR Congo"
 hh_Eswatini$country                  <- "Eswatini"
-#hh_Fiji$country                      <- "Fiji"
+#hh_Fiji$country                      <- "Fiji" # exclude because environmental variables could not be sampled
 hh_Gambia$country                    <- "Gambia"
 hh_Georgia$country                   <- "Georgia"
 hh_Ghana$country                     <- "Ghana"
