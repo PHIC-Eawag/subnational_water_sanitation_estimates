@@ -7,8 +7,7 @@ subtitle: "Basic sanitation and open defecation outcomes"
 
 ## Parameters
 
-Tune here before running. Use fewer trees and repeats for fast
-exploratory runs; increase for final model selection.
+Tune here before running. Use fewer trees for fast, exploratory runs; increase for final model selection.
 
 ```{r}
 # ── Feature set comparison ────────────────────────────────────────────────────
@@ -91,7 +90,7 @@ SDG_COL      <- "sdg_region"
 INCOME_COL   <- "wb_income_group"
 ```
 
-## Full feature list (k = 103 baseline)
+## Full feature list 
 
 ```{r}
 all_EO_features <- c(

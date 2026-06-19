@@ -32,7 +32,6 @@ accessibility_training_with_covariates <- readr::read_csv(
 )
 ```
 
-
 ```{r}
 all_EO_features <- c(
   "CGIAR_Aridity_Index", "CGIAR_PET",
@@ -187,6 +186,7 @@ rf_loco_eo <- h2o::h2o.randomForest(
   keep_cross_validation_fold_assignment = TRUE
 )
 ```
+
 ```{r}
 # -----------------------------
 # 4. Overall LOCO-CV metrics
@@ -204,7 +204,6 @@ loco_metrics_eo <- tibble::tibble(
 
 loco_metrics_eo
 ```
-
 
 ```{r}
 # -----------------------------
@@ -300,7 +299,6 @@ plotPredObs_ecoli_eo_cv <- ggplot(
 plotPredObs_ecoli_eo_cv
 ```
 
-
 ### 2. Selecting test-data set
 
 ```{r}
@@ -321,7 +319,6 @@ df_training_final_wq <- df_training_final_wq %>%
   left_join(country_key, by = "country_key") %>%
   select(-country_key)
 ```
-
 
 ```{r}
 set.seed(12)
@@ -893,11 +890,7 @@ rf_metrics_ecoli
 
 features Outcome: access to E.coli free water
 
-We performed a grid-search to iteratively explore the results of a suite
-of random forest models trained on the selected covariates. A list of
-hyperparameters was selected, varying in (1) the number of trees, (2)
-the number of variables sampled at each split and (3) the minimum
-observations per leaf and (4)sampling rate
+We performed a grid-search to iteratively explore the results of a suite of random forest models trained on the selected covariates. A list of hyperparameters was selected, varying in (1) the number of trees, (2) the number of variables sampled at each split and (3) the minimum observations per leaf and (4)sampling rate
 
 ```{r}
 best_k <- "k60"
@@ -1544,8 +1537,7 @@ mean_values_ecoli <- group39FeaturesInto5IndicatorGroups(mean_values_ecoli)
 
 ```
 
-Plotting summarized average SHAP values by Indicator Group for E.coli
-estimates
+Plotting summarized average SHAP values by Indicator Group for E.coli estimates
 
 ```{r}
 SHAP_values_Ecoli_grouped <- mean_values_ecoli %>% 
@@ -1596,9 +1588,7 @@ ggsave(
 )
 ```
 
-Plot results from best RF Model for E.coli contamination Plot as
-predicted versus observed E.coli contamination with results from
-leave-one-country-out holdout predictions.
+Plot results from best RF Model for E.coli contamination Plot as predicted versus observed E.coli contamination with results from leave-one-country-out holdout predictions.
 
 ```{r}
 TrainAndPredicted_ecoli <- as.data.frame(h2o.cross_validation_holdout_predictions(rf_model_ecoli_final))
@@ -1805,8 +1795,7 @@ nationalpopulation_originalPercentageNoEcoli_ $propotionEcoli <- 1-nationalpopul
 
 # Modeling drinking water availability
 
-Here we create a dataframe with indicators for drinking water
-availability.
+Here we create a dataframe with indicators for drinking water availability.
 
 ```{r}
 df.MICS_HH_availability <-createDataFrameWithAvailabilty(df.MICS_HH)
@@ -1829,11 +1818,7 @@ combined_Availability_envir_human_39 <-  Availability_training %>%
 
 features Outcome: access to drinking water availability
 
-grid-search to iteratively explore the results of a suite of random
-forest models trained on the selected covariates. A list of
-hyperparameters was selected, varying in (1) the number of trees, (2)
-the number of variables sampled at each split and (3) the minimum
-observations per leaf and (4) sampling rate.
+grid-search to iteratively explore the results of a suite of random forest models trained on the selected covariates. A list of hyperparameters was selected, varying in (1) the number of trees, (2) the number of variables sampled at each split and (3) the minimum observations per leaf and (4) sampling rate.
 
 ```{r}
 h2o.shutdown()
@@ -1917,8 +1902,7 @@ h2o.mae(rf_model_Avail_final,  xval = TRUE)
 
 ```
 
-Plot Predicted versus Observed Availability with results from
-leave-one-country-out holdout predictions.
+Plot Predicted versus Observed Availability with results from leave-one-country-out holdout predictions.
 
 ```{r}
 TrainAndPredicted_Avail <- as.data.frame(h2o.cross_validation_holdout_predictions(rf_model_Avail_final))
@@ -2019,8 +2003,7 @@ ggsave(
 )
 ```
 
-Plotting summarized average SHAP values by Indicator Group for
-Availability
+Plotting summarized average SHAP values by Indicator Group for Availability
 
 ```{r}
 #colours <- c("#E64B35FF", "#91D1C2FF","#3C5488FF","#4DBBD5FF", "#00A087FF")
@@ -2080,8 +2063,7 @@ FullPrediction_Avail <- FullPrediction_Avail %>%
 
 # Modeling drinking water accessibility
 
-Here we create a dataframe with indicators for drinking water
-accessibility.
+Here we create a dataframe with indicators for drinking water accessibility.
 
 ```{r}
 df.MICS_HH_accessibility <-createDataFrameWithAccessibilityIndicator(df.MICS_HH)
@@ -2185,8 +2167,7 @@ h2o.r2(rf_model_Access_final, xval = TRUE)
 h2o.mae(rf_model_Access_final, xval = TRUE)
 ```
 
-Plot Predicted versus Observed Accessibility with results from
-leave-one-country-out holdout predictions.
+Plot Predicted versus Observed Accessibility with results from leave-one-country-out holdout predictions.
 
 ```{r}
 TrainAndPredicted_Access <- as.data.frame(h2o.cross_validation_holdout_predictions(rf_model_Access_final))
@@ -2403,8 +2384,7 @@ Access_prediction_UNSubregion <- Access_prediction %>%
 
 # Modeling water source type
 
-Here we create a dataframe with indicators for drinking water source
-type (proportion of people using an improved drinking water source).
+Here we create a dataframe with indicators for drinking water source type (proportion of people using an improved drinking water source).
 
 ```{r}
 df.MICS_HH_improved <-createDataFrameWithmainWaterSourceType(df.MICS_HH)
@@ -2425,11 +2405,7 @@ combined_Improved_envir_human_39 <-  Improved_training %>%
 
 ## Grid Search for water source type model
 
-grid-search to iteratively explore the results of a suite of random
-forest models trained on the selected covariates. A list of
-hyperparameters was selected, varying in (1) the number of trees, (2)
-the number of variables sampled at each split and (3) the minimum
-observations per leaf and (4)sampling rate.
+grid-search to iteratively explore the results of a suite of random forest models trained on the selected covariates. A list of hyperparameters was selected, varying in (1) the number of trees, (2) the number of variables sampled at each split and (3) the minimum observations per leaf and (4)sampling rate.
 
 ```{r}
 h2o.shutdown(prompt = FALSE)
@@ -2509,8 +2485,7 @@ h2o.mae(rf_model_improved_final, xval = TRUE)
 
 ```
 
-Plot predicted versus Observed populations using improved drinking water
-sources with results from leave-one-country-out holdout predictions.
+Plot predicted versus Observed populations using improved drinking water sources with results from leave-one-country-out holdout predictions.
 
 ```{r}
 TrainAndPredicted_Improved <- as.data.frame(h2o.cross_validation_holdout_predictions(rf_model_improved_final))
@@ -2584,8 +2559,7 @@ mean_values_Improved <- group39FeaturesInto5IndicatorGroups(mean_values_Improved
 #write.csv(mean_values_Improved, "./5_Prediction/predition_results/Shap_values_Improved_newest.csv", fileEncoding = "UTF-8", row.names = T)
 ```
 
-Plotting summarized average SHAP values by Indicator Group for Water
-Source Type
+Plotting summarized average SHAP values by Indicator Group for Water Source Type
 
 ```{r}
 SHAP_values_Improved_grouped <- mean_values_Improved %>% 
