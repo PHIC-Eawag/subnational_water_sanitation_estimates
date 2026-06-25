@@ -1,22 +1,6 @@
 ---
 title: "Prepare Sanitation Model Training Data"
 subtitle: "Basic sanitation and open defecation outcomes with geospatial covariates"
-author: ""
-date: today
-format:
-  html:
-    toc: true
-    toc-depth: 3
-    number-sections: true
-    code-fold: true
-    self-contained: true
-execute:
-  echo: true
-  warning: false
-  message: false
-editor: 
-  markdown: 
-    wrap: 72
 ---
 
 # 1. Setup
@@ -932,4 +916,120 @@ dplyr::bind_rows(
   dplyr::mutate(percent = round(100 * n_observations / sum(n_observations), 2)) %>%
   dplyr::ungroup() %>%
   dplyr::arrange(outcome_type, desc(n_observations))
+```
+
+------------------------------------------------------------------------
+
+# 8. Survey data availability overview
+
+Bar charts showing the number of surveys (distinct country × year
+combinations) included in the training data, broken down by SDG region
+and World Bank income group. Three survey groups are compared:
+
+1.  **All MICS surveys** – the full MICS extract before source
+    selection.
+2.  **Basic sanitation modelling surveys** – the final
+    `basic_sanitation_training` dataset, excluding Indonesia.
+
+## Inspect available columns
+
+```{r}
+cat("── basic_sanitation_training columns ──\n")
+print(names(basic_sanitation_training))
+
+cat("\n── df_mics columns ──\n")
+print(names(df_mics))
+```
+
+## Build survey-count datasets
+
+```{r}
+# ── 1. MICS surveys included in basic sanitation training ────────────────────
+# source_to_keep (built in section 3) maps country -> household_data_source
+mics_countries <- source_to_keep %>%
+  dplyr::filter(household_data_source == "MICS_sanitation") %>%
+  dplyr::pull(country)
+
+surveys_mics_sdg <- basic_sanitation_training %>%
+  dplyr::filter(country_outcome %in% mics_countries) %>%
+  dplyr::distinct(country_outcome, HH7_region_outcome, sdg_region) %>%
+  dplyr::count(sdg_region, name = "n_surveys") %>%
+  dplyr::mutate(group = "MICS surveys in training data")
+
+surveys_mics_income <- basic_sanitation_training %>%
+  dplyr::filter(country_outcome %in% mics_countries) %>%
+  dplyr::distinct(country_outcome, wb_income_group) %>%
+  dplyr::count(wb_income_group, name = "n_surveys") %>%
+  dplyr::mutate(group = "MICS surveys in training data")
+
+# ── 2. Basic sanitation modelling surveys (no Indonesia) ─────────────────────
+basic_san_filtered <- basic_sanitation_training %>%
+  dplyr::filter(country_outcome != "Indonesia")
+
+surveys_basic_san_sdg <- basic_san_filtered %>%
+  dplyr::distinct(country_outcome, HH7_region_outcome, sdg_region) %>%
+  dplyr::count(sdg_region, name = "n_surveys") %>%
+  dplyr::mutate(group = "Basic sanitation (no Indonesia)")
+
+surveys_basic_san_income <- basic_san_filtered %>%
+  dplyr::distinct(country_outcome, wb_income_group) %>%
+  dplyr::count(wb_income_group, name = "n_surveys") %>%
+  dplyr::mutate(group = "Basic sanitation (no Indonesia)")
+```
+
+## Bar charts by SDG region
+
+```{r fig.width=10, fig.height=6}
+# SDG region order: descending by total surveys across all groups
+sdg_order <- dplyr::bind_rows(surveys_mics_sdg, surveys_basic_san_sdg) %>%
+  dplyr::group_by(sdg_region) %>%
+  dplyr::summarise(total = sum(n_surveys), .groups = "drop") %>%
+  dplyr::arrange(desc(total)) %>%
+  dplyr::pull(sdg_region)
+
+sdg_plot_data <- dplyr::bind_rows(surveys_mics_sdg, surveys_basic_san_sdg) %>%
+  dplyr::filter(!is.na(sdg_region)) %>%
+  dplyr::mutate(
+    sdg_region = factor(sdg_region, levels = rev(sdg_order)),
+    group      = factor(group, levels = c("MICS surveys in training data",
+                                          "Basic sanitation (no Indonesia)"))
+  )
+
+ggplot2::ggplot(sdg_plot_data,
+                ggplot2::aes(x = sdg_region, y = n_surveys, fill = group)) +
+  ggplot2::geom_col(position = ggplot2::position_dodge(width = 0.7), width = 0.65) +
+  ggplot2::coord_flip() +
+  ggplot2::scale_fill_manual(
+    values = c("MICS surveys in training data"     = "#4C9BE8",
+               "Basic sanitation (no Indonesia)"   = "#E88B4C")
+  ) +
+  ggplot2::labs(
+    title = NULL,
+    x     = NULL,
+    y     = "Number of regions",
+    fill  = NULL
+  ) +
+  ggplot2::theme_bw(base_size = 12) +
+  ggplot2::theme(legend.position = "bottom")
+```
+
+## Survey coverage summary
+
+```{r}
+dplyr::bind_rows(
+  basic_sanitation_training %>%
+    dplyr::filter(country_outcome %in% mics_countries) %>%
+    dplyr::summarise(
+      group       = "MICS surveys in training data",
+      n_countries = dplyr::n_distinct(country_outcome),
+      n_regions   = dplyr::n_distinct(paste(country_outcome, HH7_region_outcome))
+    ),
+  basic_sanitation_training %>%
+    dplyr::filter(country_outcome != "Indonesia") %>%
+    dplyr::summarise(
+      group       = "Basic sanitation (no Indonesia)",
+      n_countries = dplyr::n_distinct(country_outcome),
+      n_regions   = dplyr::n_distinct(paste(country_outcome, HH7_region_outcome))
+    )
+)
 ```
