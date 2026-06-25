@@ -3,7 +3,6 @@ title: "Prepare Prediction Data"
 subtitle: "Join GEE-sampled covariates with country-level data sources for model prediction"
 author: "Esther Greenwood"
 date: 15.06.2026
-
 ---
 
 # 1. Setup
@@ -22,9 +21,7 @@ source(here::here("configuration/covariate_cols.R"))   # loads `covariate_cols` 
 
 ## Prediction year
 
-All time-varying country-level covariates (WGI, JMP, GDP, education,
-income group) are joined at this year. Update here when producing
-predictions for a different reference year.
+All time-varying country-level covariates (WGI, JMP, GDP, education, income group) are joined at this year. Update here when producing predictions for a different reference year.
 
 ```{r}
 PREDICTION_YEAR <- 2024L
@@ -58,8 +55,7 @@ OUTPUT_DIR <- here::here("data/prediction")
 
 ## Non-population covariates
 
-Loaded from the single CSV exported by GEE. Each row is one GADM admin-1
-region, identified by `NAME_0` (country) and `NAME_1` (region).
+Loaded from the single CSV exported by GEE. Each row is one GADM admin-1 region, identified by `NAME_0` (country) and `NAME_1` (region).
 
 ```{r}
 df_nonpop_pred <- readr::read_csv(FILE_NONPOP_PRED, show_col_types = FALSE)
@@ -67,12 +63,28 @@ df_nonpop_pred <- readr::read_csv(FILE_NONPOP_PRED, show_col_types = FALSE)
 cat("Rows:", nrow(df_nonpop_pred), "\n")
 cat("Countries:", dplyr::n_distinct(df_nonpop_pred$NAME_0), "\n")
 cat("Columns:", ncol(df_nonpop_pred), "\n")
+
+# GID_1 must be present for downstream shapefile joining and mapping.
+# It should flow through from the GADM shapefile uploaded to GEE.
+if (!"GID_1" %in% colnames(df_nonpop_pred)) {
+  stop(
+    "GID_1 column is missing from ", FILE_NONPOP_PRED, ".\n",
+    "GID_1 is required for joining prediction outputs to shapefiles for mapping.\n",
+    "Ensure GID_1 is set as a feature property in the GEE sampling script ",
+    "(03_sampling_geospatial_data.ipynb) before re-exporting."
+  )
+} else {
+  cat("GID_1 present:", dplyr::n_distinct(df_nonpop_pred$GID_1), "unique values\n")
+  n_missing_gid1 <- sum(is.na(df_nonpop_pred$GID_1))
+  if (n_missing_gid1 > 0) {
+    warning(n_missing_gid1, " rows have missing GID_1 values.")
+  }
+}
 ```
 
 ## Population sums
 
-Population covariates are stored as one CSV per country, exported
-separately from GEE. All files are read and stacked.
+Population covariates are stored as one CSV per country, exported separately from GEE. All files are read and stacked.
 
 ```{r}
 pop_files_pred <- list.files(
@@ -105,8 +117,7 @@ if (nrow(missing_pop_countries) > 0) {
 
 ## Join non-pop and pop covariates
 
-The two tables are joined on `NAME_0` + `NAME_1`. The result is one row
-per admin-1 region.
+The two tables are joined on `NAME_0` + `NAME_1`. The result is one row per admin-1 region.
 
 ```{r}
 df_pred_covariates <- df_nonpop_pred %>%
@@ -126,10 +137,10 @@ if (nrow(dup_keys) > 0) {
   message("No duplicate region keys.")
 }
 ```
+
 ## Region areas
 
-`area_km2` is not sampled in GEE; it is derived from the prediction
-boundary files.
+`area_km2` is not sampled in GEE; it is derived from the prediction boundary files.
 
 ```{r}
 df_region_areas_pred <- readr::read_csv(
@@ -151,10 +162,7 @@ cat("Missing area_km2:", sum(is.na(df_pred_covariates$area_km2)), "regions\n")
 
 # 3. Country-level covariates
 
-All country-level sources are joined by standardised country name via
-`add_country_join_key_extended()`, which resolves GADM names to the
-World Bank country name used as the join key. Time-varying covariates
-use `PREDICTION_YEAR`.
+All country-level sources are joined by standardised country name via `add_country_join_key_extended()`, which resolves GADM names to the World Bank country name used as the join key. Time-varying covariates use `PREDICTION_YEAR`.
 
 ```{r}
 country_name_key_WB <- readr::read_csv(PATH_COUNTRY_KEY, show_col_types = FALSE)
@@ -310,8 +318,7 @@ print(missing_wgi)
 
 ## World Bank income group
 
-Income group at `PREDICTION_YEAR`, parsed from the OGHIST analytical
-history file.
+Income group at `PREDICTION_YEAR`, parsed from the OGHIST analytical history file.
 
 ```{r}
 oghist_raw <- suppressMessages(readxl::read_excel(
@@ -353,21 +360,14 @@ cat("Missing income group:", sum(is.na(df_pred_covariates$wb_income_group)), "re
 
 ## JMP indicators
 
-Extracts country-level estimates and regional classifications from the
-JMP 2025 global dataset at `PREDICTION_YEAR`.
+Extracts country-level estimates and regional classifications from the JMP 2025 global dataset at `PREDICTION_YEAR`.
 
 Two sheets are used:
 
--   **Sanitation sheet** — `sanitation_basic`, `open_defecation`,
-    `iso3`, `sdg_region`, `fragile_context`. These are contextual
-    covariates relevant across all outcomes.
--   **Water sheet** — `drinking_water_basic` and related SMDW
-    subcomponents: accessible on premises, available when needed, free
-    from contamination, piped, non-piped.
+-   **Sanitation sheet** — `sanitation_basic`, `open_defecation`, `iso3`, `sdg_region`, `fragile_context`. These are contextual covariates relevant across all outcomes.
+-   **Water sheet** — `drinking_water_basic` and related SMDW subcomponents: accessible on premises, available when needed, free from contamination, piped, non-piped.
 
-Time-invariant fields (`iso3`, `sdg_region`, `fragile_context`) are
-taken from the most available row per country and do not depend on
-`PREDICTION_YEAR`.
+Time-invariant fields (`iso3`, `sdg_region`, `fragile_context`) are taken from the most available row per country and do not depend on `PREDICTION_YEAR`.
 
 ```{r}
 jmp_raw_sanitation <- suppressMessages(readxl::read_excel(
@@ -528,22 +528,61 @@ country_level_vars <- c(
   jmp_water_vars,
   "iso3", "sdg_region"
 )
-df_pred_covariates %>%
-  dplyr::summarise(dplyr::across(
-    dplyr::all_of(country_level_vars),
-    ~ sum(is.na(.x)),
-    .names = "n_missing_{.col}"
-  )) %>%
-  tidyr::pivot_longer(everything(), names_to = "variable", values_to = "n_missing") %>%
-  dplyr::mutate(variable = stringr::str_remove(variable, "^n_missing_")) %>%
-  dplyr::filter(n_missing > 0) %>%
-  dplyr::arrange(desc(n_missing))
+# Flag any expected country-level columns that are absent entirely
+missing_cols <- setdiff(country_level_vars, colnames(df_pred_covariates))
+if (length(missing_cols) > 0) {
+  warning(
+    "The following country-level columns are not yet in df_pred_covariates ",
+    "(Section 3 joins may not have run):\n  ",
+    paste(missing_cols, collapse = ", ")
+  )
+}
+
+# Report missingness only for columns that are actually present
+present_vars <- intersect(country_level_vars, colnames(df_pred_covariates))
+if (length(present_vars) > 0) {
+  df_pred_covariates %>%
+    dplyr::summarise(dplyr::across(
+      dplyr::all_of(present_vars),
+      ~ sum(is.na(.x)),
+      .names = "n_missing_{.col}"
+    )) %>%
+    tidyr::pivot_longer(everything(), names_to = "variable", values_to = "n_missing") %>%
+    dplyr::mutate(variable = stringr::str_remove(variable, "^n_missing_")) %>%
+    dplyr::filter(n_missing > 0) %>%
+    dplyr::arrange(desc(n_missing))
+}
 ```
 
 ## Write prediction CSV
 
 ```{r}
 dir.create(OUTPUT_DIR, recursive = TRUE, showWarnings = FALSE)
+
+# Final column checks before writing
+required_output_cols <- c("GID_1", "NAME_0", "NAME_1", "sdg_region",
+                           "wb_income_group", "fragile_context")
+missing_output_cols <- setdiff(required_output_cols, colnames(df_pred_covariates))
+if (length(missing_output_cols) > 0) {
+  stop(
+    "The following columns required for downstream analysis are missing from ",
+    "the final prediction dataframe:\n  ",
+    paste(missing_output_cols, collapse = ", "), "\n",
+    "Check that they are present in the GEE-sampled input and joined correctly."
+  )
+} else {
+  message("All required identifier/stratification columns present: ",
+          paste(required_output_cols, collapse = ", "))
+}
+
+# Reorder columns so identifier / stratification columns come first,
+# making the file easy to inspect and join to shapefiles.
+lead_cols <- c("GID_1", "NAME_0", "NAME_1", "sdg_region",
+               "wb_income_group", "fragile_context")
+other_cols <- setdiff(colnames(df_pred_covariates), lead_cols)
+df_pred_covariates <- dplyr::select(df_pred_covariates,
+                                    dplyr::all_of(lead_cols),
+                                    dplyr::all_of(other_cols))
 
 output_path <- file.path(OUTPUT_DIR, paste0("prediction_covariates_", PREDICTION_YEAR, ".csv"))
 readr::write_csv(df_pred_covariates, output_path)
