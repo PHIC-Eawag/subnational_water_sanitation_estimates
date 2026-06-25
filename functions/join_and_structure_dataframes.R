@@ -394,7 +394,7 @@ make_training_covariates <- function(pop_files, nonpop_files, covariate_cols) {
   # Reads population and non-population geospatial covariates,
   # standardises their region names, and joins them into one table.
   
-  join_cols <- c("country", "analysis_year", "HH7_region", "source")
+  join_cols <- c("country", "analysis_year", "HH7_region", "source", "GID_1","GID_0")
   
   df_pop_raw <- read_existing_csvs(pop_files) %>%
     readr::type_convert()
