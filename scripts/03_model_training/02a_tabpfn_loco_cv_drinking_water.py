@@ -12,6 +12,7 @@
 #   12–16 Final model per outcome (LOCO-CV)
 #   17    Combined summary
 #   18    Quantile predictions (LOCO-CV)
+#   19    Final model: LMIC predictions (median + 90% PI)
 # -------------------------------------------------------
 
 from zmq import NULL
@@ -870,3 +871,223 @@ for outcome_name, final_k in QUANTILE_TASKS.items():
     except RuntimeError as exc:
         warnings.warn(f"  Quantile prediction skipped for {outcome_name}: {exc}")
         print("  → Use CQR for uncertainty intervals.")
+
+
+# -------------------------------------------------------
+# 19. Final model predictions across LMICs
+#
+# Trains TabPFN on ALL training data (every country retained)
+# then predicts across LMIC locations in the prediction dataset
+# (same file used for cluster analysis and fold stratification).
+#
+# Outputs per outcome:
+#   - median        (q50)
+#   - pi90_lower    (q05)
+#   - pi90_upper    (q95)
+#
+# High-income countries (wb_income_group == "H") are excluded
+# from the prediction set; all income groups are retained in
+# training (consistent with earlier modelling stages).
+#
+# Note: model_df is reloaded here per outcome because
+# run_and_save_loco() does not retain it in memory.
+# -------------------------------------------------------
+
+PRED_OUTPUT_DIR = os.path.join(OUTPUT_DIR, "predictions")
+os.makedirs(PRED_OUTPUT_DIR, exist_ok=True)
+
+# JMP water features are also country-level (joined in 05_prepare_prediction_data.qmd)
+# and must be present in the prediction data alongside COUNTRY_LEVEL_FEATURES.
+REQUIRED_PRED_COLS = {
+    "features":       COUNTRY_LEVEL_FEATURES + JMP_WATER_FEATURES,
+    "identifiers":    ["GID_1", "NAME_0", "NAME_1"],
+    "stratification": ["sdg_region", "wb_income_group", "fragile_context"],
+}
+
+# Reload and validate prediction data
+pred_all = pd.read_csv(PRED_COVARIATES_PATH)
+
+_pred_cols          = set(pred_all.columns)
+_missing_features   = [c for c in REQUIRED_PRED_COLS["features"]   if c not in _pred_cols]
+_missing_ids        = [c for c in REQUIRED_PRED_COLS["identifiers"] if c not in _pred_cols]
+_missing_strat      = [c for c in REQUIRED_PRED_COLS["stratification"] if c not in _pred_cols]
+
+if _missing_features:
+    raise ValueError(
+        f"Country-level / JMP covariates missing from prediction data.\n"
+        f"These must be joined in 05_prepare_prediction_data.qmd:\n"
+        f"  {_missing_features}"
+    )
+if _missing_ids:
+    raise ValueError(
+        f"Identifier columns missing from prediction data "
+        f"(needed for shapefile join / mapping):\n  {_missing_ids}"
+    )
+if _missing_strat:
+    raise ValueError(
+        f"Stratification columns missing from prediction data "
+        f"(needed for SDG region / income group / fragile context analysis):\n"
+        f"  {_missing_strat}"
+    )
+
+pred_lmic = pred_all[pred_all[INCOME_COL] != "H"].copy().reset_index(drop=True)
+
+print(f"\nPrediction data: {len(pred_all):,} total rows → "
+      f"{len(pred_lmic):,} LMIC rows "
+      f"({pred_lmic[COUNTRY_COL].nunique() if COUNTRY_COL in pred_lmic.columns else '?'} countries)")
+
+PRED_QUANTILES = [0.05, 0.50, 0.95]
+
+# Map each outcome to its final k value and feature list
+PRED_TASKS_DW = {
+    "smdw":            {"final_k": FINAL_K_SMDW,            "prefix": "smdw"},
+    "ecoli_free":      {"final_k": FINAL_K_ECOLI_FREE,      "prefix": "ecoli_free"},
+    "improved_source": {"final_k": FINAL_K_IMPROVED_SOURCE, "prefix": "improved_source"},
+    "availability":    {"final_k": FINAL_K_AVAILABILITY,    "prefix": "availability"},
+    "accessibility":   {"final_k": FINAL_K_ACCESSIBILITY,   "prefix": "accessibility"},
+}
+
+
+def predict_lmics_dw(outcome_name, cfg_task, cfg_pred, pred_df,
+                     quantiles=None):
+    """
+    Train TabPFN on the complete training dataset for one drinking water
+    outcome, then generate quantile predictions for every LMIC row in pred_df.
+
+    Parameters
+    ----------
+    outcome_name : string label for this outcome
+    cfg_task     : entry from TASKS dict (filename, exclude_countries)
+    cfg_pred     : entry from PRED_TASKS_DW dict (final_k, prefix)
+    pred_df      : LMIC prediction dataframe
+    quantiles    : list of quantile levels; defaults to [0.05, 0.50, 0.95]
+
+    Returns
+    -------
+    DataFrame with lead identifier/stratification/prediction columns first,
+    followed by all remaining covariate columns.
+    """
+    if quantiles is None:
+        quantiles = PRED_QUANTILES
+
+    final_k      = cfg_pred["final_k"]
+    feature_cols = feature_sets[f"k{final_k}"]
+
+    # ── Reload and prepare full training data ───────────────────────────
+    model_df, valid_train = prepare_model_data(
+        pd.read_csv(os.path.join(DATA_DIR, cfg_task["filename"])),
+        feature_cols=feature_cols,
+        exclude_countries=cfg_task["exclude_countries"],
+    )
+
+    # TabPFN handles NaN features natively — only drop rows with missing
+    # target or weight values.
+    X_tr = model_df[valid_train].to_numpy(dtype=float)
+    y_tr = model_df[TARGET_COL].to_numpy(dtype=float)
+    w_tr = model_df[WEIGHT_COL].to_numpy(dtype=float)
+
+    valid_mask       = ~(np.isnan(y_tr) | np.isnan(w_tr))
+    X_tr, y_tr, w_tr = X_tr[valid_mask], y_tr[valid_mask], w_tr[valid_mask]
+    w_norm           = w_tr / w_tr.mean()
+
+    print(f"  Training on {len(X_tr):,} rows "
+          f"({model_df[COUNTRY_COL].nunique()} countries) …")
+
+    model = TabPFNRegressor()
+    model, used_sw = fit_tabpfn(model, X_tr, y_tr, sample_weight=w_norm)
+    print(f"  Sample weights used: {used_sw}")
+
+    # ── Validate prediction features ────────────────────────────────────
+    valid_pred          = [f for f in valid_train if f in pred_df.columns]
+    missing             = set(valid_train) - set(valid_pred)
+    missing_country_lvl = [f for f in missing
+                           if f in COUNTRY_LEVEL_FEATURES + JMP_WATER_FEATURES]
+    missing_eo          = [f for f in missing
+                           if f not in COUNTRY_LEVEL_FEATURES + JMP_WATER_FEATURES]
+
+    if missing_country_lvl:
+        raise ValueError(
+            f"{outcome_name}: country-level / JMP covariates missing from "
+            f"prediction data. Join them in 05_prepare_prediction_data.qmd:\n"
+            f"  {missing_country_lvl}"
+        )
+    if missing_eo:
+        warnings.warn(
+            f"{outcome_name}: {len(missing_eo)} EO feature(s) absent from "
+            f"prediction data — excluded from model input: {missing_eo}"
+        )
+
+    # ── Predict ─────────────────────────────────────────────────────────
+    X_pred      = pred_df[valid_pred].to_numpy(dtype=float)
+    q_col_names = [f"q{int(q * 100):02d}" for q in quantiles]
+    out_df      = pred_df.copy().reset_index(drop=True)
+
+    try:
+        q_preds = model.predict(
+            X_pred, output_type="quantiles", quantiles=quantiles,
+        )
+        q_preds = np.asarray(q_preds)
+        if (q_preds.ndim == 2
+                and q_preds.shape[0] == len(quantiles)
+                and q_preds.shape[1] != len(quantiles)):
+            q_preds = q_preds.T
+    except (TypeError, AttributeError) as exc:
+        del model; clear_memory()
+        raise RuntimeError(
+            "TabPFN client does not support quantile output in this version."
+        ) from exc
+
+    for i, col in enumerate(q_col_names):
+        out_df[col] = q_preds[:, i]
+
+    del model; clear_memory()
+
+    # ── Rename and reorder columns ───────────────────────────────────────
+    out_df = out_df.rename(columns={
+        "q05": "pi90_lower",
+        "q50": "median",
+        "q95": "pi90_upper",
+    })
+    out_df.insert(0, "outcome", outcome_name)
+
+    _IDENTIFIERS    = ["GID_1", "NAME_0", "NAME_1"]
+    _STRATIFICATION = ["sdg_region", "wb_income_group", "fragile_context"]
+    _PREDICTIONS    = ["median", "pi90_lower", "pi90_upper"]
+
+    lead_cols  = (
+        ["outcome"]
+        + [c for c in _IDENTIFIERS    if c in out_df.columns]
+        + [c for c in _STRATIFICATION if c in out_df.columns]
+        + [c for c in _PREDICTIONS    if c in out_df.columns]
+    )
+    other_cols = [c for c in out_df.columns if c not in lead_cols]
+    return out_df[lead_cols + other_cols]
+
+
+print(f"\n{'='*60}")
+print("Section 19 — Final model: LMIC predictions (drinking water)")
+print(f"{'='*60}")
+
+for outcome_name, cfg_pred in PRED_TASKS_DW.items():
+    cfg_task = TASKS[outcome_name]
+    print(f"\n  Outcome: {outcome_name}  (k={cfg_pred['final_k']})")
+    try:
+        pred_out = predict_lmics_dw(
+            outcome_name=outcome_name,
+            cfg_task=cfg_task,
+            cfg_pred=cfg_pred,
+            pred_df=pred_lmic,
+        )
+        out_path = os.path.join(
+            PRED_OUTPUT_DIR,
+            f"{cfg_pred['prefix']}_tabpfn_lmic_predictions.csv",
+        )
+        pred_out.to_csv(out_path, index=False)
+        n_valid  = pred_out["median"].notna().sum()
+        pi_width = (pred_out["pi90_upper"] - pred_out["pi90_lower"]).mean()
+        print(f"  Saved: {out_path}  ({n_valid:,} / {len(pred_out):,} rows predicted)")
+        print(f"  Median range : [{pred_out['median'].min():.3f}, "
+              f"{pred_out['median'].max():.3f}]")
+        print(f"  Mean PI90 width: {pi_width:.3f}")
+    except RuntimeError as exc:
+        warnings.warn(f"  Prediction skipped for {outcome_name}: {exc}")

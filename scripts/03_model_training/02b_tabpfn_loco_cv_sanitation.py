@@ -1003,7 +1003,7 @@ def load_quantile_oof(prefix):
     if not os.path.exists(path):
         raise FileNotFoundError(f"Quantile OOF file not found: {path}")
     df = pd.read_csv(path)
-    df["error"]    = df["q50"] - df[TARGET_COL]    # median prediction minus truth
+    df["error"]    = df[TARGET_COL] - df["q50"]    # observed minus median prediction
     df["width_80"] = df["q90"] - df["q10"]          # width of 80% interval
     df["width_90"] = df["q95"] - df["q05"]          # width of 90% interval
     df["w_norm"]   = df[WEIGHT_COL] / df[WEIGHT_COL].mean()  # normalised weight for dot size
@@ -1058,14 +1058,14 @@ else:
                     lw=2, ls=ls, color="black", label=lbl, zorder=5)
 
         ax.axvline(0, color="grey", lw=1.0, ls=":", zorder=4)  # zero-error reference line
-        ax.set_xlabel("Prediction error  (q50 − observed)", fontsize=11)
+        ax.set_xlabel("Residual  (observed − q50)", fontsize=11)
         ax.set_ylabel("Prediction interval width", fontsize=11)
         ax.set_title(cfg["label"], fontsize=12, fontweight="bold")
         ax.legend(fontsize=8, framealpha=0.7)
         ax.spines[["top", "right"]].set_visible(False)
 
     fig.suptitle(
-        "TabPFN: interval width vs prediction error\n(point size ∝ PSU weight)",
+        "TabPFN: interval width vs residual (observed − q50)\n(point size ∝ PSU weight)",
         fontsize=13, y=1.02,
     )
     plt.tight_layout()
@@ -1198,8 +1198,8 @@ else:
         cfg      = OUTCOME_CFG[name]
         obs      = df[TARGET_COL].to_numpy(dtype=float)
         resid    = df["error"].to_numpy(dtype=float)
-        lo_resid = df["q05"].to_numpy(dtype=float) - obs  # lower interval as residual
-        hi_resid = df["q95"].to_numpy(dtype=float) - obs  # upper interval as residual
+        lo_resid = obs - df["q95"].to_numpy(dtype=float)  # lower residual bound (observed - upper PI)
+        hi_resid = obs - df["q05"].to_numpy(dtype=float)  # upper residual bound (observed - lower PI)
         w        = df[WEIGHT_COL].to_numpy(dtype=float)
         s        = np.clip(df["w_norm"].to_numpy() * 18, 2, 120)
 
@@ -1227,14 +1227,14 @@ else:
         ax.axhline(-0.10,  color="grey",  lw=0.5, ls=":",  alpha=0.5)
         ax.set_xlim(0, 1)
         ax.set_xlabel("Observed proportion", fontsize=11)
-        ax.set_ylabel("Residual (q50 − observed)", fontsize=11)
+        ax.set_ylabel("Residual (observed − q50)", fontsize=11)
         ax.set_title(cfg["label"], fontsize=12, fontweight="bold")
         ax.legend(fontsize=8, framealpha=0.8)
         ax.spines[["top", "right"]].set_visible(False)
 
     fig.suptitle(
         "Residuals vs observed  (point size ∝ PSU weight;\n"
-        "error bars = q05–q95 residuals)",
+        "error bars = observed − q95 to observed − q05)",
         fontsize=12, y=1.02,
     )
     plt.tight_layout()
@@ -1242,3 +1242,225 @@ else:
     plt.savefig(out_d, dpi=300, bbox_inches="tight")
     plt.close()
     print(f"Saved: {out_d}")
+
+
+# -------------------------------------------------------
+# 18. Final model predictions across LMICs
+#
+# Trains TabPFN on ALL training data (every country retained),
+# then predicts across LMIC locations in the prediction dataset
+# (same file used for cluster analysis and fold stratification).
+#
+# Outputs per outcome:
+#   - median        (q50)
+#   - pi90_lower    (q05)
+#   - pi90_upper    (q95)
+#
+# High-income countries (wb_income_group == "H") are excluded
+# from the prediction set; all income groups are retained in
+# training (consistent with earlier modelling stages).
+# -------------------------------------------------------
+
+PRED_OUTPUT_DIR = os.path.join(OUTPUT_DIR, "predictions")
+os.makedirs(PRED_OUTPUT_DIR, exist_ok=True)
+
+# Columns that must be present in the prediction data:
+#   - used as model features (country-level covariates)
+#   - needed for downstream analysis / mapping
+REQUIRED_PRED_COLS = {
+    "features":        COUNTRY_LEVEL_FEATURES,          # must be present for modelling
+    "identifiers":     ["GID_1", "NAME_0", "NAME_1"],   # shapefile join / mapping
+    "stratification":  ["sdg_region", "wb_income_group", "fragile_context"],
+}
+
+# Reload prediction data (same source as cluster analysis in 01_cluster_analysis.qmd)
+pred_all = pd.read_csv(PRED_COVARIATES_PATH)
+
+# Validate required columns
+_pred_cols = set(pred_all.columns)
+_missing_features = [c for c in REQUIRED_PRED_COLS["features"] if c not in _pred_cols]
+_missing_ids      = [c for c in REQUIRED_PRED_COLS["identifiers"] if c not in _pred_cols]
+_missing_strat    = [c for c in REQUIRED_PRED_COLS["stratification"] if c not in _pred_cols]
+
+if _missing_features:
+    raise ValueError(
+        f"Country-level covariates missing from prediction data.\n"
+        f"These are required model inputs and must be joined in "
+        f"05_prepare_prediction_data.qmd before predictions can run:\n"
+        f"  {_missing_features}"
+    )
+if _missing_ids:
+    raise ValueError(
+        f"Identifier columns missing from prediction data (needed for shapefile join / mapping):\n"
+        f"  {_missing_ids}\n"
+        f"Ensure GID_1 is set in the GEE sampling notebook and "
+        f"05_prepare_prediction_data.qmd exports it."
+    )
+if _missing_strat:
+    raise ValueError(
+        f"Stratification columns missing from prediction data "
+        f"(needed for SDG region / income group / fragile context analysis):\n"
+        f"  {_missing_strat}"
+    )
+
+pred_lmic = pred_all[pred_all[INCOME_COL] != "H"].copy().reset_index(drop=True)
+
+print(f"\nPrediction data: {len(pred_all):,} total rows → "
+      f"{len(pred_lmic):,} LMIC rows "
+      f"({pred_lmic[COUNTRY_COL].nunique() if COUNTRY_COL in pred_lmic.columns else '?'} countries)")
+
+PRED_QUANTILES = [0.05, 0.50, 0.95]
+
+
+def predict_lmics(model_df, feature_cols, outcome_name, pred_df,
+                  quantiles=None):
+    """
+    Train TabPFN on the complete training dataset (all countries) then
+    generate quantile predictions for every row in pred_df.
+
+    Parameters
+    ----------
+    model_df     : cleaned training dataframe (output of prepare_model_data)
+    feature_cols : list of feature column names to use
+    outcome_name : string label for this outcome
+    pred_df      : prediction-space dataframe (LMIC rows only)
+    quantiles    : list of quantile levels; defaults to [0.05, 0.50, 0.95]
+
+    Returns
+    -------
+    DataFrame with all columns from pred_df plus:
+        outcome, median, pi90_lower, pi90_upper
+    Rows where features are missing receive NaN predictions.
+    """
+    if quantiles is None:
+        quantiles = PRED_QUANTILES
+
+    # ── Training data ────────────────────────────────────────────────
+    valid_train = [f for f in feature_cols if f in model_df.columns]
+    # TabPFN handles NaN features natively in both training and prediction.
+    # Only drop rows where the target or weight is missing (those can't be used).
+    X_tr = model_df[valid_train].to_numpy(dtype=float)
+    y_tr = model_df[TARGET_COL].to_numpy(dtype=float)
+    w_tr = model_df[WEIGHT_COL].to_numpy(dtype=float)
+
+    valid_mask    = ~(np.isnan(y_tr) | np.isnan(w_tr))
+    X_tr, y_tr, w_tr = X_tr[valid_mask], y_tr[valid_mask], w_tr[valid_mask]
+    w_norm        = w_tr / w_tr.mean()
+
+    print(f"  Training on {len(X_tr):,} rows "
+          f"({model_df[COUNTRY_COL].nunique()} countries) …")
+
+    model = TabPFNRegressor()
+    model, used_sw = fit_tabpfn(model, X_tr, y_tr, sample_weight=w_norm)
+    print(f"  Sample weights used in training: {used_sw}")
+
+    # ── Prediction data ──────────────────────────────────────────────
+    # All training features must be present in the prediction data.
+    # Missing country-level covariates are a hard error (they are required
+    # model inputs that should have been joined in 05_prepare_prediction_data.qmd).
+    valid_pred          = [f for f in valid_train if f in pred_df.columns]
+    missing             = set(valid_train) - set(valid_pred)
+    missing_country_lvl = [f for f in missing if f in COUNTRY_LEVEL_FEATURES]
+    missing_eo          = [f for f in missing if f not in COUNTRY_LEVEL_FEATURES]
+
+    if missing_country_lvl:
+        raise ValueError(
+            f"{outcome_name}: country-level covariates are missing from the "
+            f"prediction data. These must be joined in 05_prepare_prediction_data.qmd:\n"
+            f"  {missing_country_lvl}"
+        )
+    if missing_eo:
+        warnings.warn(
+            f"{outcome_name}: {len(missing_eo)} EO feature(s) absent from prediction "
+            f"data — excluded from model input: {missing_eo}"
+        )
+
+    # TabPFN handles NaN features natively — pass all rows directly.
+    X_pred      = pred_df[valid_pred].to_numpy(dtype=float)
+    q_col_names = [f"q{int(q * 100):02d}" for q in quantiles]
+    out_df      = pred_df.copy().reset_index(drop=True)
+
+    try:
+        q_preds = model.predict(
+            X_pred,
+            output_type="quantiles",
+            quantiles=quantiles,
+        )
+        q_preds = np.asarray(q_preds)
+        # Ensure shape is (n_rows, n_quantiles) — transpose if needed
+        if (q_preds.ndim == 2
+                and q_preds.shape[0] == len(quantiles)
+                and q_preds.shape[1] != len(quantiles)):
+            q_preds = q_preds.T
+    except (TypeError, AttributeError) as exc:
+        del model; clear_memory()
+        raise RuntimeError(
+            "TabPFN client does not support quantile output in this version."
+        ) from exc
+
+    for i, col in enumerate(q_col_names):
+        out_df[col] = q_preds[:, i]
+
+    del model; clear_memory()
+
+    # Rename quantile columns to human-readable names
+    out_df = out_df.rename(columns={
+        "q05": "pi90_lower",
+        "q50": "median",
+        "q95": "pi90_upper",
+    })
+
+    # Add outcome label, then reorder: identifiers → stratification → predictions
+    # → remaining covariates.
+    out_df.insert(0, "outcome", outcome_name)
+
+    _IDENTIFIERS    = ["GID_1", "NAME_0", "NAME_1"]
+    _STRATIFICATION = ["sdg_region", "wb_income_group", "fragile_context"]
+    _PREDICTIONS    = ["median", "pi90_lower", "pi90_upper"]
+
+    lead_cols = (
+        ["outcome"]
+        + [c for c in _IDENTIFIERS    if c in out_df.columns]
+        + [c for c in _STRATIFICATION if c in out_df.columns]
+        + [c for c in _PREDICTIONS    if c in out_df.columns]
+    )
+    other_cols = [c for c in out_df.columns if c not in lead_cols]
+    return out_df[lead_cols + other_cols]
+
+
+PRED_TASKS = {
+    "basic_sanitation": {
+        "model_df": bs_model_df,
+        "features": bs_features,
+        "prefix":   "basic_sanitation",
+    },
+    "open_defecation": {
+        "model_df": od_model_df,
+        "features": od_features,
+        "prefix":   "open_defecation",
+    },
+}
+
+print(f"\n{'='*60}")
+print("Section 18 — Final model: LMIC predictions")
+print(f"{'='*60}")
+
+for outcome_name, cfg in PRED_TASKS.items():
+    print(f"\n  Outcome: {outcome_name}")
+    try:
+        pred_out  = predict_lmics(
+            cfg["model_df"], cfg["features"], outcome_name, pred_lmic
+        )
+        out_path  = os.path.join(
+            PRED_OUTPUT_DIR,
+            f"{cfg['prefix']}_tabpfn_lmic_predictions.csv",
+        )
+        pred_out.to_csv(out_path, index=False)
+        n_valid   = pred_out["median"].notna().sum()
+        pi_width  = (pred_out["pi90_upper"] - pred_out["pi90_lower"]).mean()
+        print(f"  Saved: {out_path}  ({n_valid:,} / {len(pred_out):,} rows predicted)")
+        print(f"  Median range : [{pred_out['median'].min():.3f}, "
+              f"{pred_out['median'].max():.3f}]")
+        print(f"  Mean PI90 width: {pi_width:.3f}")
+    except RuntimeError as exc:
+        warnings.warn(f"  Prediction skipped for {outcome_name}: {exc}")
