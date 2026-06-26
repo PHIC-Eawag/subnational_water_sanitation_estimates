@@ -1,0 +1,81 @@
+# Scripts Folder Overview
+
+Scripts for data preparation and analysis are numbered within each folder to indicate execution order. The pipeline produces admin1-level predictions of basic sanitation, open defecation and safely managed drinking water (SMDW) across LMICs.
+
+------------------------------------------------------------------------
+
+## `01_data_preparation/`
+
+Prepares all input data for modelling. Run these scripts in order before any modelling step.
+
+| Script | Description |
+|------------------------------------|------------------------------------|
+| `01a_sanitation_compile_and_label_MICS_data.R` | Reads raw MICS household survey files, applies indicator labelling for sanitation outcomes (basic sanitation, open defecation), and writes a cleaned survey extract |
+| `01b_sanitation_compile_and_label_DHS_data.R` | Same as 01a but for DHS surveys |
+| `01c_SMDW_compile_and_label_MICS_data.R` | Reads raw MICS household survey files and applies labelling for water service outcomes (SMDW subcomponents: E. coli, improved source, accessibility, availability) |
+| `01d_SMDW_compile_and_label_DHS_data.R` | Same as 01c but for DHS surveys |
+| `02_matching_survey_gadm_names.qmd` | Matches survey region names to GADM administrative names using exact and fuzzy matching. Produces match status tables for manual review of unresolved regions. Outputs go to `data/processed/crosswalk_review/final_match_status_boundaries` |
+| `03_sampling_geospatial_data.ipynb` | Prepares survey boundary shapefiles for Google Earth Engine (GEE) sampling. Selects the corresponding boundary per survey, merges and cleans geometries, and exports files to `data/processed/survey_boundaries/`. GEE sampling itself is run externally; results are exported to a Google Drive and then downloaded and stored on the switchdrive |
+| `04a_sanitation_preparing_training_dataframes.qmd` | Joins sanitation survey data to geospatial covariates using the finalised GADM crosswalk. Outputs one training CSV per sanitation indicator (`basic_sanitation`, `open_defecation`) to `data/processed/training_subcomponents/` |
+| `04b_SMDW_preparing_training_dataframes.qmd` | Same as 04a but for SMDW/water quality outcomes (`ecoli_free`, `ecoli`, `improved_source`, `accessibility`, `availability`, `smdw`) |
+| `05_prepare_prediction_data.qmd` | Builds the prediction covariate dataframe covering all LMIC admin1 units, using the same features as the training data. Output: `data/processed/prediction/prediction_covariates_2024.csv` |
+| `06_format_final_sanitation_dataframe.qmd` | Loads sanitation model prediction files from `outputs/model_performance/predictions/`, combines and formats them into the final deliverable table, and writes to the switchdrive |
+
+------------------------------------------------------------------------
+
+## `02_feature_selection/`
+
+Supports feature selection prior to modelling.
+
+| Script | Description |
+|------------------------------------|------------------------------------|
+| `01_cluster_analysis.qmd` | Hierarchical clustering of geospatial covariates using the `ClustOfVar` package. Groups highly correlated covariates to inform the final feature set used in modelling |
+
+------------------------------------------------------------------------
+
+## `03_model_training/`
+
+Trains and evaluates models for all outcomes. Two modelling approaches are implemented: Random Forest and TabPFN.
+
+| Script | Description |
+|------------------------------------|------------------------------------|
+| `01a_sanitation_modelling_RF.qmd` | Trains Random Forest models for sanitation outcomes (`basic_sanitation`, `open_defecation`) using leave-one-country-out cross-validation (LOCO-CV). Evaluates model performance on subsets of features using a regionally stratified cross validation. |
+| `01b_SMDW_modelling_RF.qmd` | Same as 01a but for SMDW/water quality outcomes. |
+| `02a_tabpfn_loco_cv_drinking_water.py` | Trains TabPFN models for all drinking water / SMDW outcomes (`smdw`, `ecoli_free`, `improved_source`, `accessibility`, `availability`). Runs feature set comparison, selects final feature count per outcome, then evaluates final models with LOCO-CV and generates admin1-level predictions with 90% prediction intervals. |
+| `02b_tabpfn_loco_cv_sanitation.py` | Same as 02a but for sanitation outcomes (`basic_sanitation`, `open_defecation`) |
+
+------------------------------------------------------------------------
+
+## `04_additional_analysis/`
+
+Post-modelling analysis, visualisation, and final output generation.
+
+| Script | Description |
+|------------------------------------|------------------------------------|
+| `01_map_sanitation_training_data.py` | Maps the spatial coverage of the training data, colouring survey regions by data source (DHS vs. MICS). Outputs figures for manuscript. |
+| `02_map_sanitation_predictions.py` | Produces maps of model predictions (median estimates) for basic sanitation and open defecation across all LMICs, in Equal Earth projection and uncertainty maps. |
+| `03_sanitation_descriptive_statistics.py` | Generates descriptive summaries of the training data, broken down by survey source and geography |
+| `04_plot_sanitation_predictions.py` | Plots the distribution of sanitation predictions across income groups, SDG regions, and fragile/conflict contexts, using boxplots and jittered points |
+| `05_plot_sanitation_uncertainty.py` | Same as 04 but plots prediction uncertainty (90% prediction interval width) rather than median estimates, to assess where model confidence is lower |
+| `06_calculating_SMDW.qmd` | Combines the SMDW model subcomponent predictions with geogenic groundwater risk estimates (arsenic and fluoride) to produce the final SMDW composite estimates at admin1 level. Writes the deliverable output to the switchdrive |
+
+------------------------------------------------------------------------
+
+## Running order
+
+For a full pipeline run, execute scripts in this order:
+
+```         
+01_data_preparation/  01a → 01b → 01c → 01d
+                      → 02  (+ manual review of unresolved regions)
+                      → 03  (+ external GEE sampling on switchdrive)
+                      → 04a → 04b  (+ manual review of unresolved name matches)
+                      → 05
+02_feature_selection/ → 01  (can be run any time after 05)
+03_model_training/    → 02a → 02b  (TabPFN; or 01a/01b for RF)
+04_additional_analysis/ → 06  (calculate SMDW deliverable)
+04_additional_analysis/ → 01–05  (visualisation; run after modelling)
+01_data_preparation/  → 06  (format sanitation deliverable)
+```
+
+Note: Steps 02 and 04 require manual intervention for unresolved region matches if new survey data is added. Step 03 before GEE sampling requires shapefiles to be manually uploaded as assets into GEE and sampled dataframes to be downloaded from the Google Drive.
