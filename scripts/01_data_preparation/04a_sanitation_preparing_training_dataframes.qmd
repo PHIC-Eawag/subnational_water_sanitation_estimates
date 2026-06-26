@@ -21,28 +21,23 @@ source(here::here("functions/diagnostics.R"))           # generalised diagnostic
 source(here::here("functions/country_join_helpers.R"))  # unified add_country_join_key_extended()
 source(here::here("configuration/covariate_cols.R"))           # loads `covariate_cols` vector
 source(here::here("configuration/manual_region_fixes.R"))      # loads `manual_fixes_sanitation` tibble
+source(here::here("configuration/paths.R"))
 ```
 
 ## Paths
 
-All raw data paths are defined here so they are easy to update when data
-moves.
+All raw data paths are defined here so they are easy to update when data moves.
 
 ```{r}
-PATH_TO_POP_SUMS_OTHER <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/pop_sums_training_other"
-FILE_NONPOP_OTHER      <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/other_surveys_covariates_nonpop_v3.csv"
 
-PATH_MICS_SANITATION   <- here::here("outputs/00_raw_household_data/df_sanitation_MICS_v1.csv")
-PATH_DHS_SANITATION    <- here::here("outputs/00_raw_household_data/df_sanitation_DHS.csv")
+PATH_MICS_SANITATION   <- here::here("data/processed/household_surveys/df_sanitation_MICS_v1.csv")
+PATH_DHS_SANITATION    <- here::here("data/processed/household_surveys/df_sanitation_DHS.csv")
 
-PATH_COUNTRY_KEY       <- here::here("data/country_name_key_WB.csv")
-PATH_GDP               <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/gdp_per_capita_2015.csv"
-PATH_EDUCATION         <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/secondary_education_years.csv"
-PATH_WASTEWATER        <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/Country_WWctr_Percentage.txt"
-PATH_TO_REGION_AREAS <- here::here("outputs/02_boundary_files/other_surveys/region_areas_km2.csv")
+PATH_COUNTRY_KEY       <- here::here("configuration/country_name_key_WB.csv")
+PATH_TO_REGION_AREAS <- here::here("data/processed/survey_boundaries/other_surveys/region_areas_km2.csv")
 
-OUTPUT_DIR             <- here::here("data/training_subcomponents") #writing training data into this file
-CROSSWALK_REVIEW_DIR   <- here::here("outputs/01_matching_regions/crosswalk_review")
+OUTPUT_DIR             <- here::here("data/processed/training_subcomponents") #writing training data into this file
+CROSSWALK_REVIEW_DIR   <- here::here("data/processed/crosswalk_review")
 
 ```
 
@@ -52,8 +47,7 @@ CROSSWALK_REVIEW_DIR   <- here::here("outputs/01_matching_regions/crosswalk_revi
 
 ## Household survey data
 
-MICS and DHS sanitation survey extracts are loaded and combined. Each
-row is one household observation with region and year identifiers.
+MICS and DHS sanitation survey extracts are loaded and combined. Each row is one household observation with region and year identifiers.
 
 ```{r}
 df_mics <- readr::read_csv(PATH_MICS_SANITATION, show_col_types = FALSE) %>%
@@ -81,13 +75,13 @@ df_wgi_lmics        <- readWGI_lmics()
 country_name_key_WB <- readr::read_csv(PATH_COUNTRY_KEY, show_col_types = FALSE)
 
 oghist_raw <- suppressMessages(readxl::read_excel(
-  "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/OGHIST_2026_03_10.xlsx",
+  PATH_OGHIST,
   sheet     = "Country Analytical History",
   col_names = FALSE
 ))
 
 jmp_raw <- suppressMessages(readxl::read_excel(
-  "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/JMP_2025_WLD.xlsx",
+  PATH_JMP,
   sheet     = "Sanitation",
   col_names = FALSE
 ))
@@ -99,8 +93,7 @@ jmp_raw <- suppressMessages(readxl::read_excel(
 
 ## Filter to study period (2015–2024)
 
-Surveys outside the modelling window are dropped. Surveys near the
-boundary are flagged before filtering so the exclusions are visible.
+Surveys outside the modelling window are dropped. Surveys near the boundary are flagged before filtering so the exclusions are visible.
 
 ```{r}
 df_hh_sanitation <- df_hh_sanitation %>%
@@ -137,8 +130,7 @@ surveys_removed <- df_hh_sanitation %>%
 
 ## Select most recent data source per country
 
-Where a country has both MICS and DHS data, we keep the source with the
-most recent survey year. Ties are broken by row count, then source name.
+Where a country has both MICS and DHS data, we keep the source with the most recent survey year. Ties are broken by row count, then source name.
 
 ```{r}
 country_source_summary <- df_hh_sanitation %>%
@@ -241,9 +233,7 @@ country == "Sao Tome and Principe" & HH7_region == "REGIÃO AUTÓNOMA DO PRÍNCI
 
 ## Build covariate table
 
-Population sums and non-population covariates are merged into a single
-region-level covariate table. The `covariate_cols` vector is defined in
-`config/covariate_cols.R`.
+Population sums and non-population covariates are merged into a single region-level covariate table. The `covariate_cols` vector is defined in `configuration/covariate_cols.R`.
 
 ```{r}
 pop_files_other <- list.files(
@@ -282,8 +272,7 @@ cat("Regions missing area_km2:", sum(is.na(df_training_covariates_sanitation$are
 
 ## Check for duplicate covariate keys
 
-Duplicate country–region–year keys would cause row inflation on joining
-and must be resolved before proceeding.
+Duplicate country–region–year keys would cause row inflation on joining and must be resolved before proceeding.
 
 ```{r}
 duplicate_covariate_keys <- check_duplicate_covariate_keys(df_training_covariates_sanitation)
@@ -294,9 +283,7 @@ duplicate_covariate_keys
 
 ## Restrict to most recent survey year per country
 
-A single data source may contain multiple survey rounds. We keep only
-the most recent year per country before building outcomes, so that the
-year lookup and aggregation use only the retained survey.
+A single data source may contain multiple survey rounds. We keep only the most recent year per country before building outcomes, so that the year lookup and aggregation use only the retained survey.
 
 ```{r}
 keep_latest_survey_year_hh <- function(df, max_survey_duration = 2) {
@@ -312,11 +299,9 @@ df_hh_sanitation_latest <- keep_latest_survey_year_hh(df_hh_sanitation)
 
 ## Build regional outcomes
 
-Household-level responses are aggregated to region–year proportions for
-each outcome. Outcome definitions:
+Household-level responses are aggregated to region–year proportions for each outcome. Outcome definitions:
 
--   **Basic sanitation**: improved facility (`WS11 == 2`) AND not shared
-    (`WS15 == 0`)
+-   **Basic sanitation**: improved facility (`WS11 == 2`) AND not shared (`WS15 == 0`)
 -   **Open defecation**: no facility / bush / field (`WS11 == 0`)
 
 ```{r}
@@ -326,8 +311,7 @@ open_defecation_outcome  <- make_open_defecation_regional_outcome(df_hh_sanitati
 
 ## Add PSU weights
 
-Survey-design weights based on the number of primary sampling units are
-attached to each region–year row.
+Survey-design weights based on the number of primary sampling units are attached to each region–year row.
 
 ```{r}
 sanitation_year_lookup <- make_year_lookup_from_raw_household_data(
@@ -371,9 +355,7 @@ dplyr::bind_rows(
 
 ## Filter covariates to outcome country–years
 
-The full covariate table is subset to only the country–year combinations
-present in each outcome, using a country name crosswalk to harmonise
-naming.
+The full covariate table is subset to only the country–year combinations present in each outcome, using a country name crosswalk to harmonise naming.
 
 ```{r}
 df_covariates_basic_sanitation <- filter_covariates_to_outcome_years(
@@ -393,9 +375,7 @@ check_duplicate_covariate_join_keys(df_covariates_open_defecation)
 
 ## Diagnose unmatched country–years
 
-Countries present in the outcome but absent from filtered covariates are
-flagged here. Common causes: country name mismatch or missing covariate
-data.
+Countries present in the outcome but absent from filtered covariates are flagged here. Common causes: country name mismatch or missing covariate data.
 
 ```{r}
 country_year_filtering_issues <- dplyr::bind_rows(
@@ -419,9 +399,7 @@ print(country_year_filtering_issues)
 
 ## Build region crosswalks
 
-Survey region names are matched to covariate region names using fuzzy
-string matching. Rows that cannot be matched automatically are flagged
-for manual review.
+Survey region names are matched to covariate region names using fuzzy string matching. Rows that cannot be matched automatically are flagged for manual review.
 
 ```{r}
 crosswalk_basic_sanitation <- build_crosswalk_for_one_outcome(
@@ -444,9 +422,7 @@ crosswalk_open_defecation$regions_to_review
 
 ## Apply manual region name fixes
 
-Known mismatches are resolved via the lookup table in
-`config/manual_region_fixes.R`. Add new entries there (not here) when
-new surveys are incorporated.
+Known mismatches are resolved via the lookup table in `config/manual_region_fixes.R`. Add new entries there (not here) when new surveys are incorporated.
 
 ```{r}
 basic_sanitation_crosswalk_final <- apply_manual_fixes_for_one_outcome(
@@ -496,9 +472,7 @@ open_defecation_training_output$missing_covariates
 
 ## GDP per capita and secondary education
 
-Country-year level economic and education indicators from the World Bank
-are joined by standardised country name. (Downloaded on 27 May 2026 from
-<https://databank.worldbank.org/source/world-development-indicators/Type/TABLE/preview/on>)
+Country-year level economic and education indicators from the World Bank are joined by standardised country name. (Downloaded on 27 May 2026 from <https://databank.worldbank.org/source/world-development-indicators/Type/TABLE/preview/on>)
 
 ```{r}
 gdp_clean <- readr::read_csv(PATH_GDP, show_col_types = FALSE) %>%
@@ -558,10 +532,7 @@ check_missing_covariates(open_defecation_training, "open_defecation",
 
 ## Wastewater treatment
 
-Country-level wastewater collection, treatment, and reuse percentages.
-These are static (no year dimension) and joined by country name only
-(Downloaded on 21 May 2026 from
-<https://doi.pangaea.de/10.1594/PANGAEA.918731>)
+Country-level wastewater collection, treatment, and reuse percentages. These are static (no year dimension) and joined by country name only (Downloaded on 21 May 2026 from <https://doi.pangaea.de/10.1594/PANGAEA.918731>)
 
 ```{r}
 ww_country_clean <- readr::read_tsv(PATH_WASTEWATER, show_col_types = FALSE) %>%
@@ -622,9 +593,7 @@ check_missing_covariates(open_defecation_training, "open_defecation",
 
 ## WGI governance indicators
 
-Six World Governance Indicators are joined by country and year.
-(Downloaded on 27 May 2026 from
-<https://databank.worldbank.org/source/worldwide-governance-indicators/Type/TABLE/preview/on>)
+Six World Governance Indicators are joined by country and year. (Downloaded on 27 May 2026 from <https://databank.worldbank.org/source/worldwide-governance-indicators/Type/TABLE/preview/on>)
 
 ```{r}
 indicator_map <- c(
@@ -677,9 +646,7 @@ check_missing_covariates(open_defecation_training,  "open_defecation",  unname(i
 
 ## World Bank Income Groups
 
-Here we use the file OGHIST_2026_03_10.xlsx which was downloaded from
-the World Bank website on 13 June 2026
-(<https://datahelpdesk.worldbank.org/knowledgebase/articles/906519-world-bank-country-and-lending-groups>)
+Here we use the file OGHIST_2026_03_10.xlsx which was downloaded from the World Bank website on 13 June 2026 (<https://datahelpdesk.worldbank.org/knowledgebase/articles/906519-world-bank-country-and-lending-groups>)
 
 ```{r}
 # ============================================================
@@ -755,13 +722,7 @@ print(missing_income_group)
 
 ## JMP Sanitation Indicators
 
-Extracts country-level sanitation estimates (at least basic, open
-defecation), regional classifications (ISO3, SDG region, fragile
-context) from the JMP 2025 global dataset (downloaded on 13 June 2026
-from <https://washdata.org/data/downloads>) and joins them to the
-training data by country and year. Time-invariant fields (ISO3, SDG
-region) are carried forward from any available survey year to fill gaps
-where a specific year is missing.
+Extracts country-level sanitation estimates (at least basic, open defecation), regional classifications (ISO3, SDG region, fragile context) from the JMP 2025 global dataset (downloaded on 13 June 2026 from <https://washdata.org/data/downloads>) and joins them to the training data by country and year. Time-invariant fields (ISO3, SDG region) are carried forward from any available survey year to fill gaps where a specific year is missing.
 
 ```{r}
 # ============================================================
@@ -922,14 +883,10 @@ dplyr::bind_rows(
 
 # 8. Survey data availability overview
 
-Bar charts showing the number of surveys (distinct country × year
-combinations) included in the training data, broken down by SDG region
-and World Bank income group. Three survey groups are compared:
+Bar charts showing the number of surveys (distinct country × year combinations) included in the training data, broken down by SDG region and World Bank income group. Three survey groups are compared:
 
-1.  **All MICS surveys** – the full MICS extract before source
-    selection.
-2.  **Basic sanitation modelling surveys** – the final
-    `basic_sanitation_training` dataset, excluding Indonesia.
+1.  **All MICS surveys** – the full MICS extract before source selection.
+2.  **Basic sanitation modelling surveys** – the final `basic_sanitation_training` dataset, excluding Indonesia.
 
 ## Inspect available columns
 

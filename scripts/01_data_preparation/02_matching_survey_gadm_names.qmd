@@ -15,6 +15,7 @@ library(tidyr)
 library(stringr)
 library(stringi)
 library(fuzzyjoin)
+source(here::here("configuration/paths.R"))   # loads switchdrive paths
 ```
 
 ### 1. Standardise names
@@ -38,10 +39,10 @@ clean_key <- function(x) {
 
 ### 2. Prepare survey data
 
-This chunk reads the survey file, keeps the region and country variables needed for matching, standardises names, and creates cleaned matching keys.
+This chunk reads the survey file, keeps the region and country variables needed for matching, standardises names, and creates cleaned matching keys. Substitute the file path and rename the final export of outputs to run matching for different files.
 
 ```{r}
-survey_raw <- fread('/Users/esthergreenwood/switchdrive/Eawag/WorldBankProject/HH_surveys/HH_survey_data/df_SMDW_oldMICS.csv', encoding = "UTF-8") %>%
+survey_raw <- fread(PATH_SURVEY_SMDW_OLD_MICS, encoding = "UTF-8") %>%
   transmute(
     region_survey  = HH7_region,
     country_survey = country
@@ -95,7 +96,7 @@ survey <- survey_raw %>%
 Reshapes administrative names from levels 1 to 4 into long format so they can be matched consistently.
 
 ```{r}
-GADM_regions <- read.csv("/Users/esthergreenwood/switchdrive/Eawag/WorldBankProject/regions/all_regions_GADM.csv", encoding = "UTF-8")
+GADM_regions <- read.csv(PATH_GADM_REGIONS, encoding = "UTF-8")
 
 gadm_long <- GADM_regions %>%
   select(NAME_0, NAME_1, NAME_2, NAME_3, NAME_4) %>%
@@ -271,7 +272,7 @@ unmatched_regions
 
 ### 14. Export of outputs
 
-The outputs can be written to file for later review.
+The outputs can be written to file for later review. Adapt name of file as appropriates.
 
 ```{r}
 write.csv(final_match_status, "final_match_status_oldMICS_SMDW.csv", row.names = FALSE, fileEncoding = "UTF-8")

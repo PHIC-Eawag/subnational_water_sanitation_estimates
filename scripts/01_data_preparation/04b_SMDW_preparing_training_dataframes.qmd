@@ -36,6 +36,7 @@ source(here::here("functions/diagnostics.R"))           # generalised diagnostic
 source(here::here("functions/country_join_helpers.R"))  # unified add_country_join_key_extended()
 source(here::here("configuration/covariate_cols.R"))           # loads `covariate_cols` vector
 source(here::here("configuration/manual_region_fixes.R"))      # loads `manual_fixes_smdw`, `manual_fixes_smdw_ecoli`
+source(here::here("configuration/paths.R"))                         # loads switchdrive paths
 ```
 
 ## Paths
@@ -45,30 +46,23 @@ moves.
 
 ```{r}
 # ── Geospatial covariate paths ──────────────────────────────────────────────
-PATH_TO_POP_SUMS_WQ    <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/pop_sums_training_water_quality"
-PATH_TO_POP_SUMS_OTHER <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/pop_sums_training_other"
-FILE_NONPOP_WQ         <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/water_quality_covariates_nonpop_v4.csv"
-FILE_NONPOP_OTHER      <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/other_surveys_covariates_nonpop_v3.csv"
 
 # ── Household survey data ────────────────────────────────────────────────────
-PATH_MICS_SMDW_WQ_OLD <- here::here("outputs/00_raw_household_data/df.SMDW_wq_MICS_old.csv")
-PATH_MICS_SMDW_WQ_NEW <- here::here("outputs/00_raw_household_data/df.SMDW_wq_MICS_new.csv")
-PATH_MICS_SMDW_OTHER  <- here::here("outputs/00_raw_household_data/df.SMDW_other_MICS.csv")
-PATH_DHS_SMDW_WQ      <- here::here("outputs/00_raw_household_data/df.SMDW_wq_DHS.csv")
-PATH_DHS_SMDW_OTHER   <- here::here("outputs/00_raw_household_data/df.SMDW_other_DHS.csv")
+PATH_MICS_SMDW_WQ_OLD <- here::here("data/processed/household_surveys/df.SMDW_wq_MICS_old.csv")
+PATH_MICS_SMDW_WQ_NEW <- here::here("data/processed/household_surveys/df.SMDW_wq_MICS_new.csv")
+PATH_MICS_SMDW_OTHER  <- here::here("data/processed/household_surveys/df.SMDW_other_MICS.csv")
+PATH_DHS_SMDW_WQ      <- here::here("data/processed/household_surveys/df.SMDW_wq_DHS.csv")
+PATH_DHS_SMDW_OTHER   <- here::here("data/processed/household_surveys/df.SMDW_other_DHS.csv")
 
 # ── Lookup tables ────────────────────────────────────────────────────────────
-PATH_COUNTRY_KEY  <- here::here("data/country_name_key_WB.csv")
-PATH_GDP          <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/gdp_per_capita_2015.csv"
-PATH_EDUCATION    <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/secondary_education_years.csv"
-PATH_WASTEWATER   <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/Country_WWctr_Percentage.txt"
+PATH_COUNTRY_KEY  <- here::here("configuration/country_name_key_WB.csv")
 
-PATH_TO_REGION_AREAS_WQ    <- here::here("outputs/03_sampled_features/water_quality_region_areas_km2.csv")
-PATH_TO_REGION_AREAS_OTHER <- here::here("outputs/03_sampled_features/other_surveys_region_areas_km2.csv")
+PATH_TO_REGION_AREAS_WQ    <- here::here("data/processed/sampled_features/water_quality_region_areas_km2.csv")
+PATH_TO_REGION_AREAS_OTHER <- here::here("data/processed/sampled_features/other_surveys_region_areas_km2.csv")
 
 # ── Outputs ──────────────────────────────────────────────────────────────────
-OUTPUT_DIR           <- here::here("data/training_subcomponents")
-CROSSWALK_REVIEW_DIR <- here::here("outputs/01_matching_regions/crosswalk_review")
+OUTPUT_DIR           <- here::here("data/processed/training_subcomponents")
+CROSSWALK_REVIEW_DIR <- here::here("data/processed/crosswalk_review")
 ```
 
 ------------------------------------------------------------------------
@@ -140,7 +134,7 @@ df_wgi_lmics        <- readWGI_lmics()
 country_name_key_WB <- readr::read_csv(PATH_COUNTRY_KEY, show_col_types = FALSE)
 
 oghist_raw <- suppressMessages(readxl::read_excel(
-  "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/OGHIST_2026_03_10.xlsx",
+  PATH_OGHIST,
   sheet     = "Country Analytical History",
   col_names = FALSE
 ))
@@ -150,13 +144,13 @@ oghist_raw <- suppressMessages(readxl::read_excel(
 #   sanitation estimates (used as contextual covariates for all outcomes).
 # "Water" provides drinking water estimates specific to the SMDW outcomes.
 jmp_raw_sanitation <- suppressMessages(readxl::read_excel(
-  "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/JMP_2025_WLD.xlsx",
+  PATH_JMP,
   sheet     = "Sanitation",
   col_names = FALSE
 ))
 
 jmp_raw_water <- suppressMessages(readxl::read_excel(
-  "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/JMP_2025_WLD.xlsx",
+  PATH_JMP,
   sheet     = "Water",
   col_names = FALSE
 ))

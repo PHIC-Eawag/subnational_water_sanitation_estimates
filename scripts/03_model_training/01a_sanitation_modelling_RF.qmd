@@ -39,10 +39,10 @@ library(forcats)
 ## Paths
 
 ```{r}
-TRAINING_DIR          <- here::here("data/training_subcomponents")
-CLUSTER_OUTPUT_DIR    <- here::here("outputs/03b_cluster_analysis/sanitation")
-PRED_COVARIATES_PATH  <- here::here("data/prediction/prediction_covariates_2024.csv")
-OUTPUT_DIR            <- here::here("outputs/04_model_performance")
+TRAINING_DIR          <- here::here("data/processed/training_subcomponents")
+CLUSTER_OUTPUT_DIR    <- here::here("outputs/cluster_analysis/sanitation")
+PRED_COVARIATES_PATH  <- here::here("data/processed/prediction/prediction_covariates_2024.csv")
+OUTPUT_DIR            <- here::here("outputs/model_performance")
 FIGURE_DIR            <- file.path(OUTPUT_DIR, "figures")
 dir.create(FIGURE_DIR, recursive = TRUE, showWarnings = FALSE)
 ```

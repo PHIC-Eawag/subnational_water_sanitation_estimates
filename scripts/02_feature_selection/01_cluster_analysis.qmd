@@ -16,9 +16,9 @@ library(ClustOfVar)
 ## Paths
 
 ```{r}
-PATH_PRED_COVARIATES   <- here::here("data/prediction/prediction_covariates_2024.csv")
-OUTPUT_DIR_SMDW        <- here::here("outputs/03b_cluster_analysis/smdw")
-OUTPUT_DIR_SANITATION  <- here::here("outputs/03b_cluster_analysis/sanitation")
+PATH_PRED_COVARIATES   <- here::here("data/processed/prediction/prediction_covariates_2024.csv")
+OUTPUT_DIR_SMDW        <- here::here("outputs/cluster_analysis/smdw")
+OUTPUT_DIR_SANITATION  <- here::here("outputs/cluster_analysis/sanitation")
 
 dir.create(OUTPUT_DIR_SMDW,       recursive = TRUE, showWarnings = FALSE)
 dir.create(OUTPUT_DIR_SANITATION,  recursive = TRUE, showWarnings = FALSE)

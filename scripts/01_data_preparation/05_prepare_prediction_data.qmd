@@ -17,6 +17,7 @@ source(here::here("functions/join_and_structure_dataframes.R"))
 source(here::here("functions/diagnostics.R"))
 source(here::here("functions/country_join_helpers.R"))
 source(here::here("configuration/covariate_cols.R"))   # loads `covariate_cols` vector
+source(here::here("configuration/paths.R"))             # loads switchdrive paths
 ```
 
 ## Prediction year
@@ -31,22 +32,16 @@ PREDICTION_YEAR <- 2024L
 
 ```{r}
 # ── GEE-sampled covariates ───────────────────────────────────────────────────
-FILE_NONPOP_PRED     <- here::here("outputs/03_sampled_features/nonpop_prediction_v2.csv")
-PATH_TO_POP_SUMS_PRED <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/pop_sums_prediction"
+FILE_NONPOP_PRED     <- here::here("data/processed/sampled_features/nonpop_prediction_v2.csv")
 
 # ── Country-level covariates ─────────────────────────────────────────────────
-PATH_COUNTRY_KEY  <- here::here("data/country_name_key_WB.csv")
-PATH_GDP          <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/gdp_per_capita_2015.csv"
-PATH_EDUCATION    <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/secondary_education_years.csv"
-PATH_WASTEWATER   <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/Country_WWctr_Percentage.txt"
-PATH_OGHIST       <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/OGHIST_2026_03_10.xlsx"
-PATH_JMP          <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/JMP_2025_WLD.xlsx"
+PATH_COUNTRY_KEY  <- here::here("configuration/country_name_key_WB.csv")
 
 # ── Region areas ─────────────────────────────────────────────────────────────
-PATH_TO_REGION_AREAS_PRED <- here::here("outputs/03_sampled_features/gadm_lmic_region_areas_km2.csv")
+PATH_TO_REGION_AREAS_PRED <- here::here("data/processed/sampled_features/gadm_lmic_region_areas_km2.csv")
 
 # ── Output ───────────────────────────────────────────────────────────────────
-OUTPUT_DIR <- here::here("data/prediction")
+OUTPUT_DIR <- here::here("data/processed/prediction")
 ```
 
 ------------------------------------------------------------------------

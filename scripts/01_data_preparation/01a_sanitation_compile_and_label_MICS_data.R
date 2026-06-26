@@ -285,7 +285,7 @@ print(missing_by_country, n = Inf, width = Inf)
 
 
 write.csv(df.MICS.sanitation,
-          here::here("outputs/00_raw_household_data/df_sanitation_MICS_v1.csv"),
+          here::here("data/processed/household_surveys/df_sanitation_MICS_v1.csv"),
           fileEncoding = "UTF-8", row.names = FALSE)
 
 # =============================================================================

@@ -34,10 +34,10 @@ tabpfn_client.init()  # no-op after first login on this machine
 # 1.  Paths
 # -------------------------------------------------------
 
-DATA_DIR             = "data/training_subcomponents"
-CLUSTER_DIR          = "outputs/03b_cluster_analysis/sanitation"
-PRED_COVARIATES_PATH = "data/prediction/prediction_covariates_2024.csv"
-OUTPUT_DIR           = "outputs/04_model_performance"
+DATA_DIR             = "data/processed/training_subcomponents"
+CLUSTER_DIR          = "outputs/cluster_analysis/sanitation"
+PRED_COVARIATES_PATH = "data/processed/prediction/prediction_covariates_2024.csv"
+OUTPUT_DIR           = "outputs/model_performance"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 

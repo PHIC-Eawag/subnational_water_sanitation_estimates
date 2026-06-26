@@ -10,7 +10,7 @@ source(here::here("functions/extract_label_dhs_variables.R"))
 source(here::here("configuration/paths.R"))
 
 country_name_key_WB <- readr::read_csv(
-  here::here("data/country_name_key_WB.csv"),
+  here::here("configuration/country_name_key_WB.csv"),
   show_col_types = FALSE
 )
 
@@ -144,7 +144,7 @@ df.DHS.SMDW_Labeled <- df.DHS.SMDW_Labeled %>%
 
 write.csv(
   df.DHS.SMDW_Labeled,
-  here::here("outputs/00_raw_household_data/df.SMDW_wq_DHS.csv"),
+  here::here("data/processed/household_surveys/df.SMDW_wq_DHS.csv"),
   fileEncoding = "UTF-8",
   row.names = FALSE
 )
@@ -618,7 +618,7 @@ print(countries_to_check_with_raw_column_status, n=26)
 
 write.csv(
   df.DHS.other_Labeled,
-  here::here("outputs/00_raw_household_data/df.SMDW_other_DHS.csv"),
+  here::here("data/processed/household_surveys/df.SMDW_other_DHS.csv"),
   fileEncoding = "UTF-8",
   row.names = FALSE
 )

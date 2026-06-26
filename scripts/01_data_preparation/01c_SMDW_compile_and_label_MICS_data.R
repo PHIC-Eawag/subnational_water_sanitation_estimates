@@ -380,7 +380,7 @@ df.MICS.SMDW_old_Labeled <- relabelingSurveyQuestionResponses(
   df.MICS.SMDW_old, WS1, WS2, WS3, WS4, WS7, WS8, WQ27
 )
 
-write.csv(df.MICS.SMDW_old_Labeled, here::here("outputs/00_raw_household_data/df.SMDW_wq_MICS_old.csv"),
+write.csv(df.MICS.SMDW_old_Labeled, here::here("data/processed/household_surveys/df.SMDW_wq_MICS_old.csv"),
           fileEncoding = "UTF-8", row.names = FALSE)
 
 df.MICS.SMDW_new <- rbind(
@@ -408,7 +408,7 @@ df.MICS.SMDW_new_Labeled <- relabelingSurveyQuestionResponses(
   df.MICS.SMDW_new, WS1, WS2, WS3, WS4, WS7, WS8, WQ27
 )
 
-write.csv(df.MICS.SMDW_new_Labeled, here::here("outputs/00_raw_household_data/df.SMDW_wq_MICS_new.csv"),
+write.csv(df.MICS.SMDW_new_Labeled, here::here("data/processed/household_surveys/df.SMDW_wq_MICS_new.csv"),
           fileEncoding = "UTF-8", row.names = FALSE)
 
 
@@ -481,7 +481,7 @@ df.MICS.other_Labeled <- relabelingSurveyQuestionResponses(
   df.MICS.other, WS1, WS2, WS3, WS4, WS7, WS8, WQ27
 )
 
-write.csv(df.MICS.other_Labeled, here::here("outputs/00_raw_household_data/df.SMDW_other_MICS.csv"),
+write.csv(df.MICS.other_Labeled, here::here("data/processed/household_surveys/df.SMDW_other_MICS.csv"),
           fileEncoding = "UTF-8", row.names = FALSE)
 
 

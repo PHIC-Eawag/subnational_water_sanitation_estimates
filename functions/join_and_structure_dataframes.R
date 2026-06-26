@@ -59,7 +59,7 @@ readOverviewWaterQualityData <- function(){
 }
 
 readWGI_lmics <- function(){
-  df.MICS_HH <- read.csv("~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/worldwide_governance_indicators_prediction.csv")
+  df.MICS_HH <- read.csv(PATH_WGI)   # PATH_WGI defined in configuration/paths.R
   return(df.MICS_HH)
 }
 

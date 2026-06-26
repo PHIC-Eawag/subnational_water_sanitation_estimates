@@ -23,7 +23,7 @@ source(here::here("configuration/paths.R"))
 
 
 country_name_key_WB <- readr::read_csv(
-  here::here("data/country_name_key_WB.csv"),
+  here::here("configuration/country_name_key_WB.csv"),
   show_col_types = FALSE
 )
 
@@ -265,5 +265,5 @@ if (nrow(all_na_check) > 0) {
 # ============================================================
 readr::write_csv(
   df.DHS.sanitation_Labeled,
-  here::here("outputs/00_raw_household_data/df_sanitation_DHS.csv")
+  here::here("data/processed/household_surveys/df_sanitation_DHS.csv")
 )
