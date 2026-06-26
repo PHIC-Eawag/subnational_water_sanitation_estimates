@@ -1,0 +1,144 @@
+---
+title: "Preparing the Final Sanitation Estimates Dataframe"
+author: "Esther Greenwood"
+date: today
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    code-fold: true
+    theme: flatly
+    self-contained: true
+execute:
+  warning: false
+  message: false
+---
+
+## Overview
+
+This script prepares the final sanitation estimates dataset submitted as a project deliverable. It combines two admin1-level prediction files from the TabPFN model into a single joined dataframe:
+
+- **Basic sanitation** — proportion of the population using at least basic sanitation services
+- **Open defecation** — proportion of the population practising open defecation
+
+Both outcomes are predicted at the first-level administrative (admin1) district level across up to 130 low- and middle-income countries (LMICs). For each outcome the model outputs a median prediction and a 90% prediction interval.
+
+The joined file is saved directly to the project deliverables folder.
+
+```{r}
+#| label: setup
+library(tidyverse)
+source(here::here("configuration/paths.R"))   # loads switchdrive paths
+```
+
+---
+
+## Step 1: Load the Sanitation Prediction Files
+
+We load the two sanitation prediction CSVs and select the same set of columns used across all deliverable datasets: the district identifiers, contextual grouping variables, and the three prediction columns (median, lower and upper bounds of the 90% prediction interval). The prediction columns are renamed with a suffix identifying the outcome.
+
+```{r}
+#| label: load-predictions
+
+pred_dir <- here::here("outputs/model_performance/predictions")
+
+id_cols   <- c("GID_0", "GID_1", "NAME_0", "NAME_1",
+               "sdg_region", "wb_income_group", "fragile_context")
+pred_cols <- c("median", "pi90_lower", "pi90_upper")
+
+read_predictions <- function(filename, suffix) {
+  read_csv(file.path(pred_dir, filename), show_col_types = FALSE) |>
+    select(all_of(c(id_cols, pred_cols))) |>
+    rename_with(~ paste0(., "_", suffix), all_of(pred_cols))
+}
+
+basic_sanitation <- read_predictions("basic_sanitation_tabpfn_lmic_predictions.csv", "basic_sanitation")
+open_defecation  <- read_predictions("open_defecation_tabpfn_lmic_predictions.csv",  "open_defecation")
+
+cat("Basic sanitation rows:", nrow(basic_sanitation),
+    "| Countries:", n_distinct(basic_sanitation$GID_0), "\n")
+cat("Open defecation rows:", nrow(open_defecation),
+    "| Countries:", n_distinct(open_defecation$GID_0), "\n")
+```
+
+---
+
+## Step 2: Join into a Single Dataframe
+
+The two files share the same set of admin1 districts. We join on `GID_0` and `GID_1`, retaining the district identifier and contextual columns from the basic sanitation file as the reference.
+
+```{r}
+#| label: join
+
+sanitation <- basic_sanitation |>
+  left_join(
+    open_defecation |> select(GID_0, GID_1,
+                               median_open_defecation,
+                               pi90_lower_open_defecation,
+                               pi90_upper_open_defecation),
+    by = c("GID_0", "GID_1")
+  )
+
+cat("Joined dataset rows:", nrow(sanitation),
+    "| Countries:", n_distinct(sanitation$GID_0), "\n")
+cat("Districts missing open defecation predictions:",
+    sum(is.na(sanitation$median_open_defecation)), "\n")
+
+glimpse(sanitation)
+```
+
+---
+
+## Step 3: Diagnostics
+
+```{r}
+#| label: diagnostics
+
+sanitation |>
+  select(median_basic_sanitation, median_open_defecation) |>
+  summary()
+```
+
+```{r}
+#| label: plot
+
+sanitation |>
+  pivot_longer(
+    cols = c(median_basic_sanitation, median_open_defecation),
+    names_to  = "indicator",
+    values_to = "median"
+  ) |>
+  mutate(indicator = recode(indicator,
+    median_basic_sanitation = "Basic sanitation",
+    median_open_defecation  = "Open defecation"
+  )) |>
+  ggplot(aes(x = median, fill = wb_income_group)) +
+  geom_histogram(bins = 50, colour = "white", linewidth = 0.2) +
+  facet_wrap(~ indicator, scales = "free_x") +
+  scale_x_continuous(labels = scales::percent_format()) +
+  labs(
+    title = "Distribution of Sanitation Estimates by Admin1 District",
+    subtitle = "Across up to 130 LMICs",
+    x    = "Predicted proportion",
+    y    = "Number of districts",
+    fill = "World Bank income group"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(legend.position = "bottom")
+```
+
+---
+
+## Step 4: Export
+
+```{r}
+#| label: export
+
+out_file <- PATH_OUT_SANITATION
+
+sanitation |>
+  write_csv(out_file)
+
+cat("Results saved to:\n", out_file, "\n")
+cat("Rows exported:", nrow(sanitation), "\n")
+```

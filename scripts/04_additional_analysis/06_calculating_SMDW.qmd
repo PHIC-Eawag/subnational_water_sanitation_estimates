@@ -1,0 +1,364 @@
+---
+title: "Calculating the Proportion of Population Using Safely Managed Drinking Water (SMDW)"
+author: "Esther Greenwood"
+date: today
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    code-fold: true
+    theme: flatly
+    self-contained: true
+execute:
+  warning: false
+  message: false
+---
+
+## Overview
+
+This script calculates the proportion of the population using **Safely Managed Drinking Water (SMDW)** across 130 low- and middle-income countries (LMICs), at the first-level administrative (admin1) district level.
+
+SMDW is defined as access to an improved drinking water source that is:
+
+1. **Improved** — from a protected or treated source
+2. **Accessible** — located on premises
+3. **Available** — reliably available when needed
+4. **E. coli free** — free from faecal contamination
+
+In addition, drinking water must not exceed safe thresholds for **geogenic chemical contaminants** (arsenic and fluoride) that can leach into groundwater. We incorporate estimates of population exposure to arsenic and fluoride risk via groundwater usage to produce a comprehensive SMDW estimate.
+
+The final SMDW proportion for each admin1 district is calculated as:
+
+$$
+\text{SMDW} = \text{Improved} \times \min(\text{Accessible},\ \text{Available},\ \text{E. coli free},\ \text{As-safe},\ \text{F-safe})
+$$
+
+where:
+
+- **As-safe** = proportion of the district population *not* at risk of arsenic contamination via groundwater
+- **F-safe** = proportion of the district population *not* at risk of fluoride contamination via groundwater
+
+```{r}
+#| label: setup
+library(tidyverse)
+library(readxl)
+library(here)
+source(here::here("configuration/paths.R"))   # loads switchdrive paths
+```
+
+---
+
+## Step 1: Load and Join the WASH Subcomponent Predictions
+
+We load the four WASH subcomponent model prediction files. Each file contains admin1-level predictions (median and 90% prediction interval) from the TabPFN model for one subcomponent of SMDW. We select the key columns from each file and rename the prediction columns to identify the subcomponent they belong to.
+
+The four subcomponents are:
+
+- **Improved source** — access to an improved drinking water source
+- **Accessible** — the source is located on premises
+- **Available** — the source is reliably available
+- **E. coli free** — the source is free from faecal contamination (E. coli)
+
+```{r}
+#| label: load-predictions
+
+pred_dir <- here::here("outputs/model_performance/predictions")
+
+# Columns to select from each prediction file
+id_cols   <- c("GID_0", "GID_1", "NAME_0", "NAME_1",
+               "sdg_region", "wb_income_group", "fragile_context")
+pred_cols <- c("median", "pi90_lower", "pi90_upper")
+
+read_predictions <- function(filename, suffix) {
+  read_csv(file.path(pred_dir, filename), show_col_types = FALSE) |>
+    select(all_of(c(id_cols, pred_cols))) |>
+    rename_with(~ paste0(., "_", suffix), all_of(pred_cols))
+}
+
+improved   <- read_predictions("improved_source_tabpfn_lmic_predictions.csv",   "improved")
+accessible <- read_predictions("accessibility_tabpfn_lmic_predictions.csv",     "accessible")
+available  <- read_predictions("availability_tabpfn_lmic_predictions.csv",       "available")
+ecoli_free <- read_predictions("ecoli_free_tabpfn_lmic_predictions.csv",        "ecoli_free")
+```
+
+```{r}
+#| label: join-predictions
+
+# The identity columns (NAME_0, NAME_1, sdg_region, etc.) are constant across
+# files for a given GID_1. We join on GID_0 and GID_1 and keep these columns
+# from the improved source file as the reference.
+
+wash <- improved |>
+  left_join(
+    accessible |> select(GID_0, GID_1, starts_with("median"), starts_with("pi90")),
+    by = c("GID_0", "GID_1")
+  ) |>
+  left_join(
+    available |> select(GID_0, GID_1, starts_with("median"), starts_with("pi90")),
+    by = c("GID_0", "GID_1")
+  ) |>
+  left_join(
+    ecoli_free |> select(GID_0, GID_1, starts_with("median"), starts_with("pi90")),
+    by = c("GID_0", "GID_1")
+  )
+
+cat("WASH subcomponent data joined.\n")
+cat("Rows:", nrow(wash), "| Countries:", n_distinct(wash$GID_0), "\n")
+glimpse(wash)
+```
+
+---
+
+## Step 2: Load and Join Geogenic Groundwater Risk Estimates
+
+We load the geogenic groundwater risk dataset, which contains admin1-level estimates of population exposure to **arsenic (As)** and **fluoride (F)** contamination via groundwater. This dataset links population counts with groundwater usage rates and exceedance probabilities for each contaminant.
+
+Key columns used:
+
+- `As_GW_sum` — population using groundwater at risk of arsenic contamination (As > 10 µg/L)
+- `F_GW_sum` — population using groundwater at risk of fluoride contamination (F > 1.5 mg/L)
+- `Total_population_count_2024` — total district population (2024)
+
+```{r}
+#| label: load-groundwater
+
+gw_path <- PATH_GW_RISK
+
+# The Excel sheet contains five separate tables placed side by side, each
+# starting with fid / GID_0 / NAME_0 / GID_1 / NAME_1. readxl deduplicates
+# repeated column names by appending "...N" (e.g. GID_0...2, GID_1...4).
+# The columns we need are located in specific blocks:
+#   Block 1 (cols A–I):  GID_0...2, GID_1...4, As_GW_sum, Total_population_count_2024
+#   Block 3 (cols S–AB): F_GW_sum
+# We read with .name_repair = "unique" (the default) and select by the
+# deduplicated names R assigns.
+
+gw_raw <- read_xlsx(gw_path, .name_repair = "unique")
+
+# Inspect the actual column names so we can select the right ones
+cat("All column names in the groundwater file:\n")
+print(names(gw_raw))
+
+# Select only the columns we need from the first block (GID identifiers,
+# total population, and arsenic / fluoride groundwater sums).
+# GID_0...2 and GID_1...4 are from the first table — we use these as join keys.
+groundwater <- gw_raw |>
+  select(
+    GID_0 = GID_0...2,
+    GID_1 = GID_1...4,
+    Total_population_count_2024,
+    As_GW_sum,
+    F_GW_sum
+  )
+
+cat("\nGroundwater risk data loaded.\n")
+cat("Rows:", nrow(groundwater), "| Countries:", n_distinct(groundwater$GID_0), "\n")
+glimpse(groundwater)
+```
+
+```{r}
+#| label: join-groundwater
+
+# Join groundwater estimates to the WASH subcomponent data using GID_0 and GID_1.
+# Each row represents a unique admin1 district (GID_1).
+
+combined <- wash |>
+  left_join(groundwater, by = c("GID_0", "GID_1"))
+
+cat("Combined dataset rows:", nrow(combined), "\n")
+cat("Rows with missing groundwater data:", sum(is.na(combined$Total_population_count_2024)), "\n")
+```
+
+---
+
+## Step 3: Calculate Population at Risk from Geogenic Contamination
+
+We estimate the **proportion of the district population at risk** of arsenic and fluoride contamination from groundwater. These proportions reflect only those using groundwater (not surface water or rainwater), so they capture the relevant exposure pathway.
+
+- **Arsenic risk proportion** = `As_GW_sum / Total_population_count_2024`
+- **Fluoride risk proportion** = `F_GW_sum / Total_population_count_2024`
+
+We then derive the proportion of the population with water that is **safe** (i.e., *not* at risk) from each contaminant:
+
+- **As-safe** = `1 - arsenic_risk_prop`
+- **F-safe** = `1 - fluoride_risk_prop`
+
+Proportions are capped between 0 and 1 to account for any rounding artefacts in population estimates.
+
+```{r}
+#| label: calculate-chemical-risk
+
+combined <- combined |>
+  mutate(
+    # Proportion of population at risk via groundwater exposure
+    arsenic_risk_prop  = pmin(As_GW_sum / Total_population_count_2024, 1),
+    fluoride_risk_prop = pmin(F_GW_sum  / Total_population_count_2024, 1),
+
+    # Proportion with water that is chemically safe (not at risk)
+    prop_as_safe = 1 - arsenic_risk_prop,
+    prop_f_safe  = 1 - fluoride_risk_prop
+  )
+
+cat("Districts with non-zero arsenic risk:", sum(combined$arsenic_risk_prop > 0, na.rm = TRUE), "\n")
+cat("Districts with non-zero fluoride risk:", sum(combined$fluoride_risk_prop > 0, na.rm = TRUE), "\n")
+
+combined |>
+  select(GID_1, NAME_0, NAME_1, arsenic_risk_prop, fluoride_risk_prop,
+         prop_as_safe, prop_f_safe) |>
+  summary()
+```
+
+---
+
+## Step 4: Calculate SMDW
+
+SMDW is calculated as the proportion using an **improved source** multiplied by the **minimum** across all service quality and safety subcomponents. This reflects the JMP ladder approach: a household is counted as using SMDW only if their water meets *all* criteria simultaneously.
+
+The five subcomponents entering the minimum are:
+
+| Component | Variable |
+|-----------|----------|
+| Accessible | `median_accessible` |
+| Available | `median_available` |
+| E. coli free | `median_ecoli_free` |
+| Arsenic-safe | `prop_as_safe` |
+| Fluoride-safe | `prop_f_safe` |
+
+$$
+\text{SMDW} = \text{median\_improved} \times \min(\text{accessible},\ \text{available},\ \text{ecoli\_free},\ \text{As-safe},\ \text{F-safe})
+$$
+
+```{r}
+#| label: calculate-smdw
+
+smdw <- combined |>
+  rowwise() |>
+  mutate(
+    # The minimum subcomponent proportion across quality and safety dimensions
+    min_subcomponent = min(
+      median_accessible,
+      median_available,
+      median_ecoli_free,
+      prop_as_safe,
+      prop_f_safe,
+      na.rm = TRUE
+    ),
+    # SMDW = improved × min(all subcomponents)
+    prop_smdw = median_improved * min_subcomponent
+  ) |>
+  ungroup()
+
+cat("SMDW calculated for", nrow(smdw), "admin1 districts across",
+    n_distinct(smdw$GID_0), "countries.\n")
+
+smdw |>
+  select(GID_1, NAME_0, NAME_1, median_improved, min_subcomponent, prop_smdw) |>
+  summary()
+```
+
+---
+
+## Step 5: Summary and Diagnostics
+
+```{r}
+#| label: summary-table
+
+# Country-level summary: median SMDW across admin1 districts
+country_summary <- smdw |>
+  group_by(GID_0, NAME_0, sdg_region, wb_income_group) |>
+  summarise(
+    n_districts       = n(),
+    mean_smdw         = mean(prop_smdw, na.rm = TRUE),
+    median_smdw       = median(prop_smdw, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  arrange(median_smdw)
+
+cat("Countries with lowest estimated SMDW:\n")
+print(head(country_summary, 10))
+
+cat("\nCountries with highest estimated SMDW:\n")
+print(tail(country_summary, 10))
+```
+
+```{r}
+#| label: plot-smdw-distribution
+
+smdw |>
+  ggplot(aes(x = prop_smdw, fill = wb_income_group)) +
+  geom_histogram(bins = 50, colour = "white", linewidth = 0.2) +
+  scale_x_continuous(labels = scales::percent_format()) +
+  labs(
+    title    = "Distribution of SMDW Proportions by Admin1 District",
+    subtitle = "Across 130 LMICs",
+    x        = "Proportion of population using SMDW",
+    y        = "Number of districts",
+    fill     = "World Bank income group"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(legend.position = "bottom")
+```
+
+```{r}
+#| label: plot-subcomponents
+
+# Show which subcomponent is most often the binding constraint
+smdw |>
+  rowwise() |>
+  mutate(
+    binding = case_when(
+      min_subcomponent == median_accessible ~ "Accessible",
+      min_subcomponent == median_available  ~ "Available",
+      min_subcomponent == median_ecoli_free ~ "E. coli free",
+      min_subcomponent == prop_as_safe      ~ "Arsenic-safe",
+      min_subcomponent == prop_f_safe       ~ "Fluoride-safe",
+      TRUE                                  ~ "Tie / other"
+    )
+  ) |>
+  ungroup() |>
+  count(binding) |>
+  mutate(pct = n / sum(n)) |>
+  ggplot(aes(x = reorder(binding, pct), y = pct)) +
+  geom_col(fill = "#2196F3") +
+  coord_flip() +
+  scale_y_continuous(labels = scales::percent_format()) +
+  labs(
+    title = "Binding Constraint on SMDW by Admin1 District",
+    x     = "Subcomponent",
+    y     = "Share of districts"
+  ) +
+  theme_minimal(base_size = 12)
+```
+
+---
+
+## Step 6: Export Results
+
+```{r}
+#| label: export
+
+output_cols <- c(
+  "GID_0", "GID_1", "NAME_0", "NAME_1",
+  "sdg_region", "wb_income_group", "fragile_context",
+  # Subcomponent medians and intervals
+  "median_improved",   "pi90_lower_improved",   "pi90_upper_improved",
+  "median_accessible", "pi90_lower_accessible", "pi90_upper_accessible",
+  "median_available",  "pi90_lower_available",  "pi90_upper_available",
+  "median_ecoli_free", "pi90_lower_ecoli_free", "pi90_upper_ecoli_free",
+  # Groundwater contamination
+  "As_GW_sum", "F_GW_sum", "Total_population_count_2024",
+  "arsenic_risk_prop", "fluoride_risk_prop",
+  "prop_as_safe", "prop_f_safe",
+  # Final SMDW estimate
+  "min_subcomponent", "prop_smdw"
+)
+
+out_file <- PATH_OUT_SMDW
+
+smdw |>
+  select(all_of(output_cols)) |>
+  write_csv(out_file)
+
+cat("Results saved to:\n", out_file, "\n")
+cat("Rows exported:", nrow(smdw), "\n")
+```

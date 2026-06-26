@@ -9,6 +9,7 @@
 # -------------------------------------------------------
 
 import os
+from pathlib import Path
 import geopandas as gpd
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -18,9 +19,8 @@ import matplotlib.patches as mpatches
 # 1.  Paths
 # -------------------------------------------------------
 
-SHP_DIR = os.path.expanduser(
-    "~/Documents/GitHub/mapping_sanitation_access_LMICs/outputs/02_boundary_files"
-)
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+SHP_DIR      = PROJECT_ROOT / "data/processed/survey_boundaries"
 FIGURE_DIR = "outputs/figures"
 os.makedirs(FIGURE_DIR, exist_ok=True)
 

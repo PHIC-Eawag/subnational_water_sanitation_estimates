@@ -21,7 +21,7 @@ import matplotlib.colors as mc
 # 1.  Paths
 # -------------------------------------------------------
 
-PRED_DIR   = "outputs/04_model_performance/predictions"
+PRED_DIR   = "outputs/model_performance/predictions"
 FIGURE_DIR = "outputs/figures"
 os.makedirs(FIGURE_DIR, exist_ok=True)
 

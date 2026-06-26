@@ -12,6 +12,7 @@
 # -------------------------------------------------------
 
 import os
+from pathlib import Path
 import numpy as np
 import pandas as pd
 import geopandas as gpd
@@ -25,10 +26,9 @@ from matplotlib.cm import ScalarMappable
 # 1.  Paths
 # -------------------------------------------------------
 
-SHP_DIR    = os.path.expanduser(
-    "~/Documents/GitHub/mapping_sanitation_access_LMICs/data/GADM36_boundaries"
-)
-PRED_DIR   = "outputs/04_model_performance/predictions"
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+SHP_DIR      = PROJECT_ROOT / "data/raw/GADM36_boundaries"
+PRED_DIR   = "outputs/model_performance/predictions"
 FIGURE_DIR = "outputs/figures"
 os.makedirs(FIGURE_DIR, exist_ok=True)
 
