@@ -2,7 +2,7 @@
 
 This folder contains data used in the mapping of sanitation and SMDW access in LMICs. It is organised into `raw/` and `processed/`.
 
-**Not all data is stored in this repository.**
+**Data is not stored in this repository.**
 
 1.  Large input files (household survey microdata, GEE-sampled covariates, country-level covariate tables) are stored on the switchdrive and referenced via `configuration/paths.R`. These are marked with 📁 *switchdrive* below.
 2.  Boundary files are available to download from the links mentioned below.
