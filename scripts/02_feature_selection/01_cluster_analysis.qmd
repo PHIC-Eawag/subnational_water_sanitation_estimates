@@ -1,0 +1,380 @@
+---
+title: "Covariate Cluster Analysis"
+subtitle: "Hierarchical clustering of geospatial covariates for feature selection"
+---
+
+# 1. Setup
+
+## Libraries
+
+```{r}
+library(tidyverse)
+library(here)
+library(ClustOfVar)
+```
+
+## Paths
+
+```{r}
+PATH_PRED_COVARIATES   <- here::here("data/processed/prediction/prediction_covariates_2024.csv")
+OUTPUT_DIR_SMDW        <- here::here("outputs/cluster_analysis/smdw")
+OUTPUT_DIR_SANITATION  <- here::here("outputs/cluster_analysis/sanitation")
+
+dir.create(OUTPUT_DIR_SMDW,       recursive = TRUE, showWarnings = FALSE)
+dir.create(OUTPUT_DIR_SANITATION,  recursive = TRUE, showWarnings = FALSE)
+```
+
+------------------------------------------------------------------------
+
+# 2. Input data
+
+Prediction covariates prepared in `05_prepare_prediction_data.qmd`.
+Each row is one GADM admin-1 region.
+
+```{r}
+df_pred_covariates <- readr::read_csv(PATH_PRED_COVARIATES, show_col_types = FALSE)
+
+cat("Regions:", nrow(df_pred_covariates), "\n")
+cat("Countries:", dplyr::n_distinct(df_pred_covariates$NAME_0), "\n")
+cat("Columns:", ncol(df_pred_covariates), "\n")
+```
+
+------------------------------------------------------------------------
+
+# 3. Variable sets
+
+Two analyses are run in parallel:
+
+- **SMDW**: full variable set including JMP drinking water subcomponents
+- **Sanitation**: same set minus the four drinking water variables not
+  available in the sanitation training data
+
+The shared EO and country-level variables are defined once and reused.
+
+```{r}
+# ── Shared EO and country-level variables ────────────────────────────────────
+band_names_shared <- c(
+  # ── EO features ────────────────────────────────────────────────────────────
+  "CGIAR_Aridity_Index",
+  "CGIAR_PET",
+  "CHELSA_BIO_Annual_Mean_Temperature",
+  "CHELSA_BIO_Annual_Precipitation",
+  "CHELSA_BIO_Precipitation_Seasonality",
+  "CHELSA_BIO_Precipitation_of_Coldest_Quarter",
+  "CHELSA_BIO_Precipitation_of_Driest_Month",
+  "CHELSA_BIO_Precipitation_of_Driest_Quarter",
+  "CHELSA_BIO_Precipitation_of_Warmest_Quarter",
+  "CHELSA_BIO_Precipitation_of_Wettest_Month",
+  "CHELSA_BIO_Precipitation_of_Wettest_Quarter",
+  "CHELSA_BIO_Temperature_Annual_Range",
+  "CHELSA_BIO_Temperature_Seasonality",
+  "CIFOR_TropicalPeatlandExtent",
+  "CSP_Global_Human_Modification",
+  "ConsensusLandCoverClass_Barren",
+  "ConsensusLandCoverClass_Cultivated_and_Managed_Vegetation",
+  "ConsensusLandCoverClass_Deciduous_Broadleaf_Trees",
+  "ConsensusLandCoverClass_Evergreen_Broadleaf_Trees",
+  "ConsensusLandCoverClass_Evergreen_Deciduous_Needleleaf_Trees",
+  "ConsensusLandCoverClass_Herbaceous_Vegetation",
+  "ConsensusLandCoverClass_Mixed_Other_Trees",
+  "ConsensusLandCoverClass_Open_Water",
+  "ConsensusLandCoverClass_Regularly_Flooded_Vegetation",
+  "ConsensusLandCoverClass_Shrubs",
+  "ConsensusLandCoverClass_Snow_Ice",
+  "ConsensusLandCoverClass_Urban_Builtup",
+  "ConsensusLandCover_Human_Development_Percentage",
+  "CrowtherLab_Tree_Density",
+  "EarthEnvCloudCover_CloudForestPrediction",
+  "EarthEnvTexture_CoOfVar_EVI",
+  "EarthEnvTexture_Contrast_EVI",
+  "EarthEnvTexture_Correlation_EVI",
+  "EarthEnvTexture_Dissimilarity_EVI",
+  "EarthEnvTexture_Entropy_EVI",
+  "EarthEnvTexture_Evenness_EVI",
+  "EarthEnvTexture_Homogeneity_EVI",
+  "EarthEnvTexture_Maximum_EVI",
+  "EarthEnvTexture_Range_EVI",
+  "EarthEnvTexture_Shannon_Index",
+  "EarthEnvTexture_Simpson_Index",
+  "EarthEnvTexture_Std_EVI",
+  "EarthEnvTexture_Uniformity_EVI",
+  "EarthEnvTexture_Variance_EVI",
+  "EarthEnvTopoMed_1stOrderPartialDerivEW",
+  "EarthEnvTopoMed_1stOrderPartialDerivNS",
+  "EarthEnvTopoMed_Eastness",
+  "EarthEnvTopoMed_Elevation",
+  "EarthEnvTopoMed_Roughness",
+  "EarthEnvTopoMed_Slope",
+  "EarthEnvTopoMed_TerrainRuggednessIndex",
+  "EarthEnvTopoMed_TopoPositionIndex",
+  "EsaCci_BurntAreasProbability",
+  "FanEtAl_Depth_to_Water_Table_AnnualMean",
+  "FanEtAl_Depth_to_Water_Table_AnnualSD",
+  "GHS_Population_Density",
+  "GLW3_RuminantsDistribution_downsampled10km",
+  "GPWv4_Population_Density",
+  "GiriEtAl_MangrovesExtent",
+  "MODIS_EVI",
+  "MODIS_NDVI",
+  "MODIS_NPP",
+  "PelletierEtAl_SoilAndSedimentaryDepositThicknesses",
+  "SG_Absolute_depth_to_bedrock",
+  "SG_Bulk_density_015cm",
+  "SG_Depth_to_bedrock",
+  "SG_H2O_Capacity_015cm",
+  "SG_Saturated_H2O_Content_015cm",
+  "TootchiEtAl_WetlandsRegularlyFlooded",
+  "WCS_Human_Footprint_2009",
+  "chirps_annual_precipitation",
+  "era5_temperature_2m",
+  "ghsl_built_surface",
+  "ghsl_population",
+  "ghsl_urban_frac",
+  "jrc_building_height",
+  "map_friction",
+  "modis_evi",
+  "modis_ndvi",
+  "runoff_max_annualmax",
+  "runoff_min_annualmin",
+  "temperature_2m_max_annualmax",
+  "viirs_average",
+  "worldpop",
+  "worldpop_sum",
+  "ghsl_population_sum",
+  "area_km2",
+  # ── Country-level features ──────────────────────────────────────────────────
+  "gdp_per_capita_constant_2015_usd",
+  "secondary_education_duration_years",
+  "ww_collection_percent",
+  "ww_treatment_percent",
+  "ww_reuse_percent",
+  "control_of_corruption",
+  "governance_effectiveness",
+  "political_stability",
+  "regulatory_quality",
+  "rule_of_law",
+  "voice_and_accountability",
+  "sanitation_basic",
+  "open_defecation"
+)
+
+# ── Drinking water JMP variables (SMDW only) ──────────────────────────────────
+band_names_dw <- c(
+  "drinking_water_accessible_on_premises",
+  "drinking_water_available_when_needed",
+  "drinking_water_piped",
+  "drinking_water_non_piped"
+)
+
+band_names_smdw        <- c(band_names_shared, band_names_dw)
+band_names_sanitation  <- band_names_shared
+
+cat("SMDW variables:       ", length(band_names_smdw), "\n")
+cat("Sanitation variables: ", length(band_names_sanitation), "\n")
+
+# Check all variables present in prediction data
+check_vars <- function(vars, label) {
+  missing <- setdiff(vars, names(df_pred_covariates))
+  if (length(missing) > 0) {
+    warning(label, ": variables not found in prediction data:\n",
+            paste(" -", missing, collapse = "\n"))
+  } else {
+    message(label, ": all variables present.")
+  }
+}
+
+check_vars(band_names_smdw,       "SMDW")
+check_vars(band_names_sanitation,  "Sanitation")
+```
+
+------------------------------------------------------------------------
+
+# 4. SMDW cluster analysis
+
+k values: 5, 10, 15, 20, 30, 45, 90, and the full set
+(`r length(band_names_smdw)`).
+
+## Prepare feature matrix
+
+```{r}
+# Extract only the SMDW satellite/covariate columns from the prediction dataset
+# and convert everything to numeric (in case any columns were read as text)
+samples_smdw <- df_pred_covariates %>%
+  dplyr::select(dplyr::all_of(band_names_smdw)) %>%
+  dplyr::mutate(dplyr::across(everything(), as.numeric))
+
+# Check for zero-variance columns — variables with only one unique value are
+# useless for prediction and can cause models to crash or behave unexpectedly
+constant_cols_smdw <- names(samples_smdw)[
+  sapply(samples_smdw, function(x) dplyr::n_distinct(x, na.rm = TRUE) <= 1)
+]
+if (length(constant_cols_smdw) > 0) {
+  message("Zero-variance columns (SMDW):\n",
+          paste(" -", constant_cols_smdw, collapse = "\n"))
+} else {
+  message("No zero-variance columns (SMDW).")
+}
+
+# Report how many rows have complete data (no missing values across all columns)
+# — only complete cases can be passed to the model for prediction
+cat("Complete cases:", sum(complete.cases(samples_smdw)), "/",
+    nrow(samples_smdw), "\n")
+```
+
+## Hierarchical clustering
+
+```{r}
+# Set a random seed so the clustering result is reproducible across runs
+set.seed(123)
+
+# Run hierarchical clustering on the SMDW variables (columns, not rows).
+# This groups similar variables together based on how correlated they are —
+# variables that carry nearly the same information end up in the same cluster.
+hclust_smdw <- hclustvar(X.quanti = as.data.frame(samples_smdw))
+
+# Plot the aggregation index at each step of the clustering.
+# The "elbow" in the curve (where the index drops sharply) suggests
+# the natural number of clusters — i.e. how many distinct groups of
+# variables exist in the SMDW feature set.
+plot(hclust_smdw, type = "index", main = "SMDW — aggregation levels")
+```
+
+## Cut tree and save
+
+```{r}
+# The shortlist sizes to test — from 5 representative variables up to the full set.
+# The last value uses all available SMDW bands (no shortlisting).
+k_values_smdw <- c(5, 10, 15, 20, 30, 45, 90, length(band_names_smdw))
+
+# Loop over each shortlist size k and, for each one:
+# 1. Cut the variable cluster tree into k groups
+# 2. Identify one representative variable per group (the most correlated with its cluster)
+# 3. Save the representative variables to a CSV
+# 4. Save a dendrogram PDF showing the cluster boundaries
+cluster_results_smdw <- purrr::map(k_values_smdw, function(k) {
+  set.seed(123)
+  message("SMDW — k = ", k)
+
+  # Cut the hierarchical cluster tree into exactly k groups
+  cuttree <- cutreevar(hclust_smdw, k = k)
+
+  # Build a tidy table showing which cluster each variable was assigned to
+  df_clusters <- cuttree$cluster %>%
+    as.data.frame() %>%
+    dplyr::rename(cluster = 1) %>%
+    tibble::rownames_to_column("variable") %>%
+    dplyr::arrange(cluster)
+
+  # For each cluster, pick the variable most correlated with the cluster centroid
+  # — this is the single variable that best represents that whole group
+  reps <- purrr::map_chr(cuttree$var, function(cluster_df) {
+    rownames(cluster_df)[which.max(cluster_df[, 1])]
+  })
+
+  # Pair each cluster number with its chosen representative variable name
+  df_reps <- tibble::tibble(
+    cluster                 = seq_along(reps),
+    representative_variable = r
+```
+
+## Summary
+
+```{r}
+purrr::map_dfr(cluster_results_smdw, ~ tibble::tibble(
+  k          = .x$k,
+  n_clusters = nrow(.x$representatives)
+)) %>%
+  knitr::kable(caption = "SMDW — clusters per k")
+```
+
+------------------------------------------------------------------------
+
+# 5. Sanitation cluster analysis
+
+k values: 5, 10, 15, 20, 30, 45, 90, and the full set
+(`r length(band_names_sanitation)`). Excludes the four JMP drinking
+water variables not available in the sanitation training data.
+
+## Prepare feature matrix
+
+```{r}
+samples_sanitation <- df_pred_covariates %>%
+  dplyr::select(dplyr::all_of(band_names_sanitation)) %>%
+  dplyr::mutate(dplyr::across(everything(), as.numeric))
+
+constant_cols_san <- names(samples_sanitation)[
+  sapply(samples_sanitation, function(x) dplyr::n_distinct(x, na.rm = TRUE) <= 1)
+]
+if (length(constant_cols_san) > 0) {
+  message("Zero-variance columns (Sanitation):\n",
+          paste(" -", constant_cols_san, collapse = "\n"))
+} else {
+  message("No zero-variance columns (Sanitation).")
+}
+cat("Complete cases:", sum(complete.cases(samples_sanitation)), "/",
+    nrow(samples_sanitation), "\n")
+```
+
+## Hierarchical clustering
+
+```{r}
+set.seed(123)
+hclust_sanitation <- hclustvar(X.quanti = as.data.frame(samples_sanitation))
+plot(hclust_sanitation, type = "index", main = "Sanitation — aggregation levels")
+```
+
+## Cut tree and save
+
+```{r}
+k_values_sanitation <- c(5, 10, 15, 20, 30, 45, 90, length(band_names_sanitation))
+
+cluster_results_sanitation <- purrr::map(k_values_sanitation, function(k) {
+  set.seed(123)
+  message("Sanitation — k = ", k)
+
+  cuttree <- cutreevar(hclust_sanitation, k = k)
+
+  df_clusters <- cuttree$cluster %>%
+    as.data.frame() %>%
+    dplyr::rename(cluster = 1) %>%
+    tibble::rownames_to_column("variable") %>%
+    dplyr::arrange(cluster)
+
+  reps <- purrr::map_chr(cuttree$var, function(cluster_df) {
+    rownames(cluster_df)[which.max(cluster_df[, 1])]
+  })
+
+  df_reps <- tibble::tibble(
+    cluster                 = seq_along(reps),
+    representative_variable = reps
+  )
+
+  readr::write_csv(
+    df_reps,
+    file.path(OUTPUT_DIR_SANITATION, paste0("representative_variables_k", k, ".csv"))
+  )
+
+  pdf_path <- file.path(OUTPUT_DIR_SANITATION, paste0("dendrogram_k", k, ".pdf"))
+  pdf(pdf_path, width = 20, height = 12)
+  tryCatch({
+    plot(hclust_sanitation, main = paste("Sanitation — k =", k), cex = 0.5)
+    rect.hclust(hclust_sanitation, k = k, border = "red")
+  }, error = function(e) message("Plotting failed for k = ", k, ": ", e$message))
+  dev.off()
+
+  list(k = k, clusters = df_clusters, representatives = df_reps)
+})
+
+names(cluster_results_sanitation) <- paste0("k", k_values_sanitation)
+message("Sanitation outputs written to: ", OUTPUT_DIR_SANITATION)
+```
+
+## Summary
+
+```{r}
+purrr::map_dfr(cluster_results_sanitation, ~ tibble::tibble(
+  k          = .x$k,
+  n_clusters = nrow(.x$representatives)
+)) %>%
+  knitr::kable(caption = "Sanitation — clusters per k")
+```

@@ -1,0 +1,586 @@
+---
+title: "Prepare Prediction Data"
+subtitle: "Join GEE-sampled covariates with country-level data sources for model prediction"
+author: "Esther Greenwood"
+date: 15.06.2026
+---
+
+# 1. Setup
+
+## Libraries and sourced functions
+
+```{r}
+library(tidyverse)
+library(here)
+
+source(here::here("functions/join_and_structure_dataframes.R"))
+source(here::here("functions/diagnostics.R"))
+source(here::here("functions/country_join_helpers.R"))
+source(here::here("configuration/covariate_cols.R"))   # loads `covariate_cols` vector
+source(here::here("configuration/paths.R"))             # loads switchdrive paths
+```
+
+## Prediction year
+
+All time-varying country-level covariates (WGI, JMP, GDP, education, income group) are joined at this year. Update here when producing predictions for a different reference year.
+
+```{r}
+PREDICTION_YEAR <- 2024L
+```
+
+## Paths
+
+```{r}
+# ── GEE-sampled covariates ───────────────────────────────────────────────────
+FILE_NONPOP_PRED     <- here::here("data/processed/sampled_features/nonpop_prediction_v2.csv")
+
+# ── Country-level covariates ─────────────────────────────────────────────────
+PATH_COUNTRY_KEY  <- here::here("configuration/country_name_key_WB.csv")
+
+# ── Region areas ─────────────────────────────────────────────────────────────
+PATH_TO_REGION_AREAS_PRED <- here::here("data/processed/sampled_features/gadm_lmic_region_areas_km2.csv")
+
+# ── Output ───────────────────────────────────────────────────────────────────
+OUTPUT_DIR <- here::here("data/processed/prediction")
+```
+
+------------------------------------------------------------------------
+
+# 2. GEE-sampled covariates
+
+## Non-population covariates
+
+Loaded from the single CSV exported by GEE. Each row is one GADM admin-1 region, identified by `NAME_0` (country) and `NAME_1` (region).
+
+```{r}
+df_nonpop_pred <- readr::read_csv(FILE_NONPOP_PRED, show_col_types = FALSE)
+
+cat("Rows:", nrow(df_nonpop_pred), "\n")
+cat("Countries:", dplyr::n_distinct(df_nonpop_pred$NAME_0), "\n")
+cat("Columns:", ncol(df_nonpop_pred), "\n")
+
+# GID_1 must be present for downstream shapefile joining and mapping.
+# It should flow through from the GADM shapefile uploaded to GEE.
+if (!"GID_1" %in% colnames(df_nonpop_pred)) {
+  stop(
+    "GID_1 column is missing from ", FILE_NONPOP_PRED, ".\n",
+    "GID_1 is required for joining prediction outputs to shapefiles for mapping.\n",
+    "Ensure GID_1 is set as a feature property in the GEE sampling script ",
+    "(03_sampling_geospatial_data.ipynb) before re-exporting."
+  )
+} else {
+  cat("GID_1 present:", dplyr::n_distinct(df_nonpop_pred$GID_1), "unique values\n")
+  n_missing_gid1 <- sum(is.na(df_nonpop_pred$GID_1))
+  if (n_missing_gid1 > 0) {
+    warning(n_missing_gid1, " rows have missing GID_1 values.")
+  }
+}
+```
+
+## Population sums
+
+Population covariates are stored as one CSV per country, exported separately from GEE. All files are read and stacked.
+
+```{r}
+pop_files_pred <- list.files(
+  path       = path.expand(PATH_TO_POP_SUMS_PRED),
+  pattern    = "\\.csv$",
+  full.names = TRUE
+)
+
+df_pop_pred <- pop_files_pred %>%
+  purrr::map_dfr(readr::read_csv, show_col_types = FALSE)
+
+cat("Rows:", nrow(df_pop_pred), "\n")
+cat("Countries:", dplyr::n_distinct(df_pop_pred$NAME_0), "\n")
+
+df_nonpop_pred <- df_nonpop_pred %>%
+  dplyr::filter(NAME_0 != "South Korea")
+
+# Diagnostic: countries in non-pop data missing from pop sums
+missing_pop_countries <- dplyr::anti_join(
+  df_nonpop_pred %>% dplyr::distinct(NAME_0),
+  df_pop_pred    %>% dplyr::distinct(NAME_0),
+  by = "NAME_0"
+)
+if (nrow(missing_pop_countries) > 0) {
+  message("Countries in non-pop file with no pop sums:")
+  print(missing_pop_countries)
+}
+
+```
+
+## Join non-pop and pop covariates
+
+The two tables are joined on `NAME_0` + `NAME_1`. The result is one row per admin-1 region.
+
+```{r}
+df_pred_covariates <- df_nonpop_pred %>%
+  dplyr::left_join(df_pop_pred, by = c("NAME_0", "NAME_1"))
+
+cat("Regions in joined table:", nrow(df_pred_covariates), "\n")
+cat("Columns:", ncol(df_pred_covariates), "\n")
+
+# Sanity check: no duplicate region keys
+dup_keys <- df_pred_covariates %>%
+  dplyr::count(NAME_0, NAME_1) %>%
+  dplyr::filter(n > 1)
+if (nrow(dup_keys) > 0) {
+  warning("Duplicate NAME_0 / NAME_1 keys found:")
+  print(dup_keys)
+} else {
+  message("No duplicate region keys.")
+}
+```
+
+## Region areas
+
+`area_km2` is not sampled in GEE; it is derived from the prediction boundary files.
+
+```{r}
+df_region_areas_pred <- readr::read_csv(
+  PATH_TO_REGION_AREAS_PRED, show_col_types = FALSE
+) %>%
+  dplyr::mutate(NAME_1 = stringr::str_trim(NAME_1)) %>%
+  dplyr::select(NAME_0, NAME_1, area_km2) %>%
+  dplyr::group_by(NAME_0, NAME_1) %>%
+  dplyr::slice(1) %>%
+  dplyr::ungroup()
+
+df_pred_covariates <- df_pred_covariates %>%
+  dplyr::left_join(df_region_areas_pred, by = c("NAME_0", "NAME_1"))
+
+cat("Missing area_km2:", sum(is.na(df_pred_covariates$area_km2)), "regions\n")
+```
+
+------------------------------------------------------------------------
+
+# 3. Country-level covariates
+
+All country-level sources are joined by standardised country name via `add_country_join_key_extended()`, which resolves GADM names to the World Bank country name used as the join key. Time-varying covariates use `PREDICTION_YEAR`.
+
+```{r}
+country_name_key_WB <- readr::read_csv(PATH_COUNTRY_KEY, show_col_types = FALSE)
+```
+
+## GDP per capita
+
+```{r}
+gdp_clean <- readr::read_csv(PATH_GDP, show_col_types = FALSE) %>%
+  dplyr::rename(
+    country_name                     = Country.Name,
+    analysis_year                    = Year,
+    gdp_per_capita_constant_2015_usd = `GDP per capita (constant 2015 US$)`
+  ) %>%
+  dplyr::mutate(
+    analysis_year                    = as.integer(analysis_year),
+    gdp_per_capita_constant_2015_usd = as.numeric(gdp_per_capita_constant_2015_usd)
+  ) %>%
+  dplyr::filter(analysis_year == PREDICTION_YEAR) %>%
+  add_country_join_key_extended(
+    country_col = country_name, country_name_key_WB = country_name_key_WB
+  ) %>%
+  dplyr::select(country_join, gdp_per_capita_constant_2015_usd) %>%
+  dplyr::distinct()
+
+df_pred_covariates <- df_pred_covariates %>%
+  add_country_join_key_extended(
+    country_col = NAME_0, country_name_key_WB = country_name_key_WB
+  ) %>%
+  dplyr::left_join(gdp_clean, by = "country_join") %>%
+  dplyr::select(-country_join)
+
+cat("Missing GDP:", sum(is.na(df_pred_covariates$gdp_per_capita_constant_2015_usd)), "regions\n")
+```
+
+## Secondary education duration
+
+```{r}
+education_clean <- readr::read_csv(PATH_EDUCATION, show_col_types = FALSE) %>%
+  dplyr::rename(
+    country_name                       = Country.Name,
+    analysis_year                      = Year,
+    secondary_education_duration_years = `Secondary education, duration (years)`
+  ) %>%
+  dplyr::mutate(
+    analysis_year                      = as.integer(analysis_year),
+    secondary_education_duration_years = as.numeric(secondary_education_duration_years)
+  ) %>%
+  dplyr::filter(analysis_year == PREDICTION_YEAR) %>%
+  add_country_join_key_extended(
+    country_col = country_name, country_name_key_WB = country_name_key_WB
+  ) %>%
+  dplyr::select(country_join, secondary_education_duration_years) %>%
+  dplyr::distinct()
+
+df_pred_covariates <- df_pred_covariates %>%
+  add_country_join_key_extended(
+    country_col = NAME_0, country_name_key_WB = country_name_key_WB
+  ) %>%
+  dplyr::left_join(education_clean, by = "country_join") %>%
+  dplyr::select(-country_join)
+
+cat("Missing education:", sum(is.na(df_pred_covariates$secondary_education_duration_years)), "regions\n")
+```
+
+## Wastewater treatment
+
+Static (no year dimension); joined by country only.
+
+```{r}
+ww_country_clean <- readr::read_tsv(PATH_WASTEWATER, show_col_types = FALSE) %>%
+  dplyr::rename(
+    ww_country_name            = Country,
+    ww_region                  = Region,
+    ww_economic_classification = Economic_Classification,
+    ww_collection_percent      = WWc_Percent,
+    ww_treatment_percent       = WWt_Percent,
+    ww_reuse_percent           = WWr_Percent
+  ) %>%
+  dplyr::mutate(across(ends_with("_percent"), as.numeric)) %>%
+  add_country_join_key_extended(
+    country_col = ww_country_name, country_name_key_WB = country_name_key_WB
+  ) %>%
+  dplyr::distinct(country_join, .keep_all = TRUE) %>%
+  dplyr::select(country_join, ww_region, ww_economic_classification,
+                ww_collection_percent, ww_treatment_percent, ww_reuse_percent)
+
+df_pred_covariates <- df_pred_covariates %>%
+  add_country_join_key_extended(
+    country_col = NAME_0, country_name_key_WB = country_name_key_WB
+  ) %>%
+  dplyr::left_join(ww_country_clean, by = "country_join") %>%
+  dplyr::select(-country_join)
+
+# Kosovo has no wastewater record; assign region manually
+df_pred_covariates <- df_pred_covariates %>%
+  dplyr::mutate(ww_region = dplyr::if_else(
+    NAME_0 == "Kosovo" & is.na(ww_region),
+    "Eastern Europe & Central Asia", ww_region
+  ))
+
+cat("Missing ww_collection_percent:", sum(is.na(df_pred_covariates$ww_collection_percent)), "regions\n")
+```
+
+## WGI governance indicators
+
+Six World Governance Indicators joined at `PREDICTION_YEAR`.
+
+```{r}
+indicator_map <- c(
+  "Government Effectiveness - Governance score (0-100)" = "governance_effectiveness",
+  "Control of Corruption - Governance score (0-100)"    = "control_of_corruption",
+  "Political Stability - Governance score (0-100)"      = "political_stability",
+  "Regulatory Quality - Governance score (0-100)"       = "regulatory_quality",
+  "Rule of Law - Governance score (0-100)"              = "rule_of_law",
+  "Voice and Accountability - Governance score (0-100)" = "voice_and_accountability"
+)
+
+wgi_clean <- readWGI_lmics() %>%
+  dplyr::filter(`Series.Name` %in% names(indicator_map)) %>%
+  dplyr::mutate(indicator = unname(indicator_map[`Series.Name`])) %>%
+  tidyr::pivot_longer(
+    cols      = dplyr::matches("^X20[0-9]{2}$"),
+    names_to  = "analysis_year",
+    values_to = "value"
+  ) %>%
+  dplyr::mutate(
+    analysis_year = as.integer(stringr::str_remove(analysis_year, "^X")),
+    value         = as.numeric(value)
+  ) %>%
+  dplyr::filter(analysis_year == PREDICTION_YEAR) %>%
+  add_country_join_key_extended(
+    country_col = `Country.Name`, country_name_key_WB = country_name_key_WB
+  ) %>%
+  dplyr::select(country_join, indicator, value) %>%
+  tidyr::pivot_wider(names_from = indicator, values_from = value) %>%
+  dplyr::distinct()
+
+df_pred_covariates <- df_pred_covariates %>%
+  add_country_join_key_extended(
+    country_col = NAME_0, country_name_key_WB = country_name_key_WB
+  ) %>%
+  dplyr::left_join(wgi_clean, by = "country_join") %>%
+  dplyr::select(-country_join)
+
+missing_wgi <- df_pred_covariates %>%
+  dplyr::filter(dplyr::if_any(dplyr::all_of(unname(indicator_map)), is.na)) %>%
+  dplyr::distinct(NAME_0) %>%
+  dplyr::arrange(NAME_0)
+cat("Countries missing WGI:", nrow(missing_wgi), "\n")
+print(missing_wgi)
+```
+
+## World Bank income group
+
+Income group at `PREDICTION_YEAR`, parsed from the OGHIST analytical history file.
+
+```{r}
+oghist_raw <- suppressMessages(readxl::read_excel(
+  PATH_OGHIST,
+  sheet     = "Country Analytical History",
+  col_names = FALSE
+))
+
+col_names_vec <- c(
+  "country_code", "country_name",
+  as.character(suppressWarnings(as.integer(as.numeric(unlist(oghist_raw[6, 3:40])))))
+)
+
+oghist_countries <- oghist_raw[12:nrow(oghist_raw), 1:40]
+names(oghist_countries) <- col_names_vec
+
+income_group_clean <- oghist_countries %>%
+  dplyr::select(country_code, country_name, dplyr::all_of(as.character(PREDICTION_YEAR))) %>%
+  dplyr::filter(!is.na(country_code), !is.na(country_name)) %>%
+  dplyr::rename(wb_income_group = as.character(PREDICTION_YEAR)) %>%
+  dplyr::mutate(
+    wb_income_group = dplyr::if_else(wb_income_group == "..", NA_character_, wb_income_group)
+  ) %>%
+  add_country_join_key_extended(
+    country_col = country_name, country_name_key_WB = country_name_key_WB
+  ) %>%
+  dplyr::select(country_join, wb_income_group) %>%
+  dplyr::distinct()
+
+df_pred_covariates <- df_pred_covariates %>%
+  add_country_join_key_extended(
+    country_col = NAME_0, country_name_key_WB = country_name_key_WB
+  ) %>%
+  dplyr::left_join(income_group_clean, by = "country_join") %>%
+  dplyr::select(-country_join)
+
+cat("Missing income group:", sum(is.na(df_pred_covariates$wb_income_group)), "regions\n")
+```
+
+## JMP indicators
+
+Extracts country-level estimates and regional classifications from the JMP 2025 global dataset at `PREDICTION_YEAR`.
+
+Two sheets are used:
+
+-   **Sanitation sheet** — `sanitation_basic`, `open_defecation`, `iso3`, `sdg_region`, `fragile_context`. These are contextual covariates relevant across all outcomes.
+-   **Water sheet** — `drinking_water_basic` and related SMDW subcomponents: accessible on premises, available when needed, free from contamination, piped, non-piped.
+
+Time-invariant fields (`iso3`, `sdg_region`, `fragile_context`) are taken from the most available row per country and do not depend on `PREDICTION_YEAR`.
+
+```{r}
+jmp_raw_sanitation <- suppressMessages(readxl::read_excel(
+  PATH_JMP, sheet = "Sanitation", col_names = FALSE
+))
+
+jmp_raw_water <- suppressMessages(readxl::read_excel(
+  PATH_JMP, sheet = "Water", col_names = FALSE
+))
+
+# ── Helper ───────────────────────────────────────────────────────────────────
+parse_jmp_pct <- function(x) {
+  dplyr::case_when(
+    stringr::str_starts(x, "<") ~ 0,
+    stringr::str_starts(x, ">") ~ 100,
+    TRUE                        ~ suppressWarnings(as.numeric(x))
+  )
+}
+
+# ── Sanitation sheet ─────────────────────────────────────────────────────────
+# Columns: 1 country, 2 year, 17 sanitation_basic, 20 open_defecation,
+#          52 iso3, 53 sdg_region, 59 fragile_context
+jmp_san_cols <- c(
+  country_name     = 1,
+  analysis_year    = 2,
+  sanitation_basic = 17,
+  open_defecation  = 20,
+  iso3             = 52,
+  sdg_region       = 53,
+  fragile_context  = 59
+)
+
+jmp_san_clean <- jmp_raw_sanitation[4:nrow(jmp_raw_sanitation), unname(jmp_san_cols)] %>%
+  purrr::set_names(names(jmp_san_cols)) %>%
+  dplyr::filter(!is.na(country_name), !is.na(analysis_year)) %>%
+  dplyr::mutate(
+    analysis_year    = as.integer(analysis_year),
+    sanitation_basic = parse_jmp_pct(sanitation_basic),
+    open_defecation  = parse_jmp_pct(open_defecation)
+  )
+
+# Time-invariant metadata (iso3, sdg_region, fragile_context)
+jmp_country_meta <- jmp_san_clean %>%
+  dplyr::group_by(country_name) %>%
+  dplyr::summarise(
+    iso3            = dplyr::first(iso3[!is.na(iso3)]),
+    sdg_region      = dplyr::first(sdg_region[!is.na(sdg_region)]),
+    fragile_context = dplyr::first(fragile_context[!is.na(fragile_context)]),
+    .groups = "drop"
+  ) %>%
+  add_country_join_key_extended(
+    country_col = country_name, country_name_key_WB = country_name_key_WB
+  ) %>%
+  dplyr::select(country_join, iso3, sdg_region, fragile_context)
+
+# Year-varying sanitation estimates at PREDICTION_YEAR
+jmp_san_estimates <- jmp_san_clean %>%
+  dplyr::filter(analysis_year == PREDICTION_YEAR) %>%
+  dplyr::select(country_name, sanitation_basic, open_defecation) %>%
+  add_country_join_key_extended(
+    country_col = country_name, country_name_key_WB = country_name_key_WB
+  ) %>%
+  dplyr::select(country_join, sanitation_basic, open_defecation) %>%
+  dplyr::distinct()
+
+# ── Water sheet ──────────────────────────────────────────────────────────────
+# Columns: 1 country, 2 year, 15 at_least_basic, 38 accessible_on_premises,
+#          39 available_when_needed, 40 free_from_contamination,
+#          42 piped, 43 non-piped
+jmp_water_cols <- c(
+  country_name                           = 1,
+  analysis_year                          = 2,
+  drinking_water_basic                   = 15,
+  drinking_water_accessible_on_premises  = 38,
+  drinking_water_available_when_needed   = 39,
+  drinking_water_free_from_contamination = 40,
+  drinking_water_piped                   = 42,
+  drinking_water_non_piped               = 43
+)
+
+jmp_water_vars <- c(
+  "drinking_water_basic", "drinking_water_accessible_on_premises",
+  "drinking_water_available_when_needed", "drinking_water_free_from_contamination",
+  "drinking_water_piped", "drinking_water_non_piped"
+)
+
+jmp_water_estimates <- jmp_raw_water[4:nrow(jmp_raw_water), unname(jmp_water_cols)] %>%
+  purrr::set_names(names(jmp_water_cols)) %>%
+  dplyr::filter(!is.na(country_name), !is.na(analysis_year)) %>%
+  dplyr::mutate(
+    analysis_year = as.integer(analysis_year),
+    dplyr::across(dplyr::all_of(jmp_water_vars), parse_jmp_pct)
+  ) %>%
+  dplyr::filter(analysis_year == PREDICTION_YEAR) %>%
+  add_country_join_key_extended(
+    country_col = country_name, country_name_key_WB = country_name_key_WB
+  ) %>%
+  dplyr::select(country_join, dplyr::all_of(jmp_water_vars)) %>%
+  dplyr::distinct()
+
+# ── Join all JMP covariates ──────────────────────────────────────────────────
+df_pred_covariates <- df_pred_covariates %>%
+  add_country_join_key_extended(
+    country_col = NAME_0, country_name_key_WB = country_name_key_WB
+  ) %>%
+  dplyr::left_join(jmp_san_estimates,   by = "country_join") %>%
+  dplyr::left_join(jmp_water_estimates, by = "country_join") %>%
+  dplyr::left_join(jmp_country_meta,    by = "country_join") %>%
+  dplyr::select(-country_join)
+
+# Manual patches for countries whose names don't match JMP
+df_pred_covariates <- df_pred_covariates %>%
+  dplyr::mutate(
+    iso3 = dplyr::case_when(
+      NAME_0 == "Kosovo"    & is.na(iso3) ~ "XKX",
+      NAME_0 == "Palestina" & is.na(iso3) ~ "PSE",
+      NAME_0 == "Tanzania"  & is.na(iso3) ~ "TZA",
+      TRUE                               ~ iso3
+    ),
+    sdg_region = dplyr::case_when(
+      NAME_0 == "Kosovo"    & is.na(sdg_region) ~ "Europe and Northern America",
+      NAME_0 == "Palestina" & is.na(sdg_region) ~ "Northern Africa and Western Asia",
+      NAME_0 == "Tanzania"  & is.na(sdg_region) ~ "Sub-Saharan Africa",
+      TRUE                                      ~ sdg_region
+    )
+  )
+
+# Diagnostics
+jmp_check_vars <- c("sanitation_basic","open_defecation", "drinking_water_accessible_on_premises",
+  "drinking_water_available_when_needed", "drinking_water_free_from_contamination",
+  "drinking_water_piped", "drinking_water_non_piped", "iso3", "sdg_region")
+missing_jmp <- df_pred_covariates %>%
+  dplyr::filter(dplyr::if_any(dplyr::all_of(jmp_check_vars), is.na)) %>%
+  dplyr::distinct(NAME_0, dplyr::across(dplyr::all_of(jmp_check_vars))) %>%
+  dplyr::arrange(NAME_0)
+cat("Countries missing JMP fields:\n")
+print(missing_jmp)
+```
+
+------------------------------------------------------------------------
+
+# 4. Output
+
+## Summary
+
+```{r}
+cat("Final prediction dataframe:\n")
+cat("  Rows (regions):", nrow(df_pred_covariates), "\n")
+cat("  Columns:", ncol(df_pred_covariates), "\n")
+cat("  Countries:", dplyr::n_distinct(df_pred_covariates$NAME_0), "\n")
+
+# Overall missingness per covariate group
+country_level_vars <- c(
+  "gdp_per_capita_constant_2015_usd", "secondary_education_duration_years",
+  "ww_collection_percent", "ww_treatment_percent", "ww_reuse_percent",
+  unname(indicator_map),
+  "wb_income_group", "sanitation_basic", "open_defecation",
+  jmp_water_vars,
+  "iso3", "sdg_region"
+)
+# Flag any expected country-level columns that are absent entirely
+missing_cols <- setdiff(country_level_vars, colnames(df_pred_covariates))
+if (length(missing_cols) > 0) {
+  warning(
+    "The following country-level columns are not yet in df_pred_covariates ",
+    "(Section 3 joins may not have run):\n  ",
+    paste(missing_cols, collapse = ", ")
+  )
+}
+
+# Report missingness only for columns that are actually present
+present_vars <- intersect(country_level_vars, colnames(df_pred_covariates))
+if (length(present_vars) > 0) {
+  df_pred_covariates %>%
+    dplyr::summarise(dplyr::across(
+      dplyr::all_of(present_vars),
+      ~ sum(is.na(.x)),
+      .names = "n_missing_{.col}"
+    )) %>%
+    tidyr::pivot_longer(everything(), names_to = "variable", values_to = "n_missing") %>%
+    dplyr::mutate(variable = stringr::str_remove(variable, "^n_missing_")) %>%
+    dplyr::filter(n_missing > 0) %>%
+    dplyr::arrange(desc(n_missing))
+}
+```
+
+## Write prediction CSV
+
+```{r}
+dir.create(OUTPUT_DIR, recursive = TRUE, showWarnings = FALSE)
+
+# Final column checks before writing
+required_output_cols <- c("GID_1", "NAME_0", "NAME_1", "sdg_region",
+                           "wb_income_group", "fragile_context")
+missing_output_cols <- setdiff(required_output_cols, colnames(df_pred_covariates))
+if (length(missing_output_cols) > 0) {
+  stop(
+    "The following columns required for downstream analysis are missing from ",
+    "the final prediction dataframe:\n  ",
+    paste(missing_output_cols, collapse = ", "), "\n",
+    "Check that they are present in the GEE-sampled input and joined correctly."
+  )
+} else {
+  message("All required identifier/stratification columns present: ",
+          paste(required_output_cols, collapse = ", "))
+}
+
+# Reorder columns so identifier / stratification columns come first,
+# making the file easy to inspect and join to shapefiles.
+lead_cols <- c("GID_1", "NAME_0", "NAME_1", "sdg_region",
+               "wb_income_group", "fragile_context")
+other_cols <- setdiff(colnames(df_pred_covariates), lead_cols)
+df_pred_covariates <- dplyr::select(df_pred_covariates,
+                                    dplyr::all_of(lead_cols),
+                                    dplyr::all_of(other_cols))
+
+output_path <- file.path(OUTPUT_DIR, paste0("prediction_covariates_", PREDICTION_YEAR, ".csv"))
+readr::write_csv(df_pred_covariates, output_path)
+
+message("Written: ", output_path)
+```
