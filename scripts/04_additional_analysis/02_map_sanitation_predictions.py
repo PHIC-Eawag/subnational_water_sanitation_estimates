@@ -251,3 +251,43 @@ save_panel(
 )
 
 print("\nDone.")
+
+# -------------------------------------------------------
+# 7.  Alternative colour-palette experiment
+#
+#     Basic sanitation : yellow → green  (light = low, dark = high)
+#     Open defecation  : pale pink → orange → dark brown
+#                        (light = low OD, dark = high OD)
+# -------------------------------------------------------
+
+BS_CMAP_ALT = LinearSegmentedColormap.from_list(
+    "YlGn_custom",
+    ["#ffffe5", "#78c679", "#006837"],   # yellow → mid-green → dark green
+    N=256,
+)
+
+OD_CMAP_ALT = LinearSegmentedColormap.from_list(
+    "PinkOrangeBrown_custom",
+    ["#fde0dd", "#fa8c4f", "#7f2704"],   # pale pink → orange → dark brown
+    N=256,
+)
+
+print("\nDrawing alt_fig1a — basic sanitation median (yellow–green palette) …")
+save_panel(
+    filename="alt_fig1a_basic_sanitation_median",
+    gdf_panel=gdf_bs, col="median", cmap=BS_CMAP_ALT, vmin=0, vmax=1,
+    borders=borders_bs, panel_label="a", full_title="Basic sanitation",
+    cbar_label="Estimated proportion of population with basic sanitation",
+    cbar_ticks=[0.0, 0.25, 0.50, 0.75, 1.0],
+)
+
+print("Drawing alt_fig1b — open defecation median (pink–orange–brown palette) …")
+save_panel(
+    filename="alt_fig1b_open_defecation_median",
+    gdf_panel=gdf_od, col="median", cmap=OD_CMAP_ALT, vmin=0, vmax=1,
+    borders=borders_od, panel_label="b", full_title="Open defecation",
+    cbar_label="Estimated proportion of population practising open defecation",
+    cbar_ticks=[0.0, 0.25, 0.50, 0.75, 1.0],
+)
+
+print("\nDone (alternative palettes).")

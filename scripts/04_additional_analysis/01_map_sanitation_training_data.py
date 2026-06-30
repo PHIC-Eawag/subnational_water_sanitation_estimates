@@ -114,9 +114,10 @@ gdf[gdf["source_group"] == "DHS"].plot(
     ax=ax, color=DHS_COLOUR, linewidth=0, zorder=1,
 )
 
-# Country borders
-borders.boundary.plot(
-    ax=ax, linewidth=0.25, edgecolor="#333333", zorder=2,
+# Country borders — drawn from the world layer so all countries are outlined,
+# not just those present in the training data shapefile.
+world.boundary.plot(
+    ax=ax, linewidth=0.08, edgecolor="#555555", zorder=2,
 )
 
 legend_handles = [
