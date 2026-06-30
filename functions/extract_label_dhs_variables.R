@@ -219,34 +219,40 @@ extractDHSStandardSurveyVariables <- function(hh_Survey, country_name = NULL) {
 
 
 setDHSMainSourceLabels <- function(df) {
-  
-  # DHS drinking water source codes differ slightly from MICS:
-  # in DHS 8, 71 = bottled water and 72 = water bag.
-  # Therefore 71/72 are coded as packaged water = 3.
-  
+
+  # Country-specific codes confirmed from SPSS value labels:
+  #   15 = Standpipe / Piped to buy (Burkina Faso, Gabon)
+  #   16 = Autonomous water station / Piped to elsewhere (Burkina Faso, Gabon)
+  #   22 = Borehole / Open well with sump pump (Burkina Faso, Colombia)
+  #   33 = Borehole with pump (Angola)
+  #   44 = Unprotected spring (Guatemala)
+  #   63 = Motorcycle with three wheels / water delivery vehicle (Angola, Pakistan)
+  #   73 = Water kiosk (Zambia, Tanzania)
+  #   82 = Sachet water (Gabon)
+
   df$WS1 <- case_when(
-    df$WS1 %in% c(32, 42, 43, 96, 99) ~ 0,
-    df$WS1 %in% c(10, 13, 14, 20, 21, 31, 41, 51, 61, 62) ~ 1,
+    df$WS1 %in% c(32, 42, 43, 44, 81, 96, 99) ~ 0,
+    df$WS1 %in% c(10, 13, 14, 15, 16, 20, 21, 22, 31, 33, 41, 51, 61, 62, 63, 71) ~ 1,
     df$WS1 %in% c(11, 12) ~ 2,
-    df$WS1 %in% c(71, 72, 91, 92) ~ 3,
+    df$WS1 %in% c(72, 73, 82, 91, 92) ~ 3,
     is.na(df$WS1) ~ NA_real_,
     TRUE ~ df$WS1
   )
-  
+
   return(df)
 }
 
 setDHSSecondarySourceLabels <- function(df) {
-  
+
   df$WS2 <- case_when(
-    df$WS2 %in% c(32, 42, 43, 96, 99) ~ 0,
-    df$WS2 %in% c(10, 13, 14, 20, 21, 31, 41, 51, 61, 62) ~ 1,
+    df$WS2 %in% c(32, 42, 43, 44, 81, 96, 99) ~ 0,
+    df$WS2 %in% c(10, 13, 14, 15, 16, 20, 21, 22, 31, 33, 41, 51, 61, 62, 63, 71) ~ 1,
     df$WS2 %in% c(11, 12) ~ 2,
-    df$WS2 %in% c(71, 72, 91, 92) ~ 3,
+    df$WS2 %in% c(72, 73, 82, 91, 92) ~ 3,
     is.na(df$WS2) ~ NA_real_,
     TRUE ~ df$WS2
   )
-  
+
   return(df)
 }
 

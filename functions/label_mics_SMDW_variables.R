@@ -1,91 +1,126 @@
 #title: "Functions For Re-Labeling Household MICS SPSS files"
 
-#WS1 and WS2 Main and Secondary Drinking Water source 
+#WS1 and WS2 Main and Secondary Drinking Water source
 
-#Unmproved = 0
+#Unimproved = 0
 #32   unprotected well
 #42   unprotected spring
 #43   surface water (river/dam/lake/pond/stream/canal/irrigation channel)
+#44   unprotected spring — Guatemala DHS HV201 country-specific code
+#       (confirmed from SPSS value labels)
 #81   surface water
 #96   other
 #99   no response
 
 #Improved = 1
 #13   piped to neighbor
-#14   public tap/standpipe
+#14   public tap / standpipe
+#15   standpipe / piped to buy — Burkina Faso DHS ("Standpipe"),
+#       Gabon DHS ("Piped to buy"); confirmed from SPSS value labels
+#16   autonomous water station / piped to elsewhere — Burkina Faso DHS
+#       ("Autonomous water station"), Gabon DHS ("Piped to elsewhere");
+#       confirmed from SPSS value labels
 #21   tube well or borehole
-#22   BOREHOLE: MOTORIZED PUMP
+#22   borehole / open well with sump pump — Burkina Faso DHS ("Borehole"),
+#       Colombia DHS ("Open well with sump pump"); confirmed from SPSS value labels
 #23   BOREHOLE: HAND PUMP (Machincal)
 #31   protected well
+#33   borehole with pump — Angola DHS; confirmed from SPSS value labels
 #41   protected spring
 #51   rainwater
+#52   own cement or other tank / protected rainwater — Tonga MICS
+#       ("Own cement or other tank"), Vanuatu MICS ("Rainwater: protected rainwater");
+#       confirmed from SPSS value labels
+#53   neighbour's cement or other tank / unprotected rainwater — Tonga MICS
+#       ("Neighbour's cement or other tank"), Vanuatu MICS
+#       ("Rainwater: unprotected rainwater"); JMP classifies all rainwater as improved;
+#       confirmed from SPSS value labels
+#54   community cement or other tank — Tonga MICS; confirmed from SPSS value labels
 #61   tanker truck
 #62   cart with small tank
-#71   CART WITH SMALL TANK
+#63   motorcycle with three wheels (water delivery vehicle) — Angola DHS;
+#       confirmed from SPSS value labels
+#71   bottled water
 #93   AGUA DE CAMIONCITO PROCESADA
 
 #Improved and on plot = 2
 #11   piped into dwelling
 #12   piped to yard/plot
-#(13   piped water:from the house or yard of the neighbor 
+#(13   piped water: from the house or yard of the neighbor
 # (classified as on plot in Dominican Republic))
 
 #Improved (bottled/kiosk or desalinated) = 3
-
-#72   WATER KIOSK (WATER SELLING PLANT)
+#72   water kiosk / sachet water
+#73   water kiosk — Zambia DHS; confirmed from SPSS value labels
+#82   sachet water — Gabon DHS; confirmed from SPSS value labels
+#       (corrected from original classification of 0/unimproved)
 #91   bottled water
 #92   PACKAGED WATER: SACHET WATER
+#94   PACKAGED WATER: GLASS / CUP WATER — Thailand MICS;
+#       confirmed from SPSS value labels
+#95   COIN-OPERATED WATER DISPENSER — Thailand MICS;
+#       confirmed from SPSS value labels
 
 
 
 setMainSourceLabels <- function(df,WS1) {
   #Unimproved
-  df$WS1[df$WS1 == 32|df$WS1 == 42|df$WS1 == 43|df$WS1 == 81|df$WS1 == 96|
-           df$WS1 == 99] <- 0
-  
+  df$WS1[df$WS1 == 32|df$WS1 == 42|df$WS1 == 43|df$WS1 == 44|df$WS1 == 81|
+           df$WS1 == 96|df$WS1 == 99] <- 0
+
   #Improved
-  df$WS1[df$WS1 == 13|df$WS1 == 14|df$WS1 == 21|df$WS1 == 22|df$WS1 == 23|df$WS1 == 31
-         |df$WS1 == 41|df$WS1 == 51|df$WS1 == 61|df$WS1 == 62|df$WS1 == 71|df$WS1 == 72 
-         |df$WS1 == 93] <- 1
-  
-  
+  df$WS1[df$WS1 == 13|df$WS1 == 14|df$WS1 == 15|df$WS1 == 16|
+           df$WS1 == 21|df$WS1 == 22|df$WS1 == 23|
+           df$WS1 == 31|df$WS1 == 33|
+           df$WS1 == 41|df$WS1 == 51|df$WS1 == 52|df$WS1 == 53|df$WS1 == 54|
+           df$WS1 == 61|df$WS1 == 62|df$WS1 == 63|
+           df$WS1 == 71|
+           df$WS1 == 93] <- 1
+
   #Improved and on plot
   df$WS1[df$WS1 == 11|df$WS1 == 12] <- 2
-  
+
   #Improved (bottled/kiosk or desalinated)
-  df$WS1[df$WS1 == 91|df$WS1 == 92] <- 3
-  
+  df$WS1[df$WS1 == 72|df$WS1 == 73|df$WS1 == 82|
+           df$WS1 == 91|df$WS1 == 92|df$WS1 == 94|df$WS1 == 95] <- 3
+
   return(df)
 }
 
 setSecondarySourceLabels <- function(df,WS2) {
   #Unimproved
-  df$WS2[df$WS2 == 32|df$WS2 == 42|df$WS2 == 43|df$WS2 == 81|df$WS2 == 96|
-           df$WS2 == 99] <- 0
-  
+  df$WS2[df$WS2 == 32|df$WS2 == 42|df$WS2 == 43|df$WS2 == 81|
+           df$WS2 == 96|df$WS2 == 99] <- 0
+
   #Improved
-  df$WS2[df$WS2 == 13|df$WS2 == 14|df$WS2 == 21|df$WS2 == 22|df$WS2 == 23|df$WS2 == 31
-         |df$WS2 == 41|df$WS2 == 51|df$WS2 == 61|df$WS2 == 62|df$WS2 == 71|df$WS2 == 72 
-         |df$WS2 == 93] <- 1
-  
-  
+  df$WS2[df$WS2 == 13|df$WS2 == 14|df$WS2 == 15|df$WS2 == 16|
+           df$WS2 == 21|df$WS2 == 22|df$WS2 == 23|
+           df$WS2 == 31|df$WS2 == 33|
+           df$WS2 == 41|df$WS2 == 51|df$WS2 == 52|df$WS2 == 53|df$WS2 == 54|
+           df$WS2 == 61|df$WS2 == 62|df$WS2 == 63|
+           df$WS2 == 71|
+           df$WS2 == 93] <- 1
+
   #Improved and on plot
   df$WS2[df$WS2 == 11|df$WS2 == 12] <- 2
-  
+
   #Improved (bottled/kiosk or desalinated)
-  df$WS2[df$WS2 == 71|df$WS2 == 91|df$WS2 == 92] <- 3
-  
+  df$WS2[df$WS2 == 72|df$WS2 == 73|df$WS2 == 82|
+           df$WS2 == 91|df$WS2 == 92] <- 3
+
   return(df)
 }
 
 
 #WS3 Water Source location
-#1 IN OWN DWELLING   
+#1 IN OWN DWELLING
 #2 IN OWN YARD / PLOT
-#3 ELSEWHERE         
-#-99 NO RESPONSE 
+#3 ELSEWHERE
+#  4   PORTEUR D'EAU / water carrier (Chad MICS) → classified as elsewhere
+#-99 NO RESPONSE
 
 setWS3_WslocationLabels <- function(df,WS3) {
+  df$WS3[df$WS3 == 4] <- 3   # PORTEUR D'EAU: water carrier, source is elsewhere (Chad MICS)
   df$WS3[df$WS3 == 9] <- -99
   return(df)
 }
