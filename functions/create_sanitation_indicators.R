@@ -184,6 +184,64 @@ createIndicatorForRegionalOpenDefecation <- function(df) {
 }
 
 # =============================================================================
+# Step 3c — National basic sanitation and open defecation estimates
+# =============================================================================
+# Mirrors the regional functions but groups by country only, producing one
+# weighted proportion per country across all regions and households.
+
+createNationalSanitationEstimates <- function(df) {
+  prepared <- df %>%
+    prepareSanitationData() %>%
+    harmonise_household_country_region_names_for_modelling() %>%
+    renameDuplicateHH7RegionNamesFromDifferentCountries_sanitation() %>%
+    dplyr::mutate(
+      WS11            = as.numeric(WS11),
+      HH48_hhweight   = as.numeric(HH48) * as.numeric(hhweight),
+      basic_sanitation = dplyr::case_when(
+        WS11 == 2 & WS15_clean == 0 ~ 1,
+        is.na(WS11)                 ~ NA_real_,
+        TRUE                        ~ 0
+      ),
+      open_defecation  = dplyr::if_else(WS11 == 0, 1, 0)
+    ) %>%
+    tidyr::drop_na(country, HH7_region, HH48, hhweight, WS11, HH5Y)
+
+  prepared %>%
+    dplyr::group_by(country) %>%
+    dplyr::summarise(
+      n_hh_basic_sanitation        = sum(!is.na(basic_sanitation)),
+      n_hh_open_defecation         = sum(!is.na(open_defecation)),
+      HouseholdMembersNational     = sum(HH48_hhweight, na.rm = TRUE),
+      HHmembersBasicSanitation     = sum(
+        HH48_hhweight * dplyr::if_else(basic_sanitation == 1, 1, 0, missing = 0),
+        na.rm = TRUE
+      ),
+      HHmembersOD                  = sum(
+        HH48_hhweight * open_defecation,
+        na.rm = TRUE
+      ),
+      prop_basic_sanitation_national = dplyr::if_else(
+        HouseholdMembersNational > 0,
+        HHmembersBasicSanitation / HouseholdMembersNational,
+        NA_real_
+      ),
+      prop_open_defecation_national  = dplyr::if_else(
+        HouseholdMembersNational > 0,
+        HHmembersOD / HouseholdMembersNational,
+        NA_real_
+      ),
+      .groups = "drop"
+    ) %>%
+    dplyr::select(
+      country,
+      prop_basic_sanitation_national,
+      n_hh_basic_sanitation,
+      prop_open_defecation_national,
+      n_hh_open_defecation
+    )
+}
+
+# =============================================================================
 # Step 4 — Workflow wrappers (mirror make_*_regional_outcome in create_indicators.R)
 # =============================================================================
 
