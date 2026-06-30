@@ -394,7 +394,7 @@ make_training_covariates <- function(pop_files, nonpop_files, covariate_cols) {
   # Reads population and non-population geospatial covariates,
   # standardises their region names, and joins them into one table.
   
-  join_cols <- c("country", "analysis_year", "HH7_region", "source", "GID_1","GID_0")
+  join_cols <- c("country", "analysis_year", "HH7_region", "source")
   
   df_pop_raw <- read_existing_csvs(pop_files) %>%
     readr::type_convert()
@@ -881,7 +881,7 @@ build_crosswalk_for_one_outcome <- function(
     outcome_df,
     df_training_covariates,
     country_name_key_WB,
-    output_dir = here::here("./outputs/01_matching_regions/crosswalk_review")
+    output_dir
 ) {
   # Builds and exports an initial crosswalk and a review file for one outcome.
   # Manual corrections are added later.
@@ -912,7 +912,7 @@ apply_manual_fixes_for_one_outcome <- function(
     outcome_name,
     crosswalk_results,
     manual_region_fixes,
-    output_dir = here::here("./data/crosswalk_review")
+    output_dir
 ) {
   # Applies manual corrections after you have reviewed the crosswalk file.
   # For now, manual_region_fixes can be an empty tibble.
@@ -938,7 +938,7 @@ join_and_save_one_training_dataset <- function(
     outcome_df,
     df_training_covariates,
     region_crosswalk_final,
-    output_dir = here::here("./data/training_subcomponents")
+    output_dir
 ) {
   # Joins one outcome to the geospatial covariates and saves:
   #   1. the final model-ready training CSV
