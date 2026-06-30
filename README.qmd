@@ -2,7 +2,7 @@
 
 ## Overview
 
-Link to the repository:
+Link to the repository:https://github.com/PHIC-Eawag/subnational_water_sanitation_estimates.git 
 
 This repository contains code for modelling subnational estimates of basic sanitation, open defecation, and safely managed drinking water (SMDW) across low- and middle-income countries (LMICs), using household survey data and geospatial covariates. Models are trained at the survey region level and predictions are generated for all LMIC admin1 units.
 
