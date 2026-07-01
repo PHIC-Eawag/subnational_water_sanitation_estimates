@@ -1,152 +1,348 @@
 # -------------------------------------------------------
-# Sanitation training data — survey source coverage map
+# Descriptive statistics for results text
 #
-# Colours shapefile regions by data source:
-#   MICS (incl. GADM_other, GADM_wq, MICS, MICS_other, other)
-#   DHS
+# Computes medians, IQRs, and counts needed to fill
+# placeholders in the results section, for:
+#   - SDG regions
+#   - Income groups
+#   - Fragile contexts
+#   - Within-country ranges
+#   - Data gap countries (with/without JMP estimates)
 #
-# Projection : Equal Earth
+# Outputs a printed summary and a CSV for reference.
 # -------------------------------------------------------
 
 import os
-from pathlib import Path
-import geopandas as gpd
-import matplotlib as mpl
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
+import numpy as np
+import pandas as pd
 
 # -------------------------------------------------------
 # 1.  Paths
 # -------------------------------------------------------
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
-SHP_DIR      = PROJECT_ROOT / "data/processed/survey_boundaries"
-FIGURE_DIR = "outputs/figures"
-os.makedirs(FIGURE_DIR, exist_ok=True)
+PRED_DIR   = "outputs/model_performance/predictions"
+OUTPUT_DIR = "outputs/descriptive_statistics"
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-BOUNDARY_SHP = os.path.join(SHP_DIR, "all_selected_boundaries_for_sampling_v2.shp")
-
-# -------------------------------------------------------
-# 2.  Style
-# -------------------------------------------------------
-
-EQUAL_EARTH_CRS = "+proj=eqearth +lon_0=0 +datum=WGS84 +units=m +no_defs"
-
-# Nature Water double-column = 180 mm = 7.09 in
-# At 300 DPI this is 2127 px wide — correct for print submission.
-# Font sizes are in points (1/72 in), so 6 pt on a 7.09 in figure
-# is correct journal body size.
-FIG_WIDTH  = 7.09
-FIG_HEIGHT = 3.9
-DPI        = 300
-
-MICS_COLOUR = "#2166ac"
-DHS_COLOUR  = "#d6604d"
-HI_COLOUR   = "#d9d9d9"
-
-mpl.rcParams.update({
-    "font.family":      "sans-serif",
-    "font.sans-serif":  ["Arial", "Helvetica Neue", "Helvetica", "DejaVu Sans"],
-    "font.size":        1.2,
-    "axes.titlesize":   1.4,
-    "legend.fontsize":  1.2,
-    "figure.dpi":       DPI,
-    "savefig.dpi":      DPI,
-    # Prevent matplotlib from adding any default edge colours
-    "patch.edgecolor":  "none",
-    "patch.linewidth":  0,
-})
-
-MICS_SOURCES = {"GADM_other", "GADM_wq", "MICS", "MICS_other", "other"}
+BS_PRED = os.path.join(PRED_DIR, "basic_sanitation_tabpfn_lmic_predictions.csv")
+OD_PRED = os.path.join(PRED_DIR, "open_defecation_tabpfn_lmic_predictions.csv")
 
 # -------------------------------------------------------
-# 3.  Load and prepare shapefile
+# 2.  Load data
 # -------------------------------------------------------
 
-print("Loading boundary shapefile …")
-gdf = gpd.read_file(BOUNDARY_SHP)
-print(f"  {len(gdf):,} regions | CRS: {gdf.crs}")
-print(f"  Source values: {gdf['source'].unique().tolist()}")
+bs = pd.read_csv(BS_PRED)
+od = pd.read_csv(OD_PRED)
 
-for _col in ("GID_0", "NAME_0", "ISO", "COUNTRY", "country"):
-    if _col in gdf.columns:
-        COUNTRY_COL = _col
-        break
+# Add 90% PI width
+bs["width_90"] = bs["pi90_upper"] - bs["pi90_lower"]
+od["width_90"] = od["pi90_upper"] - od["pi90_lower"]
+
+INCOME_LABELS = {"L": "Low income", "LM": "Lower middle income",
+                 "UM": "Upper middle income"}
+bs["income_label"] = bs["wb_income_group"].map(INCOME_LABELS)
+od["income_label"] = od["wb_income_group"].map(INCOME_LABELS)
+
+# -------------------------------------------------------
+# 3.  Helper
+# -------------------------------------------------------
+
+def summarise(df, group_col, value_col="median"):
+    """Return n regions, median, Q25, Q75 per group."""
+    def stats(x):
+        return pd.Series({
+            "n_regions":  len(x),
+            "n_countries": x["NAME_0"].nunique() if "NAME_0" in x.columns else np.nan,
+            "min":        round(x[value_col].min() * 100, 1),
+            "median":     round(x[value_col].median() * 100, 1),
+            "max":        round(x[value_col].max() * 100, 1),
+            "q25":        round(x[value_col].quantile(0.25) * 100, 1),
+            "q75":        round(x[value_col].quantile(0.75) * 100, 1),
+        })
+    return df.groupby(group_col).apply(stats, include_groups=False).reset_index()
+
+
+def print_section(title, df):
+    print(f"\n{'='*60}")
+    print(title)
+    print('='*60)
+    print(df.to_string(index=False))
+
+
+def versioned_path(directory, filename):
+    """Return directory/filename_vN.csv where N is the next unused version."""
+    stem = filename.replace(".csv", "")
+    version = 1
+    while True:
+        path = os.path.join(directory, f"{stem}_v{version}.csv")
+        if not os.path.exists(path):
+            return path
+        version += 1
+
+
+# -------------------------------------------------------
+# 4.  SDG region summaries
+# -------------------------------------------------------
+
+bs_sdg = summarise(bs, "sdg_region")
+od_sdg = summarise(od, "sdg_region")
+
+# Merge for side-by-side comparison
+sdg_combined = bs_sdg.rename(columns={
+    "min": "BS_min_%", "median": "BS_median_%", "max": "BS_max_%",
+    "q25": "BS_q25_%", "q75": "BS_q75_%", "n_regions": "n_regions_BS"
+}).merge(
+    od_sdg.rename(columns={
+        "min": "OD_min_%", "median": "OD_median_%", "max": "OD_max_%",
+        "q25": "OD_q25_%", "q75": "OD_q75_%", "n_regions": "n_regions_OD"
+    }),
+    on="sdg_region", how="outer"
+).sort_values("BS_median_%")
+
+print_section("BASIC SANITATION & OPEN DEFECATION — BY SDG REGION", sdg_combined)
+sdg_combined.to_csv(versioned_path(OUTPUT_DIR, "stats_sdg_region.csv"), index=False)
+
+# -------------------------------------------------------
+# 5.  Income group summaries
+# -------------------------------------------------------
+
+INCOME_ORDER = ["Low income", "Lower middle income", "Upper middle income"]
+
+bs_inc = summarise(bs[bs["income_label"].notna()], "income_label")
+od_inc = summarise(od[od["income_label"].notna()], "income_label")
+
+inc_combined = bs_inc.rename(columns={
+    "min": "BS_min_%", "median": "BS_median_%", "max": "BS_max_%",
+    "q25": "BS_q25_%", "q75": "BS_q75_%", "n_regions": "n_regions_BS"
+}).merge(
+    od_inc.rename(columns={
+        "min": "OD_min_%", "median": "OD_median_%", "max": "OD_max_%",
+        "q25": "OD_q25_%", "q75": "OD_q75_%", "n_regions": "n_regions_OD"
+    }),
+    on="income_label", how="outer"
+)
+inc_combined["income_label"] = pd.Categorical(
+    inc_combined["income_label"], categories=INCOME_ORDER, ordered=True
+)
+inc_combined = inc_combined.sort_values("income_label")
+
+print_section("BASIC SANITATION & OPEN DEFECATION — BY INCOME GROUP", inc_combined)
+inc_combined.to_csv(versioned_path(OUTPUT_DIR, "stats_income_group.csv"), index=False)
+
+# -------------------------------------------------------
+# 6.  Fragile context summaries
+# -------------------------------------------------------
+
+def label_fragile(x):
+    if isinstance(x, str) and x.strip() == "Fragile or Extremely Fragile":
+        return "Fragile or Extremely Fragile"
+    return "Non-fragile"
+
+bs["fragile_label"] = bs["fragile_context"].apply(label_fragile)
+od["fragile_label"] = od["fragile_context"].apply(label_fragile)
+
+bs_frag = summarise(bs, "fragile_label")
+od_frag = summarise(od, "fragile_label")
+
+frag_combined = bs_frag.rename(columns={
+    "min": "BS_min_%", "median": "BS_median_%", "max": "BS_max_%",
+    "q25": "BS_q25_%", "q75": "BS_q75_%", "n_regions": "n_regions_BS"
+}).merge(
+    od_frag.rename(columns={
+        "min": "OD_min_%", "median": "OD_median_%", "max": "OD_max_%",
+        "q25": "OD_q25_%", "q75": "OD_q75_%", "n_regions": "n_regions_OD"
+    }),
+    on="fragile_label", how="outer"
+)
+
+print_section("BASIC SANITATION & OPEN DEFECATION — BY FRAGILE CONTEXT", frag_combined)
+frag_combined.to_csv(versioned_path(OUTPUT_DIR, "stats_fragile_context.csv"), index=False)
+
+# -------------------------------------------------------
+# 7.  Within-country range (max - min across Admin-1 units)
+# -------------------------------------------------------
+
+country_col = "NAME_0" if "NAME_0" in bs.columns else "country"
+
+bs_range = (
+    bs.groupby(country_col)["median"]
+    .agg(["min", "max", "count"])
+    .assign(range=lambda x: (x["max"] - x["min"]) * 100)
+    .reset_index()
+    .sort_values("range", ascending=False)
+)
+bs_range["min_pct"]  = (bs_range["min"] * 100).round(1)
+bs_range["max_pct"]  = (bs_range["max"] * 100).round(1)
+bs_range["range"]    = bs_range["range"].round(1)
+
+print_section("TOP 10 COUNTRIES BY WITHIN-COUNTRY RANGE — BASIC SANITATION",
+              bs_range.head(10)[[country_col, "count", "min_pct", "max_pct", "range"]])
+
+od_range = (
+    od.groupby(country_col)["median"]
+    .agg(["min", "max", "count"])
+    .assign(range=lambda x: (x["max"] - x["min"]) * 100)
+    .reset_index()
+    .sort_values("range", ascending=False)
+)
+od_range["min_pct"] = (od_range["min"] * 100).round(1)
+od_range["max_pct"] = (od_range["max"] * 100).round(1)
+od_range["range"]   = od_range["range"].round(1)
+
+print_section("TOP 10 COUNTRIES BY WITHIN-COUNTRY RANGE — OPEN DEFECATION",
+              od_range.head(10)[[country_col, "count", "min_pct", "max_pct", "range"]])
+
+bs_range.to_csv(versioned_path(OUTPUT_DIR, "stats_within_country_range_BS.csv"), index=False)
+od_range.to_csv(versioned_path(OUTPUT_DIR, "stats_within_country_range_OD.csv"), index=False)
+
+# -------------------------------------------------------
+# 8.  Data gap countries
+#     (countries with/without JMP national estimates)
+#     Requires a 'has_jmp_data' column in predictions.
+#     If not present, flag for manual check.
+# -------------------------------------------------------
+
+if "sanitation_basic" in bs.columns:
+    # Countries where JMP national estimate is available (non-null)
+    bs["has_jmp"] = bs["sanitation_basic"].notna()
+    n_countries_total      = bs[country_col].nunique()
+    n_countries_with_jmp   = bs[bs["has_jmp"]][country_col].nunique()
+    n_countries_without_jmp = bs[~bs["has_jmp"]][country_col].nunique()
+    n_regions_total        = len(bs)
+    n_regions_with_jmp     = bs[bs["has_jmp"]].shape[0]
+    n_regions_without_jmp  = bs[~bs["has_jmp"]].shape[0]
+
+    print(f"\n{'='*60}")
+    print("DATA GAP FILLING — BASIC SANITATION")
+    print('='*60)
+    print(f"  Total countries:              {n_countries_total}")
+    print(f"  Countries with JMP data:      {n_countries_with_jmp}")
+    print(f"  Countries without JMP data:   {n_countries_without_jmp}")
+    print(f"  Total Admin-1 regions:        {n_regions_total}")
+    print(f"  Regions with JMP data:        {n_regions_with_jmp}")
+    print(f"  Regions without JMP data:     {n_regions_without_jmp}")
+
+    # Which SDG regions/income groups have most data gaps?
+    gap_countries = bs[~bs["has_jmp"]][[country_col, "sdg_region", "income_label"]].drop_duplicates()
+    gap_by_sdg = gap_countries.groupby("sdg_region").size().sort_values(ascending=False)
+    print("\n  Data gap countries by SDG region:")
+    print(gap_by_sdg.to_string())
+    gap_by_sdg.to_csv(versioned_path(OUTPUT_DIR, "stats_data_gaps_by_sdg.csv"))
 else:
-    raise ValueError("No country column found in boundary shapefile.")
-
-gdf["source_group"] = gdf["source"].apply(
-    lambda s: "MICS" if s in MICS_SOURCES else ("DHS" if s == "DHS" else "Other")
-)
-
-print(f"  MICS regions : {(gdf['source_group'] == 'MICS').sum():,}")
-print(f"  DHS regions  : {(gdf['source_group'] == 'DHS').sum():,}")
+    print("\n  [NOTE] 'sanitation_basic' column not found — "
+          "cannot compute data gap statistics. "
+          "Ensure JMP estimates are joined to prediction file.")
 
 # -------------------------------------------------------
-# 4.  Reproject
+# 9.  90% PI width by SDG region
 # -------------------------------------------------------
 
-print("Reprojecting …")
-gdf     = gdf.to_crs(EQUAL_EARTH_CRS)
-borders = gdf[[COUNTRY_COL, "geometry"]].dissolve(by=COUNTRY_COL)
+def summarise_width(df, group_col, value_col="width_90"):
+    def stats(x):
+        return pd.Series({
+            "min_width_%":    round(x[value_col].min() * 100, 1),
+            "median_width_%": round(x[value_col].median() * 100, 1),
+            "max_width_%":    round(x[value_col].max() * 100, 1),
+        })
+    return df.groupby(group_col).apply(stats, include_groups=False).reset_index()
 
-print("Loading world background …")
-world = gpd.read_file(
-    "https://naturalearth.s3.amazonaws.com/110m_cultural/"
-    "ne_110m_admin_0_countries.zip"
-)
-world = world.to_crs(EQUAL_EARTH_CRS)
+bs_width_sdg = summarise_width(bs, "sdg_region")
+od_width_sdg = summarise_width(od, "sdg_region")
+
+# Order by ascending BS median width (matches figure)
+sdg_width_order = bs_width_sdg.set_index("sdg_region")["median_width_%"].sort_values().index
+
+width_sdg_combined = bs_width_sdg.rename(columns={
+    "min_width_%": "BS_min_width_%", "median_width_%": "BS_median_width_%",
+    "max_width_%": "BS_max_width_%"
+}).merge(
+    od_width_sdg.rename(columns={
+        "min_width_%": "OD_min_width_%", "median_width_%": "OD_median_width_%",
+        "max_width_%": "OD_max_width_%"
+    }),
+    on="sdg_region", how="outer"
+).set_index("sdg_region").loc[sdg_width_order].reset_index()
+
+print_section("90% PREDICTION INTERVAL WIDTH — BY SDG REGION", width_sdg_combined)
+width_sdg_combined.to_csv(versioned_path(OUTPUT_DIR, "stats_pi_width_sdg_region.csv"), index=False)
 
 # -------------------------------------------------------
-# 5.  Plot
+# 10.  Top 10 countries by widest prediction intervals
+#      Ranked by median width_90 across Admin-1 regions
 # -------------------------------------------------------
 
-print("Drawing map …")
+def top10_wide_pi(df, country_col):
+    return (
+        df.groupby(country_col)["width_90"]
+        .agg(
+            n_regions="count",
+            min_width=lambda x: round(x.min() * 100, 1),
+            median_width=lambda x: round(x.median() * 100, 1),
+            max_width=lambda x: round(x.max() * 100, 1),
+        )
+        .reset_index()
+        .sort_values("median_width", ascending=False)
+        .head(10)
+        .rename(columns={
+            "min_width":    "min_width_%",
+            "median_width": "median_width_%",
+            "max_width":    "max_width_%",
+        })
+    )
 
-fig, ax = plt.subplots(1, 1, figsize=(FIG_WIDTH, FIG_HEIGHT))
-ax.set_aspect("equal")
-ax.axis("off")
+bs_top10_pi = top10_wide_pi(bs, country_col)
+od_top10_pi = top10_wide_pi(od, country_col)
 
-# World background — edgecolor and linewidth both silenced explicitly
-world.plot(ax=ax, color=HI_COLOUR, edgecolor="none", linewidth=0, zorder=0)
+print_section("TOP 10 COUNTRIES BY WIDEST 90% PI — BASIC SANITATION", bs_top10_pi)
+print_section("TOP 10 COUNTRIES BY WIDEST 90% PI — OPEN DEFECATION", od_top10_pi)
 
-# MICS regions
-gdf[gdf["source_group"] == "MICS"].plot(
-    ax=ax, color=MICS_COLOUR, edgecolor="none", linewidth=0, zorder=1,
-)
+bs_top10_pi.to_csv(versioned_path(OUTPUT_DIR, "stats_wide_pi_top10_BS.csv"), index=False)
+od_top10_pi.to_csv(versioned_path(OUTPUT_DIR, "stats_wide_pi_top10_OD.csv"), index=False)
 
-# DHS regions
-gdf[gdf["source_group"] == "DHS"].plot(
-    ax=ax, color=DHS_COLOUR, edgecolor="none", linewidth=0, zorder=1,
-)
+# -------------------------------------------------------
+# 11.  Top 10 Admin-1 regions by widest prediction intervals
+# -------------------------------------------------------
 
-# Thin country border overlay drawn last
-borders.boundary.plot(
-    ax=ax, linewidth=0.2, edgecolor="#555555", zorder=2,
-)
+region_col = "NAME_1" if "NAME_1" in bs.columns else "region"
 
-legend_handles = [
-    mpatches.Patch(facecolor=MICS_COLOUR, edgecolor="none", label="MICS"),
-    mpatches.Patch(facecolor=DHS_COLOUR,  edgecolor="none", label="DHS"),
-    mpatches.Patch(facecolor=HI_COLOUR,   edgecolor="#aaaaaa", linewidth=0.3,
-                   label="Not in training data"),
-]
-ax.legend(
-    handles=legend_handles,
-    loc="lower left",
-    fontsize= 5,
-    frameon=False,
-    handlelength=1.0,
-    handleheight=0.9,
-    borderpad=0,
-    labelspacing=0.3,
-)
+pi_cols = [country_col, region_col, "width_90", "pi90_lower", "pi90_upper", "median"]
 
-# Save — PDF is vector and has no DPI concept; PNG at 300 DPI for submission
-for ext in ("pdf", "png"):
-    out = os.path.join(FIGURE_DIR, f"fig3_training_data_coverage.{ext}")
-    fig.savefig(out, dpi=DPI, bbox_inches="tight", pad_inches=0.02, format=ext)
-    print(f"  Saved: {out}")
-plt.close(fig)
+def top10_wide_pi_regions(df, cols):
+    available = [c for c in cols if c in df.columns]
+    return (
+        df[available]
+        .assign(
+            width_90_pct  = lambda x: (x["width_90"]   * 100).round(1),
+            pi90_lower_pct= lambda x: (x["pi90_lower"] * 100).round(1),
+            pi90_upper_pct= lambda x: (x["pi90_upper"] * 100).round(1),
+            median_pct    = lambda x: (x["median"]      * 100).round(1),
+        )
+        .sort_values("width_90_pct", ascending=False)
+        .head(10)
+        .drop(columns=["width_90", "pi90_lower", "pi90_upper", "median"])
+    )
 
-print("\nDone.")
+bs_top10_regions = top10_wide_pi_regions(bs, pi_cols)
+od_top10_regions = top10_wide_pi_regions(od, pi_cols)
+
+print_section("TOP 10 ADMIN-1 REGIONS BY WIDEST 90% PI — BASIC SANITATION", bs_top10_regions)
+print_section("TOP 10 ADMIN-1 REGIONS BY WIDEST 90% PI — OPEN DEFECATION",  od_top10_regions)
+
+bs_top10_regions.to_csv(versioned_path(OUTPUT_DIR, "stats_wide_pi_top10_regions_BS.csv"), index=False)
+od_top10_regions.to_csv(versioned_path(OUTPUT_DIR, "stats_wide_pi_top10_regions_OD.csv"), index=False)
+
+# -------------------------------------------------------
+# 12.  Overall totals
+# -------------------------------------------------------
+
+print(f"\n{'='*60}")
+print("OVERALL TOTALS")
+print('='*60)
+print(f"  Basic sanitation — total Admin-1 regions:  {len(bs)}")
+print(f"  Basic sanitation — total countries:       {bs[country_col].nunique()}")
+print(f"  Open defecation  — total Admin-1 regions: {len(od)}")
+print(f"  Open defecation  — total countries:       {od[country_col].nunique()}")
+print(f"  BS global median prediction:              {bs['median'].median()*100:.1f}%")
+print(f"  OD global median prediction:              {od['median'].median()*100:.1f}%")
+
+print("\nAll statistics saved to:", OUTPUT_DIR, "(versioned _vN files)")
