@@ -75,7 +75,7 @@ read_predictions <- function(filename, suffix) {
     rename_with(~ paste0(., "_", suffix), all_of(pred_cols))
 }
 
-improved   <- read_predictions("improved_source_tabpfn_lmic_predictions.csv",   "improved")
+improved   <- read_predictions("improved_source_tabpfn_lmic_predictions_v1.csv", "improved")
 accessible <- read_predictions("accessibility_tabpfn_lmic_predictions.csv",     "accessible")
 available  <- read_predictions("availability_tabpfn_lmic_predictions.csv",       "available")
 ecoli_free <- read_predictions("ecoli_free_tabpfn_lmic_predictions.csv",        "ecoli_free")

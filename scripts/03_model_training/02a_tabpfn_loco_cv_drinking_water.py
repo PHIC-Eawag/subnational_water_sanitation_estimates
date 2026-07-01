@@ -36,6 +36,8 @@ tabpfn_client.init()  # no-op after first login on this machine
 # 1.  Paths
 # -------------------------------------------------------
 
+VERSION              = "v1"
+
 DATA_DIR             = "data/processed/training_subcomponents"
 CLUSTER_DIR          = "outputs/cluster_analysis/smdw"
 PRED_COVARIATES_PATH = "data/processed/prediction/prediction_covariates_2024.csv"
@@ -559,10 +561,10 @@ print(
 )
 
 cv_comparison.to_csv(
-    os.path.join(OUTPUT_DIR, "smdw_tabpfn_feature_set_cv_comparison.csv"),
+    os.path.join(OUTPUT_DIR, f"smdw_tabpfn_feature_set_cv_comparison_{VERSION}.csv"),
     index=False,
 )
-print(f"\nSaved: {OUTPUT_DIR}/smdw_tabpfn_feature_set_cv_comparison.csv")
+print(f"\nSaved: {OUTPUT_DIR}/smdw_tabpfn_feature_set_cv_comparison_{VERSION}.csv")
 
 
 # -------------------------------------------------------
@@ -695,20 +697,20 @@ def run_and_save_loco(outcome_name, final_k):
     prefix = cfg["output_prefix"]
     fold_df.to_csv(
         os.path.join(OUTPUT_DIR,
-                     f"{prefix}_tabpfn_loco_by_country_k{final_k}.csv"),
+                     f"{prefix}_tabpfn_loco_by_country_k{final_k}_{VERSION}.csv"),
         index=False,
     )
     overall_df.to_csv(
         os.path.join(OUTPUT_DIR,
-                     f"{prefix}_tabpfn_loco_overall_k{final_k}.csv"),
+                     f"{prefix}_tabpfn_loco_overall_k{final_k}_{VERSION}.csv"),
         index=False,
     )
     oof_df.to_csv(
         os.path.join(OUTPUT_DIR,
-                     f"{prefix}_tabpfn_loco_oof_k{final_k}.csv"),
+                     f"{prefix}_tabpfn_loco_oof_k{final_k}_{VERSION}.csv"),
         index=False,
     )
-    print(f"  Saved: {OUTPUT_DIR}/{prefix}_tabpfn_loco_*_k{final_k}.csv")
+    print(f"  Saved: {OUTPUT_DIR}/{prefix}_tabpfn_loco_*_k{final_k}_{VERSION}.csv")
     return overall_df
 
 
@@ -729,7 +731,7 @@ summary_df = pd.concat([
     availability_overall, accessibility_overall,
 ], ignore_index=True)
 
-summary_path = os.path.join(OUTPUT_DIR, "smdw_tabpfn_loco_summary.csv")
+summary_path = os.path.join(OUTPUT_DIR, f"smdw_tabpfn_loco_summary_{VERSION}.csv")
 summary_df.to_csv(summary_path, index=False)
 
 print(f"\n{'='*60}")
@@ -855,12 +857,12 @@ for outcome_name, final_k in QUANTILE_TASKS.items():
             model_df, feature_cols, outcome_name
         )
         q_oof_df.to_csv(
-            os.path.join(OUTPUT_DIR, f"{prefix}_tabpfn_quantile_oof.csv"),
+            os.path.join(OUTPUT_DIR, f"{prefix}_tabpfn_quantile_oof_{VERSION}.csv"),
             index=False,
         )
         q_cov_df.to_csv(
             os.path.join(OUTPUT_DIR,
-                         f"{prefix}_tabpfn_quantile_coverage_by_country.csv"),
+                         f"{prefix}_tabpfn_quantile_coverage_by_country_{VERSION}.csv"),
             index=False,
         )
         if not q_cov_df.empty:
@@ -1080,7 +1082,7 @@ for outcome_name, cfg_pred in PRED_TASKS_DW.items():
         )
         out_path = os.path.join(
             PRED_OUTPUT_DIR,
-            f"{cfg_pred['prefix']}_tabpfn_lmic_predictions.csv",
+            f"{cfg_pred['prefix']}_tabpfn_lmic_predictions_{VERSION}.csv",
         )
         pred_out.to_csv(out_path, index=False)
         n_valid  = pred_out["median"].notna().sum()
