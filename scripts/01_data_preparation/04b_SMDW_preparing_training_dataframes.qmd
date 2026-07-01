@@ -1,22 +1,6 @@
 ---
 title: "Prepare SMDW Model Training Data"
 subtitle: "Safe drinking water and subcomponent outcomes with geospatial covariates"
-author: ""
-date: today
-format:
-  html:
-    toc: true
-    toc-depth: 3
-    number-sections: true
-    code-fold: true
-    self-contained: true
-execute:
-  echo: true
-  warning: false
-  message: false
-editor:
-  markdown:
-    wrap: 72
 ---
 
 # 1. Setup
@@ -329,6 +313,26 @@ df_hh_other <- df_hh_other %>%
   )
 ```
 
+## Write full household survey data
+
+Full household-level observations (retained surveys only, most recent round) for both pools are merged and written to the switchdrive for sharing with collaborators. Raw survey data are protected and not stored in the GitHub repository.
+
+```{r}
+SWITCHDRIVE_HH_DIR <- "/Users/esthergreenwood/switchdrive/Eawag/WorldBankProject/additional_data_0002020937/HH_surveys"
+dir.create(SWITCHDRIVE_HH_DIR, recursive = TRUE, showWarnings = FALSE)
+
+df_hh_smdw_analysis <- dplyr::bind_rows(
+  df_hh_water_quality %>% dplyr::mutate(pool = "water_quality"),
+  df_hh_other         %>% dplyr::mutate(pool = "other")
+)
+
+readr::write_csv(
+  df_hh_smdw_analysis,
+  file.path(SWITCHDRIVE_HH_DIR, "df_hh_smdw_analysis.csv")
+)
+message("Written: df_hh_smdw_analysis.csv")
+```
+
 ------------------------------------------------------------------------
 
 # 4. Geospatial covariates
@@ -607,31 +611,36 @@ crosswalk_SMDW <- build_crosswalk_for_one_outcome(
   outcome_name           = "smdw",
   outcome_df             = SMDW_outcome,
   df_training_covariates = df_covariates_SMDW,
-  country_name_key_WB    = country_name_key_WB
+  country_name_key_WB    = country_name_key_WB,
+  output_dir             = CROSSWALK_REVIEW_DIR
 )
 crosswalk_ecoli <- build_crosswalk_for_one_outcome(
   outcome_name           = "ecoli_free",
   outcome_df             = ecoli_outcome,
   df_training_covariates = df_covariates_ecoli,
-  country_name_key_WB    = country_name_key_WB
+  country_name_key_WB    = country_name_key_WB,
+  output_dir             = CROSSWALK_REVIEW_DIR
 )
 crosswalk_improved_source <- build_crosswalk_for_one_outcome(
   outcome_name           = "improved_source",
   outcome_df             = improved_source_outcome,
   df_training_covariates = df_covariates_improved_source,
-  country_name_key_WB    = country_name_key_WB
+  country_name_key_WB    = country_name_key_WB,
+  output_dir             = CROSSWALK_REVIEW_DIR
 )
 crosswalk_availability <- build_crosswalk_for_one_outcome(
   outcome_name           = "availability",
   outcome_df             = availability_outcome,
   df_training_covariates = df_covariates_availability,
-  country_name_key_WB    = country_name_key_WB
+  country_name_key_WB    = country_name_key_WB,
+  output_dir             = CROSSWALK_REVIEW_DIR
 )
 crosswalk_accessibility <- build_crosswalk_for_one_outcome(
   outcome_name           = "accessibility",
   outcome_df             = accessibility_outcome,
   df_training_covariates = df_covariates_accessibility,
-  country_name_key_WB    = country_name_key_WB
+  country_name_key_WB    = country_name_key_WB,
+  output_dir             = CROSSWALK_REVIEW_DIR
 )
 
 # Inspect rows that need manual attention
@@ -676,27 +685,32 @@ when new surveys are incorporated.
 SMDW_crosswalk_final <- apply_manual_fixes_for_one_outcome(
   outcome_name        = "smdw",
   crosswalk_results   = crosswalk_SMDW,
-  manual_region_fixes = manual_fixes_smdw_ecoli
+  manual_region_fixes = manual_fixes_smdw_ecoli,
+  output_dir          = CROSSWALK_REVIEW_DIR
 )
 ecoli_crosswalk_final <- apply_manual_fixes_for_one_outcome(
   outcome_name        = "ecoli_free",
   crosswalk_results   = crosswalk_ecoli,
-  manual_region_fixes = manual_fixes_smdw_ecoli
+  manual_region_fixes = manual_fixes_smdw_ecoli,
+  output_dir          = CROSSWALK_REVIEW_DIR
 )
 improved_source_crosswalk_final <- apply_manual_fixes_for_one_outcome(
   outcome_name        = "improved_source",
   crosswalk_results   = crosswalk_improved_source,
-  manual_region_fixes = manual_fixes_sanitation
+  manual_region_fixes = manual_fixes_sanitation,
+  output_dir          = CROSSWALK_REVIEW_DIR
 )
 availability_crosswalk_final <- apply_manual_fixes_for_one_outcome(
   outcome_name        = "availability",
   crosswalk_results   = crosswalk_availability,
-  manual_region_fixes = manual_fixes_sanitation
+  manual_region_fixes = manual_fixes_sanitation,
+  output_dir          = CROSSWALK_REVIEW_DIR
 )
 accessibility_crosswalk_final <- apply_manual_fixes_for_one_outcome(
   outcome_name        = "accessibility",
   crosswalk_results   = crosswalk_accessibility,
-  manual_region_fixes = manual_fixes_sanitation
+  manual_region_fixes = manual_fixes_sanitation,
+  output_dir          = CROSSWALK_REVIEW_DIR
 )
 ```
 
@@ -707,31 +721,36 @@ SMDW_training_output <- join_and_save_one_training_dataset(
   outcome_name           = "smdw",
   outcome_df             = SMDW_outcome,
   df_training_covariates = df_covariates_SMDW,
-  region_crosswalk_final = SMDW_crosswalk_final
+  region_crosswalk_final = SMDW_crosswalk_final,
+  output_dir             = OUTPUT_DIR
 )
 ecoli_training_output <- join_and_save_one_training_dataset(
   outcome_name           = "ecoli_free",
   outcome_df             = ecoli_outcome,
   df_training_covariates = df_covariates_ecoli,
-  region_crosswalk_final = ecoli_crosswalk_final
+  region_crosswalk_final = ecoli_crosswalk_final,
+  output_dir             = OUTPUT_DIR
 )
 improved_source_training_output <- join_and_save_one_training_dataset(
   outcome_name           = "improved_source",
   outcome_df             = improved_source_outcome,
   df_training_covariates = df_covariates_improved_source,
-  region_crosswalk_final = improved_source_crosswalk_final
+  region_crosswalk_final = improved_source_crosswalk_final,
+  output_dir             = OUTPUT_DIR
 )
 availability_training_output <- join_and_save_one_training_dataset(
   outcome_name           = "availability",
   outcome_df             = availability_outcome,
   df_training_covariates = df_covariates_availability,
-  region_crosswalk_final = availability_crosswalk_final
+  region_crosswalk_final = availability_crosswalk_final,
+  output_dir             = OUTPUT_DIR
 )
 accessibility_training_output <- join_and_save_one_training_dataset(
   outcome_name           = "accessibility",
   outcome_df             = accessibility_outcome,
   df_training_covariates = df_covariates_accessibility,
-  region_crosswalk_final = accessibility_crosswalk_final
+  region_crosswalk_final = accessibility_crosswalk_final,
+  output_dir             = OUTPUT_DIR
 )
 
 # Model-ready objects

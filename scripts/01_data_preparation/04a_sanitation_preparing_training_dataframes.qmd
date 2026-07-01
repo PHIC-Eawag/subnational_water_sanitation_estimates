@@ -295,6 +295,13 @@ keep_latest_survey_year_hh <- function(df, max_survey_duration = 2) {
 
 df_hh_sanitation_latest <- keep_latest_survey_year_hh(df_hh_sanitation)
 
+SWITCHDRIVE_HH_DIR <- "/Users/esthergreenwood/switchdrive/Eawag/WorldBankProject/additional_data_0002020937/HH_surveys"
+dir.create(SWITCHDRIVE_HH_DIR, recursive = TRUE, showWarnings = FALSE)
+readr::write_csv(
+  df_hh_sanitation_latest,
+  file.path(SWITCHDRIVE_HH_DIR, "df_hh_sanitation_analysis.csv")
+)
+message("Written: df_hh_sanitation_analysis.csv")
 ```
 
 ## Build regional outcomes
@@ -406,13 +413,15 @@ crosswalk_basic_sanitation <- build_crosswalk_for_one_outcome(
   outcome_name           = "basic_sanitation",
   outcome_df             = basic_sanitation_outcome,
   df_training_covariates = df_covariates_basic_sanitation,
-  country_name_key_WB    = country_name_key_WB
+  country_name_key_WB    = country_name_key_WB,
+  output_dir             = CROSSWALK_REVIEW_DIR
 )
 crosswalk_open_defecation <- build_crosswalk_for_one_outcome(
   outcome_name           = "open_defecation",
   outcome_df             = open_defecation_outcome,
   df_training_covariates = df_covariates_open_defecation,
-  country_name_key_WB    = country_name_key_WB
+  country_name_key_WB    = country_name_key_WB,
+  output_dir             = CROSSWALK_REVIEW_DIR
 )
 
 # Inspect rows that need manual attention
@@ -428,12 +437,14 @@ Known mismatches are resolved via the lookup table in `config/manual_region_fixe
 basic_sanitation_crosswalk_final <- apply_manual_fixes_for_one_outcome(
   outcome_name        = "basic_sanitation",
   crosswalk_results   = crosswalk_basic_sanitation,
-  manual_region_fixes = manual_fixes_sanitation
+  manual_region_fixes = manual_fixes_sanitation,
+  output_dir          = CROSSWALK_REVIEW_DIR
 )
 open_defecation_crosswalk_final <- apply_manual_fixes_for_one_outcome(
   outcome_name        = "open_defecation",
   crosswalk_results   = crosswalk_open_defecation,
-  manual_region_fixes = manual_fixes_sanitation
+  manual_region_fixes = manual_fixes_sanitation,
+  output_dir          = CROSSWALK_REVIEW_DIR
 )
 ```
 
@@ -444,13 +455,15 @@ basic_sanitation_training_output <- join_and_save_one_training_dataset(
   outcome_name           = "basic_sanitation",
   outcome_df             = basic_sanitation_outcome,
   df_training_covariates = df_covariates_basic_sanitation,
-  region_crosswalk_final = basic_sanitation_crosswalk_final
+  region_crosswalk_final = basic_sanitation_crosswalk_final,
+  output_dir             = OUTPUT_DIR
 )
 open_defecation_training_output <- join_and_save_one_training_dataset(
   outcome_name           = "open_defecation",
   outcome_df             = open_defecation_outcome,
   df_training_covariates = df_covariates_open_defecation,
-  region_crosswalk_final = open_defecation_crosswalk_final
+  region_crosswalk_final = open_defecation_crosswalk_final,
+  output_dir             = OUTPUT_DIR
 )
 
 basic_sanitation_training <- basic_sanitation_training_output$training_with_covariates
@@ -989,4 +1002,107 @@ dplyr::bind_rows(
       n_regions   = dplyr::n_distinct(paste(country_outcome, HH7_region_outcome))
     )
 )
+```
+
+------------------------------------------------------------------------
+
+# 9. Descriptive statistics table
+
+Country-level summary of survey data and all covariates used in the sanitation model. Written to `outputs/descriptive_statistics/`.
+
+```{r}
+# ── National sanitation estimates from raw survey data ───────────────────────
+national_sanitation <- createNationalSanitationEstimates(df_hh_sanitation_latest)
+
+cat("Total households with basic sanitation data: ",
+    sum(national_sanitation$n_hh_basic_sanitation), "\n")
+cat("Total households with open defecation data:  ",
+    sum(national_sanitation$n_hh_open_defecation), "\n")
+
+# ── Survey date range per country ────────────────────────────────────────────
+survey_dates <- df_hh_sanitation_latest %>%
+  harmonise_household_country_names_for_modelling() %>%
+  dplyr::filter(!is.na(HH5Y)) %>%
+  dplyr::group_by(country) %>%
+  dplyr::summarise(
+    start_data_collection = min(
+      lubridate::make_date(HH5Y, dplyr::if_else(is.na(HH5M), 1L, as.integer(HH5M)), 1L),
+      na.rm = TRUE
+    ),
+    end_data_collection = max(
+      lubridate::make_date(HH5Y, dplyr::if_else(is.na(HH5M), 12L, as.integer(HH5M)), 1L),
+      na.rm = TRUE
+    ),
+    .groups = "drop"
+  )
+
+# ── Country-level covariates (one row per country) ───────────────────────────
+# Collapse from region-level training data; time-varying covariates are taken
+# at the analysis year already stored in the training data.
+country_covariates <- basic_sanitation_training %>%
+  dplyr::group_by(country_outcome, analysis_year) %>%
+  dplyr::summarise(
+    gdp_per_capita_constant_2015_usd   = dplyr::first(na.omit(gdp_per_capita_constant_2015_usd)),
+    secondary_education_duration_years = dplyr::first(na.omit(secondary_education_duration_years)),
+    ww_collection_percent              = dplyr::first(na.omit(ww_collection_percent)),
+    ww_treatment_percent               = dplyr::first(na.omit(ww_treatment_percent)),
+    ww_reuse_percent                   = dplyr::first(na.omit(ww_reuse_percent)),
+    governance_effectiveness           = dplyr::first(na.omit(governance_effectiveness)),
+    control_of_corruption              = dplyr::first(na.omit(control_of_corruption)),
+    political_stability                = dplyr::first(na.omit(political_stability)),
+    regulatory_quality                 = dplyr::first(na.omit(regulatory_quality)),
+    rule_of_law                        = dplyr::first(na.omit(rule_of_law)),
+    voice_and_accountability           = dplyr::first(na.omit(voice_and_accountability)),
+    wb_income_group                    = dplyr::first(na.omit(wb_income_group)),
+    sdg_region                         = dplyr::first(na.omit(sdg_region)),
+    iso3                               = dplyr::first(na.omit(iso3)),
+    jmp_sanitation_basic               = dplyr::first(na.omit(sanitation_basic)),
+    jmp_open_defecation                = dplyr::first(na.omit(open_defecation)),
+    .groups = "drop"
+  ) %>%
+  dplyr::rename(country = country_outcome)
+
+# ── Assemble final table ──────────────────────────────────────────────────────
+descriptive_stats <- survey_dates %>%
+  dplyr::left_join(country_covariates,   by = "country") %>%
+  dplyr::left_join(national_sanitation,  by = "country") %>%
+  dplyr::select(
+    country,
+    start_data_collection,
+    end_data_collection,
+    analysis_year,
+    wb_income_group,
+    sdg_region,
+    iso3,
+    prop_basic_sanitation_national,
+    n_hh_basic_sanitation,
+    prop_open_defecation_national,
+    n_hh_open_defecation,
+    ww_collection_percent,
+    ww_treatment_percent,
+    ww_reuse_percent,
+    gdp_per_capita_constant_2015_usd,
+    jmp_sanitation_basic,
+    jmp_open_defecation,
+    secondary_education_duration_years,
+    governance_effectiveness,
+    control_of_corruption,
+    political_stability,
+    regulatory_quality,
+    rule_of_law,
+    voice_and_accountability
+  ) %>%
+  dplyr::arrange(sdg_region, country)
+
+# ── Write output ──────────────────────────────────────────────────────────────
+DESCRIPTIVE_STATS_DIR <- here::here("outputs/descriptive_statistics")
+dir.create(DESCRIPTIVE_STATS_DIR, recursive = TRUE, showWarnings = FALSE)
+
+readr::write_csv(
+  descriptive_stats,
+  file.path(DESCRIPTIVE_STATS_DIR, "sanitation_survey_descriptive_statistics.csv")
+)
+message("Written: sanitation_survey_descriptive_statistics.csv")
+
+knitr::kable(descriptive_stats, caption = "Sanitation survey data and country-level covariates")
 ```
