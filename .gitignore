@@ -161,6 +161,9 @@ outputs/descriptive_statistics/*
 outputs/main_figures/*
 !outputs/main_figures/.gitkeep
 
+outputs/figures/*
+!outputs/figures/.gitkeep
+
 # =========================
 # Data — back-up/
 # =========================
