@@ -20,10 +20,10 @@ This script calculates the proportion of the population using **Safely Managed D
 
 SMDW is defined as access to an improved drinking water source that is:
 
-1. **Improved** — from a protected or treated source
-2. **Accessible** — located on premises
-3. **Available** — reliably available when needed
-4. **E. coli free** — free from faecal contamination
+1.  **Improved** — from a protected or treated source
+2.  **Accessible** — located on premises
+3.  **Available** — reliably available when needed
+4.  **E. coli free** — free from faecal contamination
 
 In addition, drinking water must not exceed safe thresholds for **geogenic chemical contaminants** (arsenic and fluoride) that can leach into groundwater. We incorporate estimates of population exposure to arsenic and fluoride risk via groundwater usage to produce a comprehensive SMDW estimate.
 
@@ -35,8 +35,8 @@ $$
 
 where:
 
-- **As-safe** = proportion of the district population *not* at risk of arsenic contamination via groundwater
-- **F-safe** = proportion of the district population *not* at risk of fluoride contamination via groundwater
+-   **As-safe** = proportion of the district population *not* at risk of arsenic contamination via groundwater
+-   **F-safe** = proportion of the district population *not* at risk of fluoride contamination via groundwater
 
 ```{r}
 #| label: setup
@@ -46,7 +46,7 @@ library(here)
 source(here::here("configuration/paths.R"))   # loads switchdrive paths
 ```
 
----
+------------------------------------------------------------------------
 
 ## Step 1: Load and Join the WASH Subcomponent Predictions
 
@@ -54,10 +54,10 @@ We load the four WASH subcomponent model prediction files. Each file contains ad
 
 The four subcomponents are:
 
-- **Improved source** — access to an improved drinking water source
-- **Accessible** — the source is located on premises
-- **Available** — the source is reliably available
-- **E. coli free** — the source is free from faecal contamination (E. coli)
+-   **Improved source** — access to an improved drinking water source
+-   **Accessible** — the source is located on premises
+-   **Available** — the source is reliably available
+-   **E. coli free** — the source is free from faecal contamination (E. coli)
 
 ```{r}
 #| label: load-predictions
@@ -107,7 +107,7 @@ cat("Rows:", nrow(wash), "| Countries:", n_distinct(wash$GID_0), "\n")
 glimpse(wash)
 ```
 
----
+------------------------------------------------------------------------
 
 ## Step 2: Load and Join Geogenic Groundwater Risk Estimates
 
@@ -115,9 +115,9 @@ We load the geogenic groundwater risk dataset, which contains admin1-level estim
 
 Key columns used:
 
-- `As_GW_sum` — population using groundwater at risk of arsenic contamination (As > 10 µg/L)
-- `F_GW_sum` — population using groundwater at risk of fluoride contamination (F > 1.5 mg/L)
-- `Total_population_count_2024` — total district population (2024)
+-   `As_GW_sum` — population using groundwater at risk of arsenic contamination (As \> 10 µg/L)
+-   `F_GW_sum` — population using groundwater at risk of fluoride contamination (F \> 1.5 mg/L)
+-   `Total_population_count_2024` — total district population (2024)
 
 ```{r}
 #| label: load-groundwater
@@ -169,19 +169,19 @@ cat("Combined dataset rows:", nrow(combined), "\n")
 cat("Rows with missing groundwater data:", sum(is.na(combined$Total_population_count_2024)), "\n")
 ```
 
----
+------------------------------------------------------------------------
 
 ## Step 3: Calculate Population at Risk from Geogenic Contamination
 
 We estimate the **proportion of the district population at risk** of arsenic and fluoride contamination from groundwater. These proportions reflect only those using groundwater (not surface water or rainwater), so they capture the relevant exposure pathway.
 
-- **Arsenic risk proportion** = `As_GW_sum / Total_population_count_2024`
-- **Fluoride risk proportion** = `F_GW_sum / Total_population_count_2024`
+-   **Arsenic risk proportion** = `As_GW_sum / Total_population_count_2024`
+-   **Fluoride risk proportion** = `F_GW_sum / Total_population_count_2024`
 
 We then derive the proportion of the population with water that is **safe** (i.e., *not* at risk) from each contaminant:
 
-- **As-safe** = `1 - arsenic_risk_prop`
-- **F-safe** = `1 - fluoride_risk_prop`
+-   **As-safe** = `1 - arsenic_risk_prop`
+-   **F-safe** = `1 - fluoride_risk_prop`
 
 Proportions are capped between 0 and 1 to account for any rounding artefacts in population estimates.
 
@@ -208,7 +208,7 @@ combined |>
   summary()
 ```
 
----
+------------------------------------------------------------------------
 
 ## Step 4: Calculate SMDW
 
@@ -216,13 +216,13 @@ SMDW is calculated as the proportion using an **improved source** multiplied by 
 
 The five subcomponents entering the minimum are:
 
-| Component | Variable |
-|-----------|----------|
-| Accessible | `median_accessible` |
-| Available | `median_available` |
-| E. coli free | `median_ecoli_free` |
-| Arsenic-safe | `prop_as_safe` |
-| Fluoride-safe | `prop_f_safe` |
+| Component     | Variable            |
+|---------------|---------------------|
+| Accessible    | `median_accessible` |
+| Available     | `median_available`  |
+| E. coli free  | `median_ecoli_free` |
+| Arsenic-safe  | `prop_as_safe`      |
+| Fluoride-safe | `prop_f_safe`       |
 
 $$
 \text{SMDW} = \text{median\_improved} \times \min(\text{accessible},\ \text{available},\ \text{ecoli\_free},\ \text{As-safe},\ \text{F-safe})
@@ -256,7 +256,7 @@ smdw |>
   summary()
 ```
 
----
+------------------------------------------------------------------------
 
 ## Step 5: Summary and Diagnostics
 
@@ -279,6 +279,37 @@ print(head(country_summary, 10))
 
 cat("\nCountries with highest estimated SMDW:\n")
 print(tail(country_summary, 10))
+```
+
+```{r}
+#| label: check-na-income-group
+
+# Identify which country(ies) are missing a World Bank income group
+# classification -- these will show up as an "NA" fill category in the
+# SMDW distribution plot below.
+
+na_income <- smdw |>
+  filter(is.na(wb_income_group)) |>
+  distinct(GID_0, NAME_0)
+
+if (nrow(na_income) > 0) {
+  cat("Country/countries with missing wb_income_group:\n")
+  print(na_income)
+
+  cat("\nNumber of admin1 districts affected:",
+      sum(is.na(smdw$wb_income_group)), "\n")
+} else {
+  cat("No missing wb_income_group values found.\n")
+}
+
+# Manual fix: Ethiopia is dropped by the OGHIST country-name join key
+# upstream (see 05_prepare_prediction_data.qmd) and comes through as NA.
+# Ethiopia is classified as "L" (Low income) by the World Bank.
+smdw <- smdw |>
+  mutate(
+    wb_income_group = if_else(NAME_0 == "Ethiopia" & is.na(wb_income_group),
+                               "L", wb_income_group)
+  )
 ```
 
 ```{r}
@@ -330,7 +361,7 @@ smdw |>
   theme_minimal(base_size = 12)
 ```
 
----
+------------------------------------------------------------------------
 
 ## Step 6: Export Results
 
