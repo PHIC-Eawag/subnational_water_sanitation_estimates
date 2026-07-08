@@ -21,8 +21,11 @@ import matplotlib.colors as mc
 # 1.  Paths
 # -------------------------------------------------------
 
-PRED_DIR   = "outputs/model_performance/predictions"
-FIGURE_DIR = "outputs/figures"
+# Read the retrained (_v2) predictions and write figures under a v2 subfolder,
+# so this analysis uses the corrected sanitation labelling and does not
+# overwrite prior figures. Repo paths only (never switchdrive).
+PRED_DIR   = "outputs/model_performance/v2/predictions"
+FIGURE_DIR = "outputs/figures/v2"
 os.makedirs(FIGURE_DIR, exist_ok=True)
 
 BS_PRED = os.path.join(PRED_DIR, "basic_sanitation_tabpfn_lmic_predictions.csv")
@@ -128,10 +131,11 @@ def draw_box(ax, vals, x_pos, colour, rng):
     hi_fence = q75 + 1.5 * iqr
     lo_whisk = vals[vals >= lo_fence].min()
     hi_whisk = vals[vals <= hi_fence].max()
+    # facecolor="none" so the jittered points behind show through the box
     box_patch = mpatches.FancyBboxPatch(
         (x_pos - BOX_HALF, q25), BOX_HALF * 2, q75 - q25,
         boxstyle="square,pad=0",
-        facecolor="white", edgecolor=dark_col,
+        facecolor="none", edgecolor=dark_col,
         linewidth=BOX_LW, zorder=3,
     )
     ax.add_patch(box_patch)
@@ -258,5 +262,131 @@ make_stacked_figure(
     xlabel="SDG region",
     figname="fig_uncertainty_sdg_region",
 )
+
+# -------------------------------------------------------
+# 8.  Uncertainty vs coverage — scatter (one panel per outcome)
+#     x = predicted proportion (median), y = 90% PI width.
+#     A binned median trend is overlaid so the shape of the
+#     relationship is legible despite heavy overplotting.
+# -------------------------------------------------------
+
+SCATTER_ALPHA = 0.35   # point opacity (higher = more pronounced)
+SCATTER_SIZE  = 5
+N_BINS        = 10     # coverage bins for the trend line
+MIN_BIN_N     = 20     # minimum points in a bin to draw a trend marker
+
+
+def binned_median_trend(x, y, n_bins=N_BINS, min_n=MIN_BIN_N):
+    """Median y (with 25th/75th percentiles) within equal-width x bins on [0, 1]."""
+    bins = np.linspace(0, 1, n_bins + 1)
+    idx  = np.digitize(x, bins) - 1
+    cen, med, q25, q75 = [], [], [], []
+    for b in range(n_bins):
+        sel = idx == b
+        if sel.sum() >= min_n:
+            yy = y[sel]
+            # Anchor the marker at the actual median x of the points in the
+            # bin (not the bin's geometric centre) — otherwise, when the
+            # within-bin x-distribution is skewed (points pile up near 0% or
+            # 100%), the marker is displaced horizontally from the data cloud.
+            cen.append(np.median(x[sel]))
+            med.append(np.median(yy))
+            q25.append(np.percentile(yy, 25))
+            q75.append(np.percentile(yy, 75))
+    return np.array(cen), np.array(med), np.array(q25), np.array(q75)
+
+
+def clean_xy(df):
+    x = df["median"].to_numpy(dtype=float)
+    y = df["width_90"].to_numpy(dtype=float)
+    m = np.isfinite(x) & np.isfinite(y)
+    return x[m], y[m]
+
+
+print("\nDrawing: uncertainty vs coverage scatter …")
+
+# Shared y-limit across panels for comparability (cap at 99th pct to avoid
+# a few extreme widths stretching the axis).
+_ymax = max(np.nanpercentile(bs["width_90"], 99),
+            np.nanpercentile(od["width_90"], 99))
+_ymax = float(np.ceil(_ymax * 20) / 20)  # round up to nearest 0.05
+
+fig, (ax_bs, ax_od) = plt.subplots(
+    2, 1, figsize=(FIG_WIDTH, PANEL_H * 2 + 0.4),
+    gridspec_kw={"hspace": 0.45},
+)
+
+for ax, df, colour, label, title, xlab in [
+    (ax_bs, bs, BS_COLOUR, "a", "Basic sanitation",
+     "Predicted basic sanitation coverage (median)"),
+    (ax_od, od, OD_COLOUR, "b", "Open defecation",
+     "Predicted open defecation rate (median)"),
+]:
+    x, y = clean_xy(df)
+    ax.scatter(x, y, s=SCATTER_SIZE, color=colour,
+               alpha=SCATTER_ALPHA, linewidths=0, zorder=1)
+    cen, med, q25, q75 = binned_median_trend(x, y)
+    ax.plot(cen, med, color=dark(colour), lw=1.2, marker="o", ms=2.5,
+            zorder=5, solid_capstyle="round", label="Binned median")
+
+    ax.set_xlim(-0.02, 1.02)
+    ax.set_ylim(-0.005, _ymax)
+    ax.set_xlabel(xlab, fontsize=7, labelpad=3)
+    ax.set_ylabel("90% PI width (percentage points)", fontsize=7)
+    ax.xaxis.set_major_formatter(mpl.ticker.PercentFormatter(xmax=1, decimals=0))
+    ax.yaxis.set_major_formatter(mpl.ticker.PercentFormatter(xmax=1, decimals=0))
+    ax.spines[["top", "right"]].set_visible(False)
+    ax.grid(linewidth=0.4, color="#cccccc", zorder=0)
+    ax.set_title(f"$\\bf{{{label}}}$  {title}", fontsize=8, loc="left", pad=4)
+
+fig.subplots_adjust(left=0.10, right=0.97, top=0.95, bottom=0.12)
+for ext in ("pdf", "png"):
+    out = os.path.join(FIGURE_DIR, f"fig_uncertainty_vs_coverage_scatter.{ext}")
+    fig.savefig(out, dpi=DPI, format=ext)
+    print(f"  Saved: {out}")
+plt.close(fig)
+
+# -------------------------------------------------------
+# 9.  Uncertainty vs coverage — binned trend comparison (SUGGESTED)
+#     Both outcomes on one axis: median 90% PI width across coverage
+#     bins, with an IQR ribbon. This isolates the *relationship* (the
+#     scatter's cloud is hard to read) and puts basic sanitation and
+#     open defecation on the same axis so their uncertainty profiles
+#     can be compared directly. Prediction intervals for a bounded
+#     proportion are typically widest at mid-range coverage and narrow
+#     near 0% / 100%, so this curve usually shows an inverted-U.
+# -------------------------------------------------------
+
+print("\nDrawing: uncertainty vs coverage trend comparison …")
+
+fig, ax = plt.subplots(figsize=(FIG_WIDTH, PANEL_H + 0.5))
+
+for df, colour, lab in [
+    (bs, BS_COLOUR, "Basic sanitation"),
+    (od, OD_COLOUR, "Open defecation"),
+]:
+    x, y = clean_xy(df)
+    cen, med, q25, q75 = binned_median_trend(x, y)
+    ax.fill_between(cen, q25, q75, color=colour, alpha=0.15, zorder=1)
+    ax.plot(cen, med, color=dark(colour), lw=2.2, marker="o", ms=3.5,
+            zorder=3, label=lab)
+
+ax.set_xlim(-0.02, 1.02)
+ax.set_ylim(bottom=0)
+ax.set_xlabel("Predicted proportion — coverage (basic sanitation) / rate (open defecation)",
+              fontsize=7, labelpad=3)
+ax.set_ylabel("90% PI width — median (IQR band)", fontsize=7)
+ax.xaxis.set_major_formatter(mpl.ticker.PercentFormatter(xmax=1, decimals=0))
+ax.yaxis.set_major_formatter(mpl.ticker.PercentFormatter(xmax=1, decimals=0))
+ax.spines[["top", "right"]].set_visible(False)
+ax.grid(linewidth=0.4, color="#cccccc", zorder=0)
+ax.legend(frameon=False, loc="upper right")
+
+fig.subplots_adjust(left=0.10, right=0.97, top=0.94, bottom=0.16)
+for ext in ("pdf", "png"):
+    out = os.path.join(FIGURE_DIR, f"fig_uncertainty_vs_coverage_trend.{ext}")
+    fig.savefig(out, dpi=DPI, format=ext)
+    print(f"  Saved: {out}")
+plt.close(fig)
 
 print("\nDone.")
