@@ -30,8 +30,8 @@ All raw data paths are defined here so they are easy to update when data moves.
 
 ```{r}
 
-PATH_MICS_SANITATION   <- here::here("data/processed/household_surveys/df_sanitation_MICS_v1.csv")
-PATH_DHS_SANITATION    <- here::here("data/processed/household_surveys/df_sanitation_DHS.csv")
+PATH_MICS_SANITATION   <- here::here("data/processed/household_surveys/df_sanitation_MICS_v2.csv")
+PATH_DHS_SANITATION    <- here::here("data/processed/household_surveys/df_sanitation_DHS_v2.csv")
 
 PATH_COUNTRY_KEY       <- here::here("configuration/country_name_key_WB.csv")
 PATH_TO_REGION_AREAS <- here::here("data/processed/survey_boundaries/other_surveys/region_areas_km2.csv")
@@ -295,13 +295,19 @@ keep_latest_survey_year_hh <- function(df, max_survey_duration = 2) {
 
 df_hh_sanitation_latest <- keep_latest_survey_year_hh(df_hh_sanitation)
 
-SWITCHDRIVE_HH_DIR <- "/Users/esthergreenwood/switchdrive/Eawag/WorldBankProject/additional_data_0002020937/HH_surveys"
-dir.create(SWITCHDRIVE_HH_DIR, recursive = TRUE, showWarnings = FALSE)
-readr::write_csv(
-  df_hh_sanitation_latest,
-  file.path(SWITCHDRIVE_HH_DIR, "df_hh_sanitation_analysis.csv")
-)
-message("Written: df_hh_sanitation_analysis.csv")
+# Writing df_hh_sanitation_latest to the switchdrive deliverable
+# (df_hh_sanitation_analysis.csv) is commented out deliberately — this is a
+# collaborator-facing deliverable (see additional_data_0002020937/HH_surveys/
+# README.qmd) and should only be regenerated intentionally, not as a side
+# effect of rerunning this script. Uncomment when you actually want to
+# publish an updated version.
+# SWITCHDRIVE_HH_DIR <- "/Users/esthergreenwood/switchdrive/Eawag/WorldBankProject/additional_data_0002020937/HH_surveys"
+# dir.create(SWITCHDRIVE_HH_DIR, recursive = TRUE, showWarnings = FALSE)
+# readr::write_csv(
+#   df_hh_sanitation_latest,
+#   file.path(SWITCHDRIVE_HH_DIR, "df_hh_sanitation_analysis.csv")
+# )
+# message("Written: df_hh_sanitation_analysis.csv")
 ```
 
 ## Build regional outcomes
@@ -456,14 +462,16 @@ basic_sanitation_training_output <- join_and_save_one_training_dataset(
   outcome_df             = basic_sanitation_outcome,
   df_training_covariates = df_covariates_basic_sanitation,
   region_crosswalk_final = basic_sanitation_crosswalk_final,
-  output_dir             = OUTPUT_DIR
+  output_dir             = OUTPUT_DIR,
+  training_csv_suffix    = "_v2"
 )
 open_defecation_training_output <- join_and_save_one_training_dataset(
   outcome_name           = "open_defecation",
   outcome_df             = open_defecation_outcome,
   df_training_covariates = df_covariates_open_defecation,
   region_crosswalk_final = open_defecation_crosswalk_final,
-  output_dir             = OUTPUT_DIR
+  output_dir             = OUTPUT_DIR,
+  training_csv_suffix    = "_v2"
 )
 
 basic_sanitation_training <- basic_sanitation_training_output$training_with_covariates
@@ -857,7 +865,7 @@ print(missing_jmp)
 
 ## Write training CSVs
 
-Final training datasets are written to `data/training_subcomponents/`.
+`join_and_save_one_training_dataset()` (Section 5) writes these files with the **geospatial** covariates only. The **country-level** covariates (income group, SDG region, GDP, education, wastewater, WGI, JMP) are added afterwards in Section 6, so we re-write the files here with the complete tables the models actually train on. Same `_v2` filenames, so this overwrites the partial versions.
 
 ```{r}
 dir.create(OUTPUT_DIR,           recursive = TRUE, showWarnings = FALSE)
@@ -865,15 +873,14 @@ dir.create(CROSSWALK_REVIEW_DIR, recursive = TRUE, showWarnings = FALSE)
 
 readr::write_csv(
   basic_sanitation_training,
-  file.path(OUTPUT_DIR, "basic_sanitation_training_with_covariates.csv")
+  file.path(OUTPUT_DIR, "basic_sanitation_training_with_covariates_v2.csv")
 )
 readr::write_csv(
   open_defecation_training,
-  file.path(OUTPUT_DIR, "open_defecation_training_with_covariates.csv")
+  file.path(OUTPUT_DIR, "open_defecation_training_with_covariates_v2.csv")
 )
-
-message("Written: basic_sanitation_training_with_covariates.csv")
-message("Written: open_defecation_training_with_covariates.csv")
+message("Written: basic_sanitation_training_with_covariates_v2.csv (with country-level covariates)")
+message("Written: open_defecation_training_with_covariates_v2.csv (with country-level covariates)")
 ```
 
 ## Summary: wastewater region distribution
@@ -1008,9 +1015,29 @@ dplyr::bind_rows(
 
 # 9. Descriptive statistics table
 
-Country-level summary of survey data and all covariates used in the sanitation model. Written to `outputs/descriptive_statistics/`.
+Country-level summary of survey data and all covariates used in the sanitation model. This is deliberately the last step in this script, so that it reflects the training data actually written out in Section 5-7 (after the outcome/weight/duplicate cleaning in `join_and_save_one_training_dataset()`), not a separately-recomputed household-level view. Written to `outputs/descriptive_statistics/`.
 
 ```{r}
+# ── Recap of the cleaning applied when the training data was built ──────────
+# (join_and_save_one_training_dataset() already printed this when it ran in
+# Section 5 — repeated here since this is the step meant to summarise what
+# actually went into the training data.)
+cat("=== Recap: cleaning summary from training data build ===\n")
+print(dplyr::bind_rows(
+  basic_sanitation_training_output$cleaning_summary,
+  open_defecation_training_output$cleaning_summary
+))
+
+# ── Region-level training row counts per country (post-cleaning) ────────────
+# Counts rows in the FINAL basic_sanitation_training / open_defecation_training
+# objects — i.e. after missing-outcome, missing-weight and duplicate rows have
+# already been removed. This is what the models actually train on.
+n_regions_basic_sanitation <- basic_sanitation_training %>%
+  dplyr::count(country_outcome, name = "n_regions_basic_sanitation_training")
+
+n_regions_open_defecation <- open_defecation_training %>%
+  dplyr::count(country_outcome, name = "n_regions_open_defecation_training")
+
 # ── National sanitation estimates from raw survey data ───────────────────────
 national_sanitation <- createNationalSanitationEstimates(df_hh_sanitation_latest)
 
@@ -1039,7 +1066,14 @@ survey_dates <- df_hh_sanitation_latest %>%
 # ── Country-level covariates (one row per country) ───────────────────────────
 # Collapse from region-level training data; time-varying covariates are taken
 # at the analysis year already stored in the training data.
-country_covariates <- basic_sanitation_training %>%
+# Source from BOTH outcomes so that a country dropped from basic sanitation
+# (e.g. Indonesia, no WS15 data) still gets its metadata and shared covariates
+# from the open defecation training data — only its basic-sanitation-specific
+# outcome columns should end up NA, not analysis_year / region / income group.
+country_covariates <- dplyr::bind_rows(
+    basic_sanitation_training,
+    open_defecation_training
+  ) %>%
   dplyr::group_by(country_outcome, analysis_year) %>%
   dplyr::summarise(
     gdp_per_capita_constant_2015_usd   = dplyr::first(na.omit(gdp_per_capita_constant_2015_usd)),
@@ -1066,6 +1100,12 @@ country_covariates <- basic_sanitation_training %>%
 descriptive_stats <- survey_dates %>%
   dplyr::left_join(country_covariates,   by = "country") %>%
   dplyr::left_join(national_sanitation,  by = "country") %>%
+  dplyr::left_join(n_regions_basic_sanitation, by = c("country" = "country_outcome")) %>%
+  dplyr::left_join(n_regions_open_defecation,  by = c("country" = "country_outcome")) %>%
+  dplyr::mutate(
+    n_regions_basic_sanitation_training = tidyr::replace_na(n_regions_basic_sanitation_training, 0L),
+    n_regions_open_defecation_training  = tidyr::replace_na(n_regions_open_defecation_training, 0L)
+  ) %>%
   dplyr::select(
     country,
     start_data_collection,
@@ -1076,8 +1116,11 @@ descriptive_stats <- survey_dates %>%
     iso3,
     prop_basic_sanitation_national,
     n_hh_basic_sanitation,
+    pct_pop_known_basic_sanitation,
+    n_regions_basic_sanitation_training,
     prop_open_defecation_national,
     n_hh_open_defecation,
+    n_regions_open_defecation_training,
     ww_collection_percent,
     ww_treatment_percent,
     ww_reuse_percent,
@@ -1100,9 +1143,69 @@ dir.create(DESCRIPTIVE_STATS_DIR, recursive = TRUE, showWarnings = FALSE)
 
 readr::write_csv(
   descriptive_stats,
-  file.path(DESCRIPTIVE_STATS_DIR, "sanitation_survey_descriptive_statistics.csv")
+  file.path(DESCRIPTIVE_STATS_DIR, "sanitation_survey_descriptive_statistics_v2.csv")
 )
-message("Written: sanitation_survey_descriptive_statistics.csv")
+message("Written: sanitation_survey_descriptive_statistics_v2.csv")
 
 knitr::kable(descriptive_stats, caption = "Sanitation survey data and country-level covariates")
+```
+
+------------------------------------------------------------------------
+
+# 10. Surveys diverging from JMP by more than 5 percentage points
+
+Flags surveys where the national estimate computed here differs from the JMP country estimate by more than 5 percentage points, separately for basic sanitation and open defecation. My `prop_*` estimates are proportions (0–1); JMP values (`jmp_*`) are percentages (0–100), so mine are converted to percentages and the difference is expressed in percentage points (`my_estimate − jmp_estimate`). Countries where my estimate is NA (e.g. dropped by the WS15 coverage rule) cannot be compared and are excluded.
+
+```{r}
+# Survey type (MICS / DHS) per country, from the retained household data.
+# Uses the same country-name harmonisation as descriptive_stats so the join
+# lines up.
+survey_type_lookup <- df_hh_sanitation_latest %>%
+  harmonise_household_country_names_for_modelling() %>%
+  dplyr::mutate(
+    survey_type = dplyr::case_when(
+      stringr::str_detect(household_data_source, "MICS") ~ "MICS",
+      stringr::str_detect(household_data_source, "DHS")  ~ "DHS",
+      TRUE                                               ~ household_data_source
+    )
+  ) %>%
+  dplyr::distinct(country, survey_type)
+
+jmp_comparison <- descriptive_stats %>%
+  dplyr::left_join(survey_type_lookup, by = "country") %>%
+  dplyr::transmute(
+    country,
+    survey_type,
+    analysis_year,
+    my_basic_sanitation_pct  = 100 * prop_basic_sanitation_national,
+    jmp_basic_sanitation_pct = jmp_sanitation_basic,
+    diff_basic_sanitation    = 100 * prop_basic_sanitation_national - jmp_sanitation_basic,
+    my_open_defecation_pct   = 100 * prop_open_defecation_national,
+    jmp_open_defecation_pct  = jmp_open_defecation,
+    diff_open_defecation     = 100 * prop_open_defecation_national - jmp_open_defecation
+  )
+
+# ── Basic sanitation: |difference| > 5 percentage points ─────────────────────
+basic_sanitation_jmp_gt5 <- jmp_comparison %>%
+  dplyr::filter(!is.na(diff_basic_sanitation), abs(diff_basic_sanitation) > 5) %>%
+  dplyr::select(country, survey_type, analysis_year,
+                my_basic_sanitation_pct, jmp_basic_sanitation_pct,
+                diff_basic_sanitation) %>%
+  dplyr::arrange(dplyr::desc(abs(diff_basic_sanitation)))
+
+# ── Open defecation: |difference| > 5 percentage points ──────────────────────
+open_defecation_jmp_gt5 <- jmp_comparison %>%
+  dplyr::filter(!is.na(diff_open_defecation), abs(diff_open_defecation) > 5) %>%
+  dplyr::select(country, survey_type, analysis_year,
+                my_open_defecation_pct, jmp_open_defecation_pct,
+                diff_open_defecation) %>%
+  dplyr::arrange(dplyr::desc(abs(diff_open_defecation)))
+
+cat("\n=== Basic sanitation: |my estimate - JMP| > 5 percentage points (",
+    nrow(basic_sanitation_jmp_gt5), "surveys ) ===\n")
+print(as.data.frame(basic_sanitation_jmp_gt5), row.names = FALSE)
+
+cat("\n=== Open defecation: |my estimate - JMP| > 5 percentage points (",
+    nrow(open_defecation_jmp_gt5), "surveys ) ===\n")
+print(as.data.frame(open_defecation_jmp_gt5), row.names = FALSE)
 ```

@@ -1,6 +1,6 @@
 # title: "Compiling and Labeling MICS Household Survey Data – Basic Sanitation & Open Defecation"
 #
-# Output: df_sanitation_MICS_v1.csv
+# Output: df_sanitation_MICS_v2.csv
 #
 # Key variables:
 #   WS11            – toilet type: 2 = improved, 1 = unimproved (not OD), 0 = open defecation
@@ -94,7 +94,7 @@ hh_Zimbabwe$country                  <- "Zimbabwe"
 
 # =============================================================================
 # 3. RENAME NON-STANDARD VARIABLE NAMES BEFORE EXTRACTION
-#    Nigeria MICS4 and Paraguay MICS4 use WS8/WS9 instead of WS11/WS15.
+#    Nigeria and Paraguay use WS8/WS9 instead of WS11/WS15.
 #    These are handled inside their country-specific extract functions.
 #    Add further rename blocks here for any other non-standard surveys, e.g.:
 #    names(hh_SomeCountry)[names(hh_SomeCountry) == "WS9"]  <- "WS11"
@@ -266,6 +266,10 @@ df.MICS.sanitation <- do.call(rbind, lapply(all_san_surveys, function(s) {
 df.MICS.sanitation$WS11_raw <- df.MICS.sanitation$WS11   # preserve raw codes for QC
 
 df.MICS.sanitation <- labelingSurveyVariableResponses_sanitation(df.MICS.sanitation)
+# Correct raw codes whose meaning differs by survey (e.g. code 25 = vault
+# latrine in Afghanistan, pit latrine without slab in Paraguay — neither is
+# open defecation). Must run after labelling and before deriveOpenDefecation().
+df.MICS.sanitation <- applyMICSSurveySpecificWS11Overrides(df.MICS.sanitation)
 df.MICS.sanitation <- deriveOpenDefecation(df.MICS.sanitation)
 
 checkUncodedWS11(df.MICS.sanitation)
@@ -285,7 +289,7 @@ print(missing_by_country, n = Inf, width = Inf)
 
 
 write.csv(df.MICS.sanitation,
-          here::here("data/processed/household_surveys/df_sanitation_MICS_v1.csv"),
+          here::here("data/processed/household_surveys/df_sanitation_MICS_v2.csv"),
           fileEncoding = "UTF-8", row.names = FALSE)
 
 # =============================================================================
