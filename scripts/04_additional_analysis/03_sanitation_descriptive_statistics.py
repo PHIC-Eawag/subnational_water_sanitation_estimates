@@ -20,8 +20,11 @@ import pandas as pd
 # 1.  Paths
 # -------------------------------------------------------
 
-PRED_DIR   = "outputs/model_performance/predictions"
-OUTPUT_DIR = "outputs/descriptive_statistics"
+# Read the retrained (_v2) predictions and write stats under a v2 subfolder,
+# so this analysis uses the corrected sanitation labelling and does not
+# overwrite prior outputs. Repo paths only (never switchdrive).
+PRED_DIR   = "outputs/model_performance/v2/predictions"
+OUTPUT_DIR = "outputs/descriptive_statistics/v2"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 BS_PRED = os.path.join(PRED_DIR, "basic_sanitation_tabpfn_lmic_predictions.csv")

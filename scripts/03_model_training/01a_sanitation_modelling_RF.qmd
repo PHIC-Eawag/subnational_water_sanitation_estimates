@@ -42,7 +42,11 @@ library(forcats)
 TRAINING_DIR          <- here::here("data/processed/training_subcomponents")
 CLUSTER_OUTPUT_DIR    <- here::here("outputs/cluster_analysis/sanitation")
 PRED_COVARIATES_PATH  <- here::here("data/processed/prediction/prediction_covariates_2024.csv")
-OUTPUT_DIR            <- here::here("outputs/model_performance")
+# Version all model outputs under a subfolder so retraining on the corrected
+# (_v2) training data does not overwrite previous runs. Written to the git repo
+# (outputs/), never to the switchdrive deliverables folder.
+MODEL_OUTPUT_VERSION  <- "v2"
+OUTPUT_DIR            <- here::here("outputs/model_performance", MODEL_OUTPUT_VERSION)
 FIGURE_DIR            <- file.path(OUTPUT_DIR, "figures")
 dir.create(FIGURE_DIR, recursive = TRUE, showWarnings = FALSE)
 ```
@@ -55,29 +59,29 @@ dir.create(FIGURE_DIR, recursive = TRUE, showWarnings = FALSE)
 
 ```{r}
 basic_sanitation_raw <- readr::read_csv(
-  file.path(TRAINING_DIR, "basic_sanitation_training_with_covariates.csv"),
+  file.path(TRAINING_DIR, "basic_sanitation_training_with_covariates_v2.csv"),
   show_col_types = FALSE
 )
 
 open_defecation_raw <- readr::read_csv(
-  file.path(TRAINING_DIR, "open_defecation_training_with_covariates.csv"),
+  file.path(TRAINING_DIR, "open_defecation_training_with_covariates_v2.csv"),
   show_col_types = FALSE
 )
 ```
 
-## Remove excluded countries
+## Country exclusions
+
+Indonesia is no longer manually excluded from `basic_sanitation`: its survey
+has no WS15 (shared-facility) data at all, so improved-facility rows now
+come through as NA `outcome_value` and are dropped upstream in
+`04a_sanitation_preparing_training_dataframes.qmd`
+(`join_and_save_one_training_dataset()`). The remaining Indonesia rows (open
+defecation / unimproved facilities) don't depend on WS15 and stay in the
+training data as a small, determinate-but-skewed-toward-0 sample.
 
 ```{r}
-remove_excluded_countries <- function(df) {
-  df %>%
-    dplyr::filter(!stringr::str_detect(
-      stringr::str_to_lower(country_outcome),
-      "^(indonesia)$"
-    ))
-}
-
-basic_sanitation_df <- remove_excluded_countries(basic_sanitation_raw)
-open_defecation_df <- open_defecation_raw
+basic_sanitation_df <- basic_sanitation_raw
+open_defecation_df  <- open_defecation_raw
 ```
 
 ## Column name constants
@@ -570,15 +574,18 @@ run_one_fold <- function(
     ntrees        = N_TREES_COMPARISON,
     seed          = SEED
 ) {
+  # Missing outcome/weight values are already removed upstream in
+  # 04a_sanitation_preparing_training_dataframes.qmd
+  # (join_and_save_one_training_dataset()), so no drop_na() is needed here.
+  # Missing feature/covariate values are left as NA — H2O's random forest
+  # handles them natively via missing-value-aware splits.
   train_df <- training_df %>%
     dplyr::filter(!.data[[country_col]] %in% held_out_countries) %>%
-    dplyr::select(dplyr::all_of(c(features, outcome_col, weight_col))) %>%
-    tidyr::drop_na(dplyr::all_of(c(outcome_col, weight_col)))
+    dplyr::select(dplyr::all_of(c(features, outcome_col, weight_col)))
 
   test_df <- training_df %>%
     dplyr::filter(.data[[country_col]] %in% held_out_countries) %>%
-    dplyr::select(dplyr::all_of(c(features, outcome_col))) %>%
-    tidyr::drop_na(dplyr::all_of(outcome_col))
+    dplyr::select(dplyr::all_of(c(features, outcome_col)))
 
   if (nrow(test_df) == 0) return(NULL)
 
@@ -733,7 +740,7 @@ two outcomes can differ. Re-run from here once both are set.
 
 ```{r}
 FINAL_K_BASIC_SANITATION <- 45   # e.g. 20
-FINAL_K_OPEN_DEFECATION  <- 100   # e.g. 15
+FINAL_K_OPEN_DEFECATION  <- 90   # e.g. 15
 
 if (is.null(FINAL_K_BASIC_SANITATION) || is.null(FINAL_K_OPEN_DEFECATION)) {
   stop("Set both FINAL_K_BASIC_SANITATION and FINAL_K_OPEN_DEFECATION before continuing.")
@@ -763,6 +770,9 @@ h2o::h2o.removeAll()
 prepare_loco_data <- function(training_df, features, outcome_name) {
   model_features <- intersect(features, names(training_df))
 
+  # Missing outcome/weight values are already removed upstream in
+  # 04a_sanitation_preparing_training_dataframes.qmd
+  # (join_and_save_one_training_dataset()), so no drop_na() is needed here.
   training_df %>%
     dplyr::mutate(
       country_fold = as.factor(as.integer(factor(.data[[COUNTRY_COL]])))
@@ -778,10 +788,6 @@ prepare_loco_data <- function(training_df, features, outcome_name) {
       sdg_region,
       wb_income_group,
       ww_region
-    ) %>%
-    tidyr::drop_na(
-      dplyr::all_of(OUTCOME_COL),
-      dplyr::all_of(WEIGHT_COL)
     ) %>%
     list(data = ., features = model_features, outcome_name = outcome_name)
 }
@@ -1080,7 +1086,7 @@ print_and_save_svg(
 # 8. Save final models
 
 ```{r}
-model_dir <- here::here("outputs/models")
+model_dir <- here::here("outputs/models", MODEL_OUTPUT_VERSION)
 dir.create(model_dir, recursive = TRUE, showWarnings = FALSE)
 
 h2o::h2o.saveModel(loco_basic_sanitation$model, path = model_dir, force = TRUE)

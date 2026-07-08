@@ -37,7 +37,11 @@ tabpfn_client.init()  # no-op after first login on this machine
 DATA_DIR             = "data/processed/training_subcomponents"
 CLUSTER_DIR          = "outputs/cluster_analysis/sanitation"
 PRED_COVARIATES_PATH = "data/processed/prediction/prediction_covariates_2024.csv"
-OUTPUT_DIR           = "outputs/model_performance"
+# Version all model outputs under a subfolder so retraining on the corrected
+# (_v2) training data does not overwrite previous runs. Written to the git
+# repo (outputs/), never to the switchdrive deliverables folder.
+MODEL_OUTPUT_VERSION = "v2"
+OUTPUT_DIR           = os.path.join("outputs/model_performance", MODEL_OUTPUT_VERSION)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 
@@ -187,16 +191,21 @@ for label, feats in feature_sets.items():
 # -------------------------------------------------------
 
 # Two separate prediction tasks, each pointing to its own training data file.
-# "basic_sanitation" excludes Indonesia (data quality issue).
+# Indonesia is no longer manually excluded from "basic_sanitation": its
+# survey has no WS15 (shared-facility) data at all, so improved-facility
+# rows now come through as NA outcome_value and are dropped upstream in
+# 04a (join_and_save_one_training_dataset()). The remaining Indonesia rows
+# (open defecation / unimproved facilities) don't depend on WS15 and stay in
+# the training data as a small, determinate-but-skewed-toward-0 sample.
 # "open_defecation" uses all available countries.
 TASKS = {
     "basic_sanitation": {
-        "filename":          "basic_sanitation_training_with_covariates.csv",
+        "filename":          "basic_sanitation_training_with_covariates_v2.csv",
         "output_prefix":     "basic_sanitation",
-        "exclude_countries": ["Indonesia"],
+        "exclude_countries": [],
     },
     "open_defecation": {
-        "filename":          "open_defecation_training_with_covariates.csv",
+        "filename":          "open_defecation_training_with_covariates_v2.csv",
         "output_prefix":     "open_defecation",
         "exclude_countries": [],
     },
@@ -213,10 +222,18 @@ def prepare_model_data(df, feature_cols, exclude_countries=None):
     1. Removes rows from excluded countries.
     2. Keeps only the columns (variables) we need.
     3. Converts all feature and target columns to numbers.
-    4. Drops rows missing critical values (target, location, year, weight).
-    5. Drops rows where the survey weight is zero or negative (unusable).
-    6. Removes duplicate rows (same country + year + region + target value).
-    7. Assigns each country a numeric fold ID for cross-validation.
+    4. Drops rows with no covariate-matched country (needed to assign a
+       country fold for cross-validation).
+    5. Assigns each country a numeric fold ID for cross-validation.
+
+    Missing outcome/weight values, zero-or-negative weights, and exact
+    duplicate rows are no longer handled here — they are already removed
+    upstream in 04a/04b_*_preparing_training_dataframes.qmd
+    (join_and_save_one_training_dataset()), so every model (this script, the
+    drinking-water TabPFN script, and the RF scripts) trains on the same
+    cleaned data. Missing feature/covariate values are also NOT dropped here:
+    TabPFN handles missing feature values natively (see fit_tabpfn() /
+    predict_lmics()).
     """
 
     # Step 1: Remove excluded countries by checking the outcome column name
@@ -247,17 +264,15 @@ def prepare_model_data(df, feature_cols, exclude_countries=None):
         if col in model_df.columns:
             model_df[col] = pd.to_numeric(model_df[col], errors="coerce")
 
-    # Step 5 & 6: Drop rows with missing essentials or zero/negative weights
-    model_df = model_df.dropna(
-        subset=[TARGET_COL, COUNTRY_COL, REGION_COL, YEAR_COL, WEIGHT_COL]
-    ).copy()
-    model_df = model_df[model_df[WEIGHT_COL] > 0].copy()
-
-    # Step 7: Remove exact duplicates across key identifying columns
-    model_df = model_df.drop_duplicates(
-        subset=[COUNTRY_COL, YEAR_COL, REGION_COL, TARGET_COL]
-    ).copy()
-
+    # Step 5: Drop rows with no covariate-matched country (COUNTRY_COL is
+    # "country_cov", set during the crosswalk join — distinct from
+    # country_outcome, which 04a/04b already guarantee is non-missing).
+    # Needed because country_fold below requires a non-missing country.
+    n_before = len(model_df)
+    model_df = model_df.dropna(subset=[COUNTRY_COL]).copy()
+    n_dropped = n_before - len(model_df)
+    if n_dropped:
+        print(f"  Dropped {n_dropped} row(s) with no covariate-matched country")
 
     # Assign a unique integer ID (fold number) to each country, used later
     # when we hold out one country at a time during cross-validation
@@ -490,12 +505,8 @@ def run_one_fold(training_df, held_out_countries, features):
     X_te  = test_df[valid].to_numpy(dtype=float)
     y_te  = test_df[TARGET_COL].to_numpy(dtype=float)
 
-    # Remove any rows that contain missing values in the feature columns
-    train_mask = ~np.isnan(X_tr).any(axis=1)
-    test_mask  = ~np.isnan(X_te).any(axis=1)
-    X_tr, y_tr, w_tr = X_tr[train_mask], y_tr[train_mask], w_tr[train_mask]
-    X_te, y_te       = X_te[test_mask],  y_te[test_mask]
-
+    # Feature values are NOT filtered for missingness here — TabPFN handles
+    # missing feature values natively (see fit_tabpfn() / predict_lmics()).
     if len(X_tr) == 0 or len(X_te) == 0:
         return None
 
@@ -598,8 +609,8 @@ print(f"\nSaved: {OUTPUT_DIR}/tabpfn_feature_set_cv_comparison.csv")
 # then continue running from Section 12 onwards.
 # -------------------------------------------------------
 
-FINAL_K_BASIC_SANITATION = 100   # <-- change this after reviewing Section 10 output
-FINAL_K_OPEN_DEFECATION  = 100   # <-- change this after reviewing Section 10 output
+FINAL_K_BASIC_SANITATION = 45   # <-- change this after reviewing Section 10 output
+FINAL_K_OPEN_DEFECATION  = 90   # <-- change this after reviewing Section 10 output
 
 # Safety check: both values must be set before continuing
 if FINAL_K_BASIC_SANITATION is None or FINAL_K_OPEN_DEFECATION is None:
@@ -1464,3 +1475,182 @@ for outcome_name, cfg in PRED_TASKS.items():
         print(f"  Mean PI90 width: {pi_width:.3f}")
     except RuntimeError as exc:
         warnings.warn(f"  Prediction skipped for {outcome_name}: {exc}")
+
+
+# -------------------------------------------------------
+# 19. Feature importance — SHAP values for the final models
+# -------------------------------------------------------
+# SHAP explains how each feature moves the model's prediction. TabPFN here is
+# the CLOUD client, so a model-agnostic explainer (KernelExplainer) makes many
+# API calls — cost scales with (rows explained) x (background size). The sample
+# sizes below are kept modest so it completes in reasonable time; increase them
+# for a more stable estimate. Set RUN_SHAP = False to skip this section.
+#
+# Outputs (written to the git repo, v2 folders — never switchdrive):
+#   OUTPUT_DIR/{outcome}_tabpfn_shap_importance_k{K}.csv   (mean |SHAP| per feature)
+#   PLOT_DIR/{outcome}_tabpfn_shap_importance_k{K}.{png,pdf}   (bar chart)
+#   PLOT_DIR/{outcome}_tabpfn_shap_beeswarm_k{K}.{png,pdf}     (beeswarm summary)
+
+RUN_SHAP          = True
+N_SHAP_EXPLAIN    = 80    # rows whose predictions are explained
+N_SHAP_BACKGROUND = 40    # reference rows the explainer perturbs against
+N_SHAP_SAMPLES    = 120   # KernelExplainer coalition samples per row
+SHAP_TOP_N        = 20    # features shown in the plots
+SHAP_SEED         = 123
+SHAP_DPI          = 300
+
+SHAP_COLOURS = {"basic_sanitation": "#4393c3", "open_defecation": "#d6604d"}
+
+# Human-readable feature labels — ported from 01a_sanitation_modelling_RF.qmd
+# so these TabPFN SHAP figures are directly comparable to the RF ones.
+FEATURE_LABEL_MAP = {
+    "worldpop":                               "WorldPop population density",
+    "worldpop_sum":                           "WorldPop population sum",
+    "ghsl_population":                        "GHSL population density",
+    "ghsl_population_sum":                    "GHSL population sum",
+    "GHS_Population_Density":                 "GHS population density",
+    "GPWv4_Population_Density":               "GPWv4 population density",
+    "ghsl_built_surface":                    "Built surface fraction",
+    "ghsl_urban_frac":                       "Urban fraction",
+    "jrc_building_height":                    "Building height",
+    "viirs_average":                          "Night-time lights",
+    "gdp_per_capita_constant_2015_usd":       "GDP per capita",
+    "secondary_education_duration_years":     "Secondary education duration",
+    "ww_collection_percent":                  "Wastewater collection",
+    "ww_treatment_percent":                   "Wastewater treatment",
+    "ww_reuse_percent":                       "Wastewater reuse",
+    "control_of_corruption":                  "Control of corruption",
+    "governance_effectiveness":               "Government effectiveness",
+    "political_stability":                    "Political stability",
+    "regulatory_quality":                     "Regulatory quality",
+    "rule_of_law":                            "Rule of law",
+    "voice_and_accountability":               "Voice and accountability",
+    "sanitation_basic":                       "JMP basic sanitation (national)",
+    "open_defecation":                        "JMP open defecation (national)",
+    "CGIAR_Aridity_Index":                    "Aridity index",
+    "CGIAR_PET":                              "Potential evapotranspiration",
+    "CHELSA_BIO_Annual_Mean_Temperature":     "Annual mean temperature",
+    "CHELSA_BIO_Annual_Precipitation":        "Annual precipitation",
+    "EarthEnvTopoMed_Elevation":              "Elevation",
+    "EarthEnvTopoMed_Slope":                  "Slope",
+    "FanEtAl_Depth_to_Water_Table_AnnualMean": "Depth to water table",
+    "map_friction":                           "Travel friction",
+    "WCS_Human_Footprint_2009":               "Human footprint",
+    "CSP_Global_Human_Modification":          "Human modification",
+}
+
+
+def label_feature(name):
+    """Readable label if mapped, else underscores -> spaces (matches the RF script)."""
+    if name in FEATURE_LABEL_MAP:
+        return FEATURE_LABEL_MAP[name]
+    return " ".join(str(name).replace("_", " ").split())
+
+
+def run_shap_for_outcome(model_df, features, outcome_name, final_k):
+    """Fit the final TabPFN on all rows, then estimate SHAP feature importance."""
+    import shap  # imported here so a missing shap install only skips this section
+
+    colour = SHAP_COLOURS.get(outcome_name, "#666666")
+    valid  = [f for f in features if f in model_df.columns]
+
+    # Assemble numeric X / y / weights; drop rows with missing target or weight.
+    X = model_df[valid].apply(pd.to_numeric, errors="coerce")
+    y = pd.to_numeric(model_df[TARGET_COL], errors="coerce")
+    w = pd.to_numeric(model_df[WEIGHT_COL], errors="coerce")
+    keep = y.notna() & w.notna()
+    X, y, w = X[keep].reset_index(drop=True), y[keep].reset_index(drop=True), w[keep].reset_index(drop=True)
+
+    # TabPFN handles NaN features natively, but SHAP's masking is cleaner on
+    # complete data, so median-impute feature gaps for the explanation only.
+    X = X.fillna(X.median(numeric_only=True))
+
+    # Fit the final model on the full training set (weights normalised to mean 1).
+    w_norm = (w / w.mean()).to_numpy()
+    model  = TabPFNRegressor()
+    model, used_sw = fit_tabpfn(model, X.to_numpy(dtype=float),
+                                y.to_numpy(dtype=float), sample_weight=w_norm)
+
+    rng     = np.random.default_rng(SHAP_SEED)
+    n       = len(X)
+    bg_idx  = rng.choice(n, size=min(N_SHAP_BACKGROUND, n), replace=False)
+    ex_idx  = rng.choice(n, size=min(N_SHAP_EXPLAIN,   n), replace=False)
+    background = X.iloc[bg_idx].reset_index(drop=True)
+    X_explain  = X.iloc[ex_idx].reset_index(drop=True)
+
+    print(f"    Explaining {len(X_explain)} rows against {len(background)} "
+          f"background rows ({len(valid)} features) — this calls the TabPFN API …")
+
+    def predict_np(arr):
+        return np.asarray(model.predict(np.asarray(arr, dtype=float))).reshape(-1)
+
+    explainer = shap.KernelExplainer(predict_np, background)
+    shap_vals = explainer.shap_values(X_explain, nsamples=N_SHAP_SAMPLES)
+    shap_vals = np.asarray(shap_vals)
+
+    # ── Global importance table (mean absolute SHAP per feature) ──────────────
+    mean_abs  = np.abs(shap_vals).mean(axis=0)
+    readable  = [label_feature(f) for f in valid]
+    imp = (pd.DataFrame({"feature": valid, "label": readable,
+                         "mean_abs_shap": mean_abs})
+           .sort_values("mean_abs_shap", ascending=False)
+           .reset_index(drop=True))
+    imp_path = os.path.join(OUTPUT_DIR,
+                            f"{outcome_name}_tabpfn_shap_importance_k{final_k}.csv")
+    imp.to_csv(imp_path, index=False)
+    print(f"    Saved: {imp_path}")
+
+    # ── Bar chart of the top features (extra; the RF script has no bar) ────────
+    # Save as PDF only (vector).
+    top = imp.head(SHAP_TOP_N).iloc[::-1]
+    fig, ax = plt.subplots(figsize=(7.0, 0.32 * len(top) + 1.0))
+    ax.barh(top["label"], top["mean_abs_shap"], color=colour)
+    ax.set_xlabel("Mean |SHAP value|  (impact on predicted proportion)")
+    ax.set_title(f"SHAP feature importance: {outcome_name} (k = {final_k})",
+                 loc="left")
+    ax.spines[["top", "right"]].set_visible(False)
+    fig.tight_layout()
+    fig.savefig(
+        os.path.join(PLOT_DIR, f"{outcome_name}_tabpfn_shap_importance_k{final_k}.pdf"),
+        bbox_inches="tight",
+    )
+    plt.close(fig)
+
+    # ── Beeswarm summary — matched to the RF SHAP plot: viridis colour scale,
+    #    readable feature labels, same title format. Vector PDF output. ────────
+    shap.summary_plot(shap_vals, X_explain.to_numpy(dtype=float),
+                      feature_names=readable, max_display=SHAP_TOP_N,
+                      show=False, cmap=plt.get_cmap("viridis"))
+    fig = plt.gcf()
+    fig.suptitle(f"SHAP summary: {outcome_name} (k = {final_k})", x=0.01, ha="left")
+    fig.savefig(
+        os.path.join(PLOT_DIR, f"{outcome_name}_tabpfn_shap_beeswarm_k{final_k}.pdf"),
+        bbox_inches="tight",
+    )
+    plt.close(fig)
+
+    del model
+    clear_memory()
+    print(f"    Top feature: {imp.iloc[0]['feature']} "
+          f"(mean |SHAP| = {imp.iloc[0]['mean_abs_shap']:.4f})")
+
+
+if RUN_SHAP:
+    print(f"\n{'='*60}")
+    print("Section 19 — SHAP feature importance (final models)")
+    print(f"{'='*60}")
+
+    _shap_tasks = [
+        ("basic_sanitation", bs_model_df, bs_features, FINAL_K_BASIC_SANITATION),
+        ("open_defecation",  od_model_df, od_features, FINAL_K_OPEN_DEFECATION),
+    ]
+    for _name, _mdf, _feat, _k in _shap_tasks:
+        print(f"\n  Outcome: {_name}")
+        try:
+            run_shap_for_outcome(_mdf, _feat, _name, _k)
+        except ImportError:
+            warnings.warn("  shap not installed — skipping SHAP section "
+                          "(install with: pip install shap)")
+            break
+        except Exception as exc:  # noqa: BLE001 — keep one outcome's failure isolated
+            warnings.warn(f"  SHAP skipped for {_name}: {exc}")

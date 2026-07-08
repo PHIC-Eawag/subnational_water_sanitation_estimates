@@ -25,8 +25,11 @@ import matplotlib.colors as mc
 # 1.  Paths
 # -------------------------------------------------------
 
-PRED_DIR   = "outputs/model_performance/predictions"
-FIGURE_DIR = "outputs/figures"
+# Read the retrained (_v2) predictions and write figures under a v2 subfolder,
+# so this analysis uses the corrected sanitation labelling and does not
+# overwrite prior figures. Repo paths only (never switchdrive).
+PRED_DIR   = "outputs/model_performance/v2/predictions"
+FIGURE_DIR = "outputs/figures/v2"
 os.makedirs(FIGURE_DIR, exist_ok=True)
 
 BS_PRED = os.path.join(PRED_DIR, "basic_sanitation_tabpfn_lmic_predictions.csv")
@@ -136,11 +139,12 @@ def draw_box(ax, vals, x_pos, colour, rng):
     lo_whisk = vals[vals >= lo_fence].min()
     hi_whisk = vals[vals <= hi_fence].max()
 
-    # Box: white fill + colour tint + dark border
+    # Box: transparent fill + colour tint + dark border
+    # (facecolor="none" so the jittered points behind show through the box)
     box_patch = mpatches.FancyBboxPatch(
         (x_pos - BOX_HALF, q25), BOX_HALF * 2, q75 - q25,
         boxstyle="square,pad=0",
-        facecolor="white", edgecolor=dark_col,
+        facecolor="none", edgecolor=dark_col,
         linewidth=BOX_LW, zorder=3,
     )
     ax.add_patch(box_patch)

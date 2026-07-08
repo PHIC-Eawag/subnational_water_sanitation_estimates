@@ -28,8 +28,11 @@ from matplotlib.cm import ScalarMappable
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 SHP_DIR      = PROJECT_ROOT / "data/raw/GADM36_boundaries"
-PRED_DIR   = "outputs/model_performance/predictions"
-FIGURE_DIR = "outputs/figures"
+# Read the retrained (_v2) predictions and write figures under a v2 subfolder,
+# so this analysis uses the corrected sanitation labelling and does not
+# overwrite prior figures. Repo paths only (never switchdrive).
+PRED_DIR   = "outputs/model_performance/v2/predictions"
+FIGURE_DIR = "outputs/figures/v2"
 os.makedirs(FIGURE_DIR, exist_ok=True)
 
 BS_PRED = os.path.join(PRED_DIR, "basic_sanitation_tabpfn_lmic_predictions.csv")
