@@ -27,8 +27,12 @@ PATH_JMP        <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/J
 PATH_WGI        <- "~/switchdrive/Eawag/WorldBankProject/geospatial_covariates/worldwide_governance_indicators_prediction.csv"
 
 # ── Drinking water estimates ─────────────────────────────────────────────────
-PATH_GW_RISK <- "~/switchdrive/Eawag/WorldBankProject/drinking_water_estimates/geogenic_groundwater_risk_estimates.xlsx"
+PATH_GW_RISK <- "~/switchdrive/Eawag/WorldBankProject/deliverables_0002020937/datasets/geogenic_groundwater_risk_estimates.xlsx"
+
+# ── Version tag (bump when re-running to avoid overwriting previous outputs) ──
+VERSION <- "v1"
 
 # ── Deliverable output paths ─────────────────────────────────────────────────
-PATH_OUT_SMDW       <- "~/switchdrive/Eawag/WorldBankProject/deliverables_0002020937/smdw_estimates_admin1.csv"
+PATH_OUT_SMDW       <- paste0("~/switchdrive/Eawag/WorldBankProject/smdw_estimates_admin1_", VERSION, ".csv")
+#PATH_OUT_SMDW       <- paste0("~/switchdrive/Eawag/WorldBankProject/deliverables_0002020937/smdw_estimates_admin1_", VERSION, ".csv")
 PATH_OUT_SANITATION <- "~/switchdrive/Eawag/WorldBankProject/deliverables_0002020937/datasets/sanitation_estimates_admin1.csv"
