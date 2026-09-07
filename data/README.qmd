@@ -63,7 +63,7 @@ The following raw data files are stored on the switchdrive and are not tracked i
 Individual-level DHS and MICS survey data, organised by survey type:
 
 | Path (relative to switchdrive root) | Description |
-|------------------------------------|------------------------------------|
+|----|----|
 | `HH_surveys/HH_survey_data/HH_DHS_water_quality/` | DHS surveys with water quality data |
 | `HH_surveys/HH_survey_data/HH_DHS_other/` | DHS surveys for sanitation and all other drinking water subcomponents |
 | `HH_surveys/HH_survey_data/HH_DHS_MIS/` | DHS Malaria Indicator Surveys |
@@ -78,7 +78,7 @@ Individual-level DHS and MICS survey data, organised by survey type:
 #### 📁 GADM region names table
 
 | Path | Description |
-|------------------------------------|------------------------------------|
+|----|----|
 | `regions/all_regions_GADM.csv` | All GADM version 3.6 admin level 1–4 names for LMICs in long format, used for fuzzy name matching |
 
 -   **Source:** [gadm.org](https://gadm.org/old_versions.html)
@@ -89,7 +89,7 @@ Individual-level DHS and MICS survey data, organised by survey type:
 Covariates extracted from Google Earth Engine (GEE), stored as population-weighted sums per survey region or admin unit. Sampled onto boundaries in `data/processed/survey_boundaries/`.
 
 | Path | Description |
-|------------------------------------|------------------------------------|
+|----|----|
 | `geospatial_covariates/pop_sums_training_water_quality/` | Population sums for water quality survey regions |
 | `geospatial_covariates/pop_sums_training_other/` | Population sums for other survey regions |
 | `geospatial_covariates/pop_sums_prediction/` | Population sums for GADM prediction grid |
@@ -102,7 +102,7 @@ Covariates extracted from Google Earth Engine (GEE), stored as population-weight
 #### 📁 Country-level covariates
 
 | Path | Description | Source |
-|------------------------|------------------------|------------------------|
+|----|----|----|
 | `geospatial_covariates/gdp_per_capita_2015.csv` | GDP per capita (2015 USD) by country | [World Development Indicators](https://databank.worldbank.org/source/world-development-indicators/#) |
 | `geospatial_covariates/secondary_education_years.csv` | Mean years of secondary education by country | [World Development Indicators](https://databank.worldbank.org/source/world-development-indicators/#) |
 | `geospatial_covariates/Country_WWctr_Percentage.txt` | Country-level wastewater collection, treatment, and reuse percentages (static, no year dimension). Downloaded 21 May 2026. | [PANGAEA](https://doi.pangaea.de/10.1594/PANGAEA.918731) |
@@ -122,7 +122,7 @@ Admin1-level estimates of the population using groundwater at risk of arsenic an
 -   WorldPop spatial population estimates (Bondarenko et al., 2025; [DOI:10.5258/SOTON/WP00845](https://doi.org/10.5258/SOTON/WP00845))
 
 | Path | Description |
-|------------------------------------|------------------------------------|
+|----|----|
 | `drinking_water_estimates/geogenic_groundwater_risk_estimates.xlsx` | Admin1-level population at risk from arsenic and fluoride contamination |
 
 -   **Used in:** `scripts/04_additional_analysis/06_calculating_SMDW.qmd`
@@ -132,7 +132,7 @@ Admin1-level estimates of the population using groundwater at risk of arsenic an
 Final model output files written to the switchdrive. These are not inputs to any further pipeline step.
 
 | Path | Description | Produced by |
-|------------------------|------------------------|------------------------|
+|----|----|----|
 | `deliverables_0002020937/smdw_estimates_admin1.csv` | Admin1-level SMDW estimates with arsenic/fluoride risk components | `scripts/04_additional_analysis/06_calculating_SMDW.qmd` |
 | `deliverables_0002020937/datasets/sanitation_estimates_admin1.csv` | Admin1-level basic sanitation and open defecation estimates with prediction intervals | `scripts/01_data_preparation/06_format_final_sanitation_dataframe.qmd` |
 
@@ -147,7 +147,7 @@ Data derived from raw inputs, prepared by scripts in this repository unless othe
 Compiled and labelled household survey extracts, one file per survey type and outcome. These are the direct outputs of the compile-and-label scripts and serve as inputs to the training dataframe preparation step.
 
 | File | Description |
-|------------------------------------|------------------------------------|
+|----|----|
 | `df_sanitation_MICS_v1.csv` | MICS with sanitation data |
 | `df_sanitation_DHS.csv` | DHS with sanitation data |
 | `df.SMDW_wq_MICS_old.csv` | Old MICS with water quality survey data (used in Greenwood et al., 2024) |
@@ -194,7 +194,7 @@ The `final_match_status_*` files are intermediate outputs listing all survey reg
 **Supporting files:**
 
 | File | Description |
-|------------------------------------|------------------------------------|
+|----|----|
 | `final_match_status_oldMICS_SMDW.csv` | Match status for old MICS SMDW surveys (includes water quality) |
 | `covariate_region_names.csv` | Region names extracted from covariate data, used for name harmonisation |
 | `join_names_outcome.csv` | Lookup table harmonising country/region names in the outcome data |
@@ -210,7 +210,7 @@ The `final_match_status_*` files are intermediate outputs listing all survey reg
 Region area tables and non-population covariate files produced by `03_sampling_geospatial_data.ipynb` after GEE sampling. These are used alongside the switchdrive covariate files when assembling the training and prediction dataframes.
 
 | File | Description |
-|------------------------------------|------------------------------------|
+|----|----|
 | `water_quality_region_areas_km2.csv` | Region areas (km²) for water quality survey regions |
 | `other_surveys_region_areas_km2.csv` | Region areas (km²) for other survey regions |
 | `gadm_lmic_region_areas_km2.csv` | Region areas (km²) for GADM prediction grid units |

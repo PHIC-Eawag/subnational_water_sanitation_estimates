@@ -330,13 +330,32 @@ col_names_vec <- c(
 oghist_countries <- oghist_raw[12:nrow(oghist_raw), 1:40]
 names(oghist_countries) <- col_names_vec
 
+# Year columns (headers parsed as integer years); everything else is metadata.
+oghist_year_cols <- setdiff(names(oghist_countries), c("country_code", "country_name"))
+oghist_year_cols <- oghist_year_cols[
+  !is.na(suppressWarnings(as.integer(oghist_year_cols)))
+]
+
+# Carry forward the most recent non-missing classification at or before
+# PREDICTION_YEAR, rather than reading only the PREDICTION_YEAR column. The WB
+# sometimes leaves the latest year blank for a country even though an earlier
+# value exists (e.g. Ethiopia is "L" through 2023 but blank in 2024); taking
+# only the single year drops these to NA.
 income_group_clean <- oghist_countries %>%
-  dplyr::select(country_code, country_name, dplyr::all_of(as.character(PREDICTION_YEAR))) %>%
   dplyr::filter(!is.na(country_code), !is.na(country_name)) %>%
-  dplyr::rename(wb_income_group = as.character(PREDICTION_YEAR)) %>%
+  tidyr::pivot_longer(
+    dplyr::all_of(oghist_year_cols),
+    names_to = "year", values_to = "wb_income_group"
+  ) %>%
   dplyr::mutate(
+    year            = as.integer(year),
     wb_income_group = dplyr::if_else(wb_income_group == "..", NA_character_, wb_income_group)
   ) %>%
+  dplyr::filter(year <= PREDICTION_YEAR, !is.na(wb_income_group)) %>%
+  dplyr::group_by(country_code, country_name) %>%
+  dplyr::slice_max(year, n = 1, with_ties = FALSE) %>%
+  dplyr::ungroup() %>%
+  dplyr::select(country_code, country_name, wb_income_group) %>%
   add_country_join_key_extended(
     country_col = country_name, country_name_key_WB = country_name_key_WB
   ) %>%

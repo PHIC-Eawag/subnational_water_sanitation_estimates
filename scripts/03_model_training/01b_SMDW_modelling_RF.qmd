@@ -461,15 +461,18 @@ run_one_fold <- function(training_df, held_out_countries, features,
                          country_col = COUNTRY_COL,
                          ntrees      = N_TREES_COMPARISON,
                          seed        = SEED) {
+  # Missing outcome/weight values are already removed upstream in
+  # 04b_SMDW_preparing_training_dataframes.qmd
+  # (join_and_save_one_training_dataset()), so no drop_na() is needed here.
+  # Missing feature/covariate values are left as NA — H2O's random forest
+  # handles them natively via missing-value-aware splits.
   train_df <- training_df %>%
     dplyr::filter(!.data[[country_col]] %in% held_out_countries) %>%
-    dplyr::select(dplyr::all_of(c(features, outcome_col, weight_col))) %>%
-    tidyr::drop_na(dplyr::all_of(c(outcome_col, weight_col)))
+    dplyr::select(dplyr::all_of(c(features, outcome_col, weight_col)))
 
   test_df <- training_df %>%
     dplyr::filter(.data[[country_col]] %in% held_out_countries) %>%
-    dplyr::select(dplyr::all_of(c(features, outcome_col))) %>%
-    tidyr::drop_na(dplyr::all_of(outcome_col))
+    dplyr::select(dplyr::all_of(c(features, outcome_col)))
 
   if (nrow(test_df) == 0) return(NULL)
 
@@ -609,6 +612,9 @@ purrr::iwalk(final_ks, function(k, name) {
 prepare_loco_data <- function(training_df, features, outcome_name) {
   model_features <- intersect(features, names(training_df))
 
+  # Missing outcome/weight values are already removed upstream in
+  # 04b_SMDW_preparing_training_dataframes.qmd
+  # (join_and_save_one_training_dataset()), so no drop_na() is needed here.
   training_df %>%
     dplyr::mutate(
       country_fold = as.factor(as.integer(factor(.data[[COUNTRY_COL]])))
@@ -624,10 +630,6 @@ prepare_loco_data <- function(training_df, features, outcome_name) {
       sdg_region,
       wb_income_group,
       ww_region
-    ) %>%
-    tidyr::drop_na(
-      dplyr::all_of(OUTCOME_COL),
-      dplyr::all_of(WEIGHT_COL)
     ) %>%
     list(data = ., features = model_features, outcome_name = outcome_name)
 }

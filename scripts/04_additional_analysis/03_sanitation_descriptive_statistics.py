@@ -20,8 +20,11 @@ import pandas as pd
 # 1.  Paths
 # -------------------------------------------------------
 
-PRED_DIR   = "outputs/model_performance/predictions"
-OUTPUT_DIR = "outputs/descriptive_statistics"
+# Read the retrained (_v2) predictions and write stats under a v2 subfolder,
+# so this analysis uses the corrected sanitation labelling and does not
+# overwrite prior outputs. Repo paths only (never switchdrive).
+PRED_DIR   = "outputs/model_performance/v2/predictions"
+OUTPUT_DIR = "outputs/descriptive_statistics/v2"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 BS_PRED = os.path.join(PRED_DIR, "basic_sanitation_tabpfn_lmic_predictions.csv")
@@ -265,6 +268,81 @@ width_sdg_combined = bs_width_sdg.rename(columns={
 
 print_section("90% PREDICTION INTERVAL WIDTH — BY SDG REGION", width_sdg_combined)
 width_sdg_combined.to_csv(versioned_path(OUTPUT_DIR, "stats_pi_width_sdg_region.csv"), index=False)
+
+# -------------------------------------------------------
+# 9b.  90% PI width by income group & fragile context
+#      Supports the uncertainty paragraph (larger intervals in low/LM-income
+#      and fragile settings).
+# -------------------------------------------------------
+
+bs_width_income = summarise_width(bs[bs["income_label"].notna()], "income_label")
+bs_width_frag   = summarise_width(bs, "fragile_label")
+od_width_income = summarise_width(od[od["income_label"].notna()], "income_label")
+od_width_frag   = summarise_width(od, "fragile_label")
+
+print_section("90% PI WIDTH — BY INCOME GROUP (basic sanitation)", bs_width_income)
+print_section("90% PI WIDTH — BY FRAGILE CONTEXT (basic sanitation)", bs_width_frag)
+bs_width_income.to_csv(versioned_path(OUTPUT_DIR, "stats_pi_width_income_BS.csv"), index=False)
+bs_width_frag.to_csv(versioned_path(OUTPUT_DIR, "stats_pi_width_fragile_BS.csv"), index=False)
+od_width_income.to_csv(versioned_path(OUTPUT_DIR, "stats_pi_width_income_OD.csv"), index=False)
+od_width_frag.to_csv(versioned_path(OUTPUT_DIR, "stats_pi_width_fragile_OD.csv"), index=False)
+
+# -------------------------------------------------------
+# 9c.  Uncertainty vs data availability (survey + JMP)
+#      Overlap of prediction uncertainty with data gaps, matching Fig 5.
+#        in_training : district's country appears in the training data
+#        has_jmp     : national JMP estimate available (sanitation_basic not NaN)
+#      Country-level flags, consistent with 05_plot_sanitation_uncertainty.py.
+# -------------------------------------------------------
+
+TRAIN_DIR = "data/processed/training_subcomponents"
+
+# Harmonise training country names (country_cov) to the prediction NAME_0
+# spelling, so the in_training match is not broken by spelling differences
+# (e.g. "North Macedonia" vs "Macedonia").
+NAME_FIXES = {
+    "North Macedonia":                  "Macedonia",
+    "Eswatini":                         "Swaziland",
+    "Lao People's Democratic Republic": "Laos",
+}
+
+def add_data_flags(df, train_file, jmp_col):
+    tr = pd.read_csv(os.path.join(TRAIN_DIR, train_file), usecols=["country_cov"])
+    train_countries = set(tr["country_cov"].replace(NAME_FIXES))
+    df["in_training"] = df[country_col].isin(train_countries)
+    df["has_jmp"]     = df[jmp_col].notna() if jmp_col in df.columns else False
+    return df
+
+def data_availability_table(df):
+    g = df.groupby(["in_training", "has_jmp"])
+    tbl = pd.DataFrame({
+        "n_districts":        g.size(),
+        "n_countries":        g[country_col].nunique(),
+        "median_PI_width_%":  (g["width_90"].median() * 100).round(1),
+        "pop_millions":       (g["worldpop_sum"].sum() / 1e6).round(0)
+                              if "worldpop_sum" in df.columns else np.nan,
+    }).reset_index().sort_values("median_PI_width_%", ascending=False)
+    return tbl
+
+for _df, _name, _train, _jmp in [
+    (bs, "basic_sanitation", "basic_sanitation_training_with_covariates_v2.csv", "sanitation_basic"),
+    (od, "open_defecation",  "open_defecation_training_with_covariates_v2.csv",  "open_defecation"),
+]:
+    add_data_flags(_df, _train, _jmp)
+    _tab = data_availability_table(_df)
+    print_section(f"90% PI WIDTH — BY DATA AVAILABILITY ({_name})", _tab)
+    _tab.to_csv(versioned_path(OUTPUT_DIR, f"stats_pi_width_data_availability_{_name}.csv"), index=False)
+
+    # Double data gap: neither survey nor JMP national estimate
+    _dg = _df[~_df["in_training"] & ~_df["has_jmp"]]
+    print(f"\nDOUBLE DATA GAP (no survey + no JMP) — {_name}")
+    print(f"  districts:              {len(_dg)}")
+    print(f"  countries:              {_dg[country_col].nunique()}")
+    if "worldpop_sum" in _dg.columns:
+        print(f"  population (millions):  {_dg['worldpop_sum'].sum()/1e6:.0f}")
+    print(f"  median 90% PI width:    {_dg['width_90'].median()*100:.1f} %")
+    print(f"  share in SSA + Oceania: "
+          f"{100*_dg['sdg_region'].isin(['Sub-Saharan Africa', 'Oceania']).mean():.0f}%")
 
 # -------------------------------------------------------
 # 10.  Top 10 countries by widest prediction intervals

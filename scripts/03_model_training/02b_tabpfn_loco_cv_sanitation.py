@@ -37,7 +37,11 @@ tabpfn_client.init()  # no-op after first login on this machine
 DATA_DIR             = "data/processed/training_subcomponents"
 CLUSTER_DIR          = "outputs/cluster_analysis/sanitation"
 PRED_COVARIATES_PATH = "data/processed/prediction/prediction_covariates_2024.csv"
-OUTPUT_DIR           = "outputs/model_performance"
+# Version all model outputs under a subfolder so retraining on the corrected
+# (_v2) training data does not overwrite previous runs. Written to the git
+# repo (outputs/), never to the switchdrive deliverables folder.
+MODEL_OUTPUT_VERSION = "v2"
+OUTPUT_DIR           = os.path.join("outputs/model_performance", MODEL_OUTPUT_VERSION)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 
@@ -124,6 +128,167 @@ COUNTRY_LEVEL_FEATURES = [
 ]
 
 # -------------------------------------------------------
+# 3b. Feature categories (Table S1 / S2)
+#
+# Maps every feature to the category it belongs to, used by the by-category
+# SHAP contribution summary (Section 21). Nine groups:
+#   Climate, HP (human presence), S (hydrology & soil), Topography,
+#   VT (vegetation texture), VC (vegetation coverage)   -> Table S1 (EO features)
+#   SEG (socio-economic & governance), JMP (national estimates)  -> Table S2
+#   Region size (administrative-area size, area_km2)
+# Assignments are taken verbatim from Table S1 (note the deliberate oddities:
+# Snow/Ice -> Climate, Open_Water -> S, CloudForestPrediction -> Topography).
+# -------------------------------------------------------
+
+FEATURE_CATEGORY_MAP = {
+    # ── Climate ──────────────────────────────────────────────────────────────
+    "CGIAR_Aridity_Index":                        "Climate",
+    "CGIAR_PET":                                  "Climate",
+    "CHELSA_BIO_Annual_Mean_Temperature":         "Climate",
+    "CHELSA_BIO_Annual_Precipitation":            "Climate",
+    "CHELSA_BIO_Precipitation_Seasonality":       "Climate",
+    "CHELSA_BIO_Precipitation_of_Coldest_Quarter": "Climate",
+    "CHELSA_BIO_Precipitation_of_Driest_Month":   "Climate",
+    "CHELSA_BIO_Precipitation_of_Driest_Quarter": "Climate",
+    "CHELSA_BIO_Precipitation_of_Warmest_Quarter": "Climate",
+    "CHELSA_BIO_Precipitation_of_Wettest_Month":  "Climate",
+    "CHELSA_BIO_Precipitation_of_Wettest_Quarter": "Climate",
+    "CHELSA_BIO_Temperature_Annual_Range":        "Climate",
+    "CHELSA_BIO_Temperature_Seasonality":         "Climate",
+    "ConsensusLandCoverClass_Snow_Ice":           "Climate",
+    "chirps_annual_precipitation":                "Climate",
+    "era5_temperature_2m":                        "Climate",
+    "temperature_2m_max_annualmax":               "Climate",
+    # ── HP (human presence) ──────────────────────────────────────────────────
+    "CSP_Global_Human_Modification":                            "Human presence",
+    "ConsensusLandCoverClass_Cultivated_and_Managed_Vegetation": "Human presence",
+    "ConsensusLandCoverClass_Urban_Builtup":                    "Human presence",
+    "ConsensusLandCover_Human_Development_Percentage":          "Human presence",
+    "EsaCci_BurntAreasProbability":                             "Human presence",
+    "GHS_Population_Density":                                   "Human presence",
+    "GLW3_RuminantsDistribution_downsampled10km":              "Human presence",
+    "GPWv4_Population_Density":                                 "Human presence",
+    "WCS_Human_Footprint_2009":                                "Human presence",
+    "ghsl_built_surface":                                      "Human presence",
+    "ghsl_population":                                         "Human presence",
+    "ghsl_urban_frac":                                         "Human presence",
+    "jrc_building_height":                                     "Human presence",
+    "map_friction":                                            "Human presence",
+    "viirs_average":                                           "Human presence",
+    "worldpop":                                                "Human presence",
+    "worldpop_sum":                                            "Human presence",
+    "ghsl_population_sum":                                     "Human presence",
+    # ── S (hydrology and soil) ───────────────────────────────────────────────
+    "ConsensusLandCoverClass_Open_Water":                 "Hydrology & Soil",
+    "FanEtAl_Depth_to_Water_Table_AnnualMean":            "Hydrology & Soil",
+    "FanEtAl_Depth_to_Water_Table_AnnualSD":              "Hydrology & Soil",
+    "PelletierEtAl_SoilAndSedimentaryDepositThicknesses": "Hydrology & Soil",
+    "SG_Absolute_depth_to_bedrock":                       "Hydrology & Soil",
+    "SG_Bulk_density_015cm":                              "Hydrology & Soil",
+    "SG_Depth_to_bedrock":                                "Hydrology & Soil",
+    "SG_H2O_Capacity_015cm":                              "Hydrology & Soil",
+    "SG_Saturated_H2O_Content_015cm":                     "Hydrology & Soil",
+    "runoff_max_annualmax":                               "Hydrology & Soil",
+    "runoff_min_annualmin":                               "Hydrology & Soil",
+    # ── Topography ───────────────────────────────────────────────────────────
+    "EarthEnvCloudCover_CloudForestPrediction": "Topography",
+    "EarthEnvTopoMed_1stOrderPartialDerivEW":   "Topography",
+    "EarthEnvTopoMed_1stOrderPartialDerivNS":   "Topography",
+    "EarthEnvTopoMed_Eastness":                 "Topography",
+    "EarthEnvTopoMed_Elevation":                "Topography",
+    "EarthEnvTopoMed_Roughness":                "Topography",
+    "EarthEnvTopoMed_Slope":                    "Topography",
+    "EarthEnvTopoMed_TerrainRuggednessIndex":   "Topography",
+    "EarthEnvTopoMed_TopoPositionIndex":        "Topography",
+    # ── VT (vegetation texture) ──────────────────────────────────────────────
+    "EarthEnvTexture_CoOfVar_EVI":       "Vegetation texture",
+    "EarthEnvTexture_Contrast_EVI":      "Vegetation texture",
+    "EarthEnvTexture_Correlation_EVI":   "Vegetation texture",
+    "EarthEnvTexture_Dissimilarity_EVI": "Vegetation texture",
+    "EarthEnvTexture_Entropy_EVI":       "Vegetation texture",
+    "EarthEnvTexture_Evenness_EVI":      "Vegetation texture",
+    "EarthEnvTexture_Homogeneity_EVI":   "Vegetation texture",
+    "EarthEnvTexture_Maximum_EVI":       "Vegetation texture",
+    "EarthEnvTexture_Range_EVI":         "Vegetation texture",
+    "EarthEnvTexture_Shannon_Index":     "Vegetation texture",
+    "EarthEnvTexture_Simpson_Index":     "Vegetation texture",
+    "EarthEnvTexture_Std_EVI":           "Vegetation texture",
+    "EarthEnvTexture_Uniformity_EVI":    "Vegetation texture",
+    "EarthEnvTexture_Variance_EVI":      "Vegetation texture",
+    # ── VC (vegetation coverage) ─────────────────────────────────────────────
+    "CIFOR_TropicalPeatlandExtent":                              "Vegetation coverage",
+    "ConsensusLandCoverClass_Barren":                           "Vegetation coverage",
+    "ConsensusLandCoverClass_Deciduous_Broadleaf_Trees":        "Vegetation coverage",
+    "ConsensusLandCoverClass_Evergreen_Broadleaf_Trees":        "Vegetation coverage",
+    "ConsensusLandCoverClass_Evergreen_Deciduous_Needleleaf_Trees": "Vegetation coverage",
+    "ConsensusLandCoverClass_Herbaceous_Vegetation":            "Vegetation coverage",
+    "ConsensusLandCoverClass_Mixed_Other_Trees":               "Vegetation coverage",
+    "ConsensusLandCoverClass_Regularly_Flooded_Vegetation":    "Vegetation coverage",
+    "ConsensusLandCoverClass_Shrubs":                          "Vegetation coverage",
+    "CrowtherLab_Tree_Density":                                "Vegetation coverage",
+    "GiriEtAl_MangrovesExtent":                                "Vegetation coverage",
+    "MODIS_EVI":                                               "Vegetation coverage",
+    "MODIS_NDVI":                                              "Vegetation coverage",
+    "MODIS_NPP":                                               "Vegetation coverage",
+    "TootchiEtAl_WetlandsRegularlyFlooded":                    "Vegetation coverage",
+    "modis_evi":                                               "Vegetation coverage",
+    "modis_ndvi":                                              "Vegetation coverage",
+    # ── Region size ──────────────────────────────────────────────────────────
+    "area_km2": "Region size",
+    # ── SEG (socio-economic & governance, Table S2) ──────────────────────────
+    "gdp_per_capita_constant_2015_usd":   "Socio-economic & governance",
+    "secondary_education_duration_years": "Socio-economic & governance",
+    "ww_collection_percent":              "Socio-economic & governance",
+    "ww_treatment_percent":               "Socio-economic & governance",
+    "ww_reuse_percent":                   "Socio-economic & governance",
+    "control_of_corruption":              "Socio-economic & governance",
+    "governance_effectiveness":           "Socio-economic & governance",
+    "political_stability":                "Socio-economic & governance",
+    "regulatory_quality":                 "Socio-economic & governance",
+    "rule_of_law":                        "Socio-economic & governance",
+    "voice_and_accountability":           "Socio-economic & governance",
+    # ── JMP (national estimates, Table S2) ───────────────────────────────────
+    "sanitation_basic": "JMP",
+    "open_defecation":  "JMP",
+}
+
+# Fixed display order and colours for the category groups (Section 21 plot).
+CATEGORY_ORDER = [
+    "Climate", "Human presence", "Hydrology & Soil", "Topography", "Vegetation texture", "Vegetation coverage",
+    "Socio-economic & governance", "JMP", "Region size",
+]
+CATEGORY_COLOURS = {
+    "Climate":     "#4393c3",
+    "Human presence":          "#d6604d",
+    "Hydrology & Soil":           "#5aae61",
+    "Topography":  "#8073ac",
+    "Vegetation texture":          "#bf812d",
+    "Vegetation coverage":          "#1b7837",
+    "Socio-economic & governance":         "#e08214",
+    "JMP":         "#c51b7d",
+    "Region size": "#878787",
+}
+
+
+def category_of(feature):
+    """Return the Table S1/S2 category for a feature, or 'Uncategorised'."""
+    return FEATURE_CATEGORY_MAP.get(feature, "Uncategorised")
+
+
+# Warn at import if a modelled feature is missing a category mapping, so new
+# covariates can't silently fall into 'Uncategorised' in the plots. (Uses the
+# source lists directly — ALL_FEATURES_K100 is assembled a few lines below.)
+_uncategorised = [
+    f for f in (ALL_EO_FEATURES + COUNTRY_LEVEL_FEATURES)
+    if f not in FEATURE_CATEGORY_MAP
+]
+if _uncategorised:
+    warnings.warn(
+        f"{len(_uncategorised)} feature(s) missing from FEATURE_CATEGORY_MAP "
+        f"(will show as 'Uncategorised'): {_uncategorised}"
+    )
+
+# -------------------------------------------------------
 # SETUP: Define which features (input variables) to use
 # -------------------------------------------------------
 
@@ -187,16 +352,21 @@ for label, feats in feature_sets.items():
 # -------------------------------------------------------
 
 # Two separate prediction tasks, each pointing to its own training data file.
-# "basic_sanitation" excludes Indonesia (data quality issue).
+# Indonesia is no longer manually excluded from "basic_sanitation": its
+# survey has no WS15 (shared-facility) data at all, so improved-facility
+# rows now come through as NA outcome_value and are dropped upstream in
+# 04a (join_and_save_one_training_dataset()). The remaining Indonesia rows
+# (open defecation / unimproved facilities) don't depend on WS15 and stay in
+# the training data as a small, determinate-but-skewed-toward-0 sample.
 # "open_defecation" uses all available countries.
 TASKS = {
     "basic_sanitation": {
-        "filename":          "basic_sanitation_training_with_covariates.csv",
+        "filename":          "basic_sanitation_training_with_covariates_v2.csv",
         "output_prefix":     "basic_sanitation",
-        "exclude_countries": ["Indonesia"],
+        "exclude_countries": [],
     },
     "open_defecation": {
-        "filename":          "open_defecation_training_with_covariates.csv",
+        "filename":          "open_defecation_training_with_covariates_v2.csv",
         "output_prefix":     "open_defecation",
         "exclude_countries": [],
     },
@@ -213,10 +383,18 @@ def prepare_model_data(df, feature_cols, exclude_countries=None):
     1. Removes rows from excluded countries.
     2. Keeps only the columns (variables) we need.
     3. Converts all feature and target columns to numbers.
-    4. Drops rows missing critical values (target, location, year, weight).
-    5. Drops rows where the survey weight is zero or negative (unusable).
-    6. Removes duplicate rows (same country + year + region + target value).
-    7. Assigns each country a numeric fold ID for cross-validation.
+    4. Drops rows with no covariate-matched country (needed to assign a
+       country fold for cross-validation).
+    5. Assigns each country a numeric fold ID for cross-validation.
+
+    Missing outcome/weight values, zero-or-negative weights, and exact
+    duplicate rows are no longer handled here — they are already removed
+    upstream in 04a/04b_*_preparing_training_dataframes.qmd
+    (join_and_save_one_training_dataset()), so every model (this script, the
+    drinking-water TabPFN script, and the RF scripts) trains on the same
+    cleaned data. Missing feature/covariate values are also NOT dropped here:
+    TabPFN handles missing feature values natively (see fit_tabpfn() /
+    predict_lmics()).
     """
 
     # Step 1: Remove excluded countries by checking the outcome column name
@@ -247,17 +425,15 @@ def prepare_model_data(df, feature_cols, exclude_countries=None):
         if col in model_df.columns:
             model_df[col] = pd.to_numeric(model_df[col], errors="coerce")
 
-    # Step 5 & 6: Drop rows with missing essentials or zero/negative weights
-    model_df = model_df.dropna(
-        subset=[TARGET_COL, COUNTRY_COL, REGION_COL, YEAR_COL, WEIGHT_COL]
-    ).copy()
-    model_df = model_df[model_df[WEIGHT_COL] > 0].copy()
-
-    # Step 7: Remove exact duplicates across key identifying columns
-    model_df = model_df.drop_duplicates(
-        subset=[COUNTRY_COL, YEAR_COL, REGION_COL, TARGET_COL]
-    ).copy()
-
+    # Step 5: Drop rows with no covariate-matched country (COUNTRY_COL is
+    # "country_cov", set during the crosswalk join — distinct from
+    # country_outcome, which 04a/04b already guarantee is non-missing).
+    # Needed because country_fold below requires a non-missing country.
+    n_before = len(model_df)
+    model_df = model_df.dropna(subset=[COUNTRY_COL]).copy()
+    n_dropped = n_before - len(model_df)
+    if n_dropped:
+        print(f"  Dropped {n_dropped} row(s) with no covariate-matched country")
 
     # Assign a unique integer ID (fold number) to each country, used later
     # when we hold out one country at a time during cross-validation
@@ -276,21 +452,23 @@ def prepare_model_data(df, feature_cols, exclude_countries=None):
 # 6.  Metrics helpers — measure how accurate predictions are
 # -------------------------------------------------------
 
-def compute_metrics(y_true, y_pred):
+def compute_metrics(y_true, y_pred, weights=None):
     """
-    Calculate three standard accuracy measures (no survey weights applied):
+    Calculate three standard accuracy measures. When `weights` (PSU survey
+    weights for the evaluated rows) is given, the metrics are PSU-weighted;
+    with weights=None they are unweighted.
     - MAE  (Mean Absolute Error):  average size of prediction mistakes
     - RMSE (Root Mean Squared Error): similar to MAE but penalises large errors more
     - R²   (R-squared): 1 = perfect predictions, 0 = no better than guessing the mean
-    Used during the feature-set comparison stage.
+    Used during the feature-set comparison stage. Passing the held-out PSU
+    weights makes the reported R²/MAE/RMSE population-weighted, consistent with
+    the survey weights applied during training and with the LOCO metrics.
     """
-    r      = y_true - y_pred          # residuals (errors)
-    ss_res = np.sum(r ** 2)           # sum of squared errors
-    ss_tot = np.sum((y_true - np.mean(y_true)) ** 2)  # total variance in the data
+    has_var = len(np.unique(y_true)) > 1  # can't compute R² if all values identical
     return {
-        "mae":  float(np.mean(np.abs(r))),
-        "rmse": float(np.sqrt(np.mean(r ** 2))),
-        "r2":   float(1 - ss_res / ss_tot) if ss_tot > 0 else np.nan,
+        "mae":  float(mean_absolute_error(y_true, y_pred, sample_weight=weights)),
+        "rmse": float(mean_squared_error(y_true, y_pred, sample_weight=weights) ** 0.5),
+        "r2":   float(r2_score(y_true, y_pred, sample_weight=weights)) if has_var else np.nan,
         "n":    len(y_true),
     }
 
@@ -351,114 +529,41 @@ def fit_tabpfn(model, X_train, y_train, sample_weight):
 
 
 # -------------------------------------------------------
-# 8.  Stratified fold sampler
+# 8.  Stratified CV folds — loaded from the shared definition
 #
-# Decides which countries go into each "held-out" test fold.
-# Mirrors the approach used in 01_modelling_sanitation_RF.qmd:
-# - Ensure each fold reflects the geographic mix of the prediction space
-#   (proportional to SDG region composition of prediction dataset)
-# - Sample whole countries (not individual rows) per region
-# - Exclude high-income countries from test folds
-# - Create N_REPEATS=5 independent folds, shared across both outcomes
+# Folds are generated once by
+#   01_data_preparation/05b_generate_stratified_cv_folds.py
+# and read here so that BOTH this script and 01a_sanitation_modelling_RF.qmd
+# evaluate on IDENTICAL held-out country sets. (R and NumPy RNGs diverge even
+# with equal seeds, so folds must be shared via a file, not re-sampled.)
+# Each fold is a set of whole held-out countries, stratified to mirror the
+# SDG-region mix of the prediction space and excluding high-income countries.
 # -------------------------------------------------------
 
-N_REPEATS     = 5     # number of independent test folds to create
-FOLD_FRACTION = 0.15  # each fold holds out ~15% of the training data
+CV_FOLDS_PATH = "data/processed/cv_folds/stratified_cv_folds.csv"
+if not os.path.exists(CV_FOLDS_PATH):
+    raise FileNotFoundError(
+        f"CV fold definitions not found: {CV_FOLDS_PATH}\n"
+        "Run 01_data_preparation/05b_generate_stratified_cv_folds.py first "
+        "(no API calls — pure sampling)."
+    )
 
-# Load the prediction-space dataset to work out what regional mix to target
-pred_cov = pd.read_csv(PRED_COVARIATES_PATH)
+_fold_defs = pd.read_csv(CV_FOLDS_PATH)
+fold_country_lists = [
+    grp["country"].tolist()
+    for _, grp in _fold_defs.sort_values("fold").groupby("fold", sort=True)
+]
+N_REPEATS = len(fold_country_lists)
 
-# Count how many prediction regions fall in each SDG geographic region
-# and convert to proportions — this is our "target" mix for each fold
-stratum_targets = (
-    pred_cov[pred_cov[SDG_COL].notna()]
-    .groupby(SDG_COL, as_index=False)
-    .size()
-    .rename(columns={"size": "n_pred_regions"})
-    .assign(fraction=lambda d: d["n_pred_regions"] / d["n_pred_regions"].sum())
-)
-
-# Load basic sanitation training data to learn country→region mappings
-# (Indonesia already excluded here to match Section 5)
+# Training data (Indonesia excluded, matching 05b) — only for fold diagnostics
 _bs_raw = pd.read_csv(os.path.join(DATA_DIR, TASKS["basic_sanitation"]["filename"]))
 _bs_raw = _bs_raw[
     ~_bs_raw[OUTCOME_COL].astype(str).str.startswith("Indonesia", na=False)
 ]
+total_train_regions = len(_bs_raw)
 
-# Build a table: one row per country, with its SDG region, income group,
-# and how many sub-national regions it contributes to training data
-country_strata = (
-    _bs_raw
-    .groupby(COUNTRY_COL, as_index=False)
-    .agg(
-        sdg_region      = (SDG_COL,    "first"),
-        wb_income_group = (INCOME_COL, "first"),
-        n_regions       = (COUNTRY_COL, "count"),
-    )
-)
-
-total_train_regions = int(country_strata["n_regions"].sum())
-
-# Calculate how many regions from each SDG zone should appear in each fold
-stratum_targets["n_in_fold"] = (
-    stratum_targets["fraction"] * FOLD_FRACTION * total_train_regions
-).round().astype(int)
-
-print("\nStratum targets per fold (SDG region):")
-print(stratum_targets.sort_values("n_pred_regions", ascending=False).to_string(index=False))
-
-
-def sample_held_out_countries(country_strata, stratum_targets, seed_i=1):
-    """
-    Randomly select which countries go into one held-out test fold.
-    - Works region by region (SDG zones), sampling whole countries at a time.
-    - Stops adding countries once enough regions have been collected for that zone.
-    - High-income countries (wb_income_group == 'H') are never held out.
-    - seed_i controls randomness — different seeds give different folds.
-    """
-    rng      = np.random.default_rng(seed_i)  # reproducible random number generator
-    held_out = []
-    eligible = country_strata[country_strata["wb_income_group"] != "H"].copy()
-
-    for _, row in stratum_targets.iterrows():
-        stratum  = row[SDG_COL]
-        target_n = int(row["n_in_fold"])
-
-        # Get all eligible countries in this SDG region
-        pool = (eligible[eligible["sdg_region"] == stratum]
-                .copy().reset_index(drop=True))
-        if len(pool) == 0 or target_n == 0:
-            continue
-
-        sampled_n = 0
-        sampled   = []
-
-        # Keep drawing countries until we hit the regional target count
-        while sampled_n < target_n and len(pool) > 0:
-            idx    = int(rng.integers(0, len(pool)))
-            chosen = pool.loc[idx, COUNTRY_COL]
-            sampled.append(chosen)
-            sampled_n += int(pool.loc[idx, "n_regions"])
-            pool = pool.drop(index=idx).reset_index(drop=True)
-
-        if sampled_n < target_n:
-            warnings.warn(
-                f"Stratum '{stratum}': only {sampled_n} regions available, "
-                f"target was {target_n}."
-            )
-        held_out.extend(sampled)
-
-    return held_out
-
-
-# Generate the 5 independent folds (each with a different random seed)
-fold_country_lists = [
-    sample_held_out_countries(country_strata, stratum_targets, seed_i=i)
-    for i in range(1, N_REPEATS + 1)
-]
-
-# Print a summary showing how many countries and regions ended up in each fold
-print("\nFold diagnostics:")
+print(f"\nLoaded {N_REPEATS} folds from {CV_FOLDS_PATH}")
+print("Fold diagnostics:")
 for i, countries in enumerate(fold_country_lists, 1):
     n_reg = int(_bs_raw[_bs_raw[COUNTRY_COL].isin(countries)].shape[0])
     pct   = 100 * n_reg / total_train_regions
@@ -473,7 +578,7 @@ def run_one_fold(training_df, held_out_countries, features):
     """
     Train a model on all countries EXCEPT the held-out ones,
     then test it on the held-out countries.
-    Returns unweighted accuracy metrics (or None if the test set is empty).
+    Returns PSU-weighted accuracy metrics (or None if the test set is empty).
     This is the core "train on some, test on others" evaluation loop.
     """
     train_df = training_df[~training_df[COUNTRY_COL].isin(held_out_countries)].copy()
@@ -489,13 +594,10 @@ def run_one_fold(training_df, held_out_countries, features):
     w_tr  = train_df[WEIGHT_COL].to_numpy(dtype=float)
     X_te  = test_df[valid].to_numpy(dtype=float)
     y_te  = test_df[TARGET_COL].to_numpy(dtype=float)
+    w_te  = test_df[WEIGHT_COL].to_numpy(dtype=float)   # held-out PSU weights
 
-    # Remove any rows that contain missing values in the feature columns
-    train_mask = ~np.isnan(X_tr).any(axis=1)
-    test_mask  = ~np.isnan(X_te).any(axis=1)
-    X_tr, y_tr, w_tr = X_tr[train_mask], y_tr[train_mask], w_tr[train_mask]
-    X_te, y_te       = X_te[test_mask],  y_te[test_mask]
-
+    # Feature values are NOT filtered for missingness here — TabPFN handles
+    # missing feature values natively (see fit_tabpfn() / predict_lmics()).
     if len(X_tr) == 0 or len(X_te) == 0:
         return None
 
@@ -506,7 +608,8 @@ def run_one_fold(training_df, held_out_countries, features):
     preds = np.asarray(model.predict(X_te)).reshape(-1)
 
     del model; clear_memory()  # free RAM immediately after use
-    return compute_metrics(y_te, preds)
+    # PSU-weighted metrics on the held-out rows (consistent with weighted training)
+    return compute_metrics(y_te, preds, weights=w_te)
 
 
 def run_feature_set_comparison(training_df, outcome_name):
@@ -591,6 +694,87 @@ print(f"\nSaved: {OUTPUT_DIR}/tabpfn_feature_set_cv_comparison.csv")
 
 
 # -------------------------------------------------------
+# 10b. Plot: RF vs TabPFN feature-set comparison (R² by feature set)
+#
+# Overlays the Random Forest feature-set CV results (from 01a, read from
+# feature_set_cv_comparison.csv) with the TabPFN results computed above, on one
+# plot. The comparison is fair: both use the SAME stratified folds (05b) and the
+# SAME unweighted R² metric. Requires 01a to have run first for the RF CSV; if
+# that file is absent, only the TabPFN curves are drawn (with a warning).
+# -------------------------------------------------------
+
+import matplotlib.pyplot as plt
+
+_plot_dir = os.path.join(OUTPUT_DIR, "plots")
+os.makedirs(_plot_dir, exist_ok=True)
+
+_rf_path = os.path.join(OUTPUT_DIR, "feature_set_cv_comparison.csv")
+_frames  = [cv_comparison.assign(model="TabPFN")]
+if os.path.exists(_rf_path):
+    _frames.append(pd.read_csv(_rf_path).assign(model="Random Forest"))
+else:
+    warnings.warn(
+        f"RF comparison file not found ({_rf_path}); plotting TabPFN only. "
+        "Run 01a_sanitation_modelling_RF.qmd to add the Random Forest curves."
+    )
+_combined = pd.concat(_frames, ignore_index=True)
+
+# x-axis: feature sets ordered by number of features (k5, k10, ..., k100)
+_order = (_combined[["feature_set", "n_features"]]
+          .drop_duplicates().sort_values("n_features")["feature_set"].tolist())
+_xpos  = {fs: i for i, fs in enumerate(_order)}
+
+_outcomes = sorted(_combined["outcome"].unique())
+_colors   = dict(zip(_outcomes, plt.cm.tab10.colors))
+_mstyle   = {
+    "Random Forest": dict(linestyle="--", marker="s"),
+    "TabPFN":        dict(linestyle="-",  marker="o"),
+}
+
+fig, ax = plt.subplots(figsize=(8, 5))
+for (oc, model), grp in _combined.groupby(["outcome", "model"]):
+    grp = grp.assign(_x=grp["feature_set"].map(_xpos)).sort_values("_x")
+    ax.errorbar(
+        grp["_x"], grp["mean_r2"], yerr=grp["sd_r2"],
+        color=_colors[oc], capsize=3, alpha=0.9,
+        label=f"{oc} — {model}",
+        **_mstyle.get(model, dict(linestyle="-", marker="o")),
+    )
+ax.set_xticks(range(len(_order)))
+ax.set_xticklabels(_order)
+ax.set_xlabel("Feature set (k clusters)")
+ax.set_ylabel("PSU-weighted mean R² (±1 SD across repeats)")
+ax.set_title("Stratified CV performance by feature set — RF vs TabPFN (PSU-weighted)")
+ax.grid(True, alpha=0.3)
+ax.legend(fontsize=8)
+plt.tight_layout()
+_out = os.path.join(_plot_dir, "feature_set_cv_rf_vs_tabpfn_r2.png")
+plt.savefig(_out, dpi=300, bbox_inches="tight")
+plt.close()
+print(f"Saved: {_out}")
+
+
+# -------------------------------------------------------
+# STOP — manual checkpoint before the API-heavy final models
+#
+# Halts a top-to-bottom run here so the LOCO-CV / prediction sections (12+)
+# don't fire automatically. Review the comparison table + plot above, set
+# FINAL_K_* in Section 11, then run Section 12 onward.
+# Set STOP_AFTER_FEATURE_COMPARISON = False to run straight through.
+# -------------------------------------------------------
+
+STOP_AFTER_FEATURE_COMPARISON = True
+
+if STOP_AFTER_FEATURE_COMPARISON:
+    raise SystemExit(
+        "\nFeature-set comparison complete. Review the table/plot, set "
+        "FINAL_K_BASIC_SANITATION / FINAL_K_OPEN_DEFECATION in Section 11, "
+        "then run from Section 12 onward (or set "
+        "STOP_AFTER_FEATURE_COMPARISON = False to run through)."
+    )
+
+
+# -------------------------------------------------------
 # 11. [MANUAL STEP] Choose the final feature shortlist size
 #
 # Look at the table printed above.
@@ -598,8 +782,8 @@ print(f"\nSaved: {OUTPUT_DIR}/tabpfn_feature_set_cv_comparison.csv")
 # then continue running from Section 12 onwards.
 # -------------------------------------------------------
 
-FINAL_K_BASIC_SANITATION = 100   # <-- change this after reviewing Section 10 output
-FINAL_K_OPEN_DEFECATION  = 100   # <-- change this after reviewing Section 10 output
+FINAL_K_BASIC_SANITATION = 45   # <-- change this after reviewing Section 10 output
+FINAL_K_OPEN_DEFECATION  = 90   # <-- change this after reviewing Section 10 output
 
 # Safety check: both values must be set before continuing
 if FINAL_K_BASIC_SANITATION is None or FINAL_K_OPEN_DEFECATION is None:
@@ -1149,38 +1333,53 @@ else:
         ax.plot(Q_LEVELS, empirical, marker="o", markersize=6, lw=2,
                 color=cfg["colour"], label=cfg["label"], zorder=3)
 
-        # Annotate the 90th percentile coverage value
+        # Annotate the 90th percentile coverage value.
+        # A white background box + high zorder keep the number legible so it is
+        # never hidden underneath the calibration lines.
         emp_90 = empirical[Q_LEVELS.index(0.90)]
         ax.annotate(
             f"{emp_90:.2f}",
             xy=(0.90, emp_90),
-            xytext=(0.80, emp_90 - 0.04),
-            fontsize=8, color=cfg["colour"],
-            arrowprops=dict(arrowstyle="-", color=cfg["colour"], lw=0.8),
+            xytext=(0.79, emp_90 - 0.07),
+            fontsize=8, color=cfg["colour"], zorder=6,
+            bbox=dict(boxstyle="round,pad=0.15", fc="white",
+                      ec="none", alpha=0.85),
+            arrowprops=dict(arrowstyle="-", color=cfg["colour"], lw=0.8,
+                            zorder=6),
         )
 
     ax.plot([0, 1], [0, 1], color="black", lw=1.2, ls="--",
             zorder=2, label="Perfect calibration")
-    # Shade regions to label overconfident vs underconfident zones
+    # Shade regions to label overconfident vs underconfident zones.
+    # The zone labels sit deep in their respective triangles (well away from the
+    # diagonal and the data lines) and carry a white background + high zorder so
+    # they are never covered by the graph lines.
     ax.fill_between([0, 1], [0, 1], [1, 1], alpha=0.06, color="steelblue")
     ax.fill_between([0, 1], [0, 0], [0, 1], alpha=0.06, color="tomato")
-    ax.text(0.72, 0.60, "Overconfident", fontsize=8,
-            color="tomato", ha="center", style="italic")
-    ax.text(0.25, 0.40, "Underconfident", fontsize=8,
-            color="steelblue", ha="center", style="italic")
+    ax.text(0.78, 0.32, "Overconfident", fontsize=8, zorder=5,
+            color="tomato", ha="center", style="italic",
+            bbox=dict(boxstyle="round,pad=0.2", fc="white",
+                      ec="none", alpha=0.7))
+    ax.text(0.22, 0.78, "Underconfident", fontsize=8, zorder=5,
+            color="steelblue", ha="center", style="italic",
+            bbox=dict(boxstyle="round,pad=0.2", fc="white",
+                      ec="none", alpha=0.7))
 
     ax.set_xlim(0, 1); ax.set_ylim(0, 1)
     ax.set_xticks(Q_LEVELS)
     ax.set_xticklabels([f"{int(q*100)}th" for q in Q_LEVELS], fontsize=9)
     ax.set_xlabel("Nominal quantile level", fontsize=11)
     ax.set_ylabel("Empirical proportion below predicted quantile", fontsize=11)
-    ax.set_title("Calibration diagram — TabPFN raw quantile predictions\n"
-                 "(PSU-weighted)", fontsize=11, fontweight="bold")
     ax.legend(fontsize=9, framealpha=0.8, loc="upper left")
     ax.spines[["top", "right"]].set_visible(False)
 
+    # Save the recreated figure (title removed; labels no longer covered by
+    # the graph lines) into a versioned "v2" sub-folder.
+    V2_DIR = os.path.join(PLOT_DIR, "v2")
+    os.makedirs(V2_DIR, exist_ok=True)
+
     plt.tight_layout()
-    out_c = os.path.join(PLOT_DIR, "tabpfn_quantile_calibration.png")
+    out_c = os.path.join(V2_DIR, "tabpfn_quantile_calibration.png")
     plt.savefig(out_c, dpi=300, bbox_inches="tight")
     plt.close()
     print(f"Saved: {out_c}")
@@ -1464,3 +1663,551 @@ for outcome_name, cfg in PRED_TASKS.items():
         print(f"  Mean PI90 width: {pi_width:.3f}")
     except RuntimeError as exc:
         warnings.warn(f"  Prediction skipped for {outcome_name}: {exc}")
+
+
+# -------------------------------------------------------
+# 19. Feature importance — SHAP values for the final models
+# -------------------------------------------------------
+# SHAP explains how each feature moves the model's prediction. TabPFN here is
+# the CLOUD client, so we use a model-agnostic explainer that only needs the
+# predict function. We use PermutationExplainer (see the note by RUN_SHAP for
+# why, not KernelExplainer) — it is robust for a black-box model and makes API
+# calls proportional to rows × permutation rounds × background size. Set
+# RUN_SHAP = False to skip this section.
+#
+# The per-feature SHAP values feed the by-category contribution summary in
+# Section 21 (grouped bar plot). No per-feature bar chart or beeswarm is
+# produced — only the mean |SHAP| CSVs are saved.
+#
+# Outputs (written to the git repo, v2 folders — never switchdrive):
+#   OUTPUT_DIR/{outcome}_tabpfn_shap_importance_k{K}.csv          (mean |SHAP| per feature)
+#   OUTPUT_DIR/{outcome}_tabpfn_shap_importance_k{K}_seed{S}.csv  (per-seed, for variance checks)
+
+RUN_SHAP          = True
+# Run ONE outcome at a time (separate days) so a single run stays within the
+# 100M/day TabPFN cap. Start with basic_sanitation; once its CSVs are saved,
+# switch this to ["open_defecation"] and re-run (Sections 19 + 21). At the
+# settings below (200 rows, bg=5): basic_sanitation ≈20M, open_defecation ≈79M
+# — each fits a day, but NOT both together, so keep this list to one outcome.
+SHAP_OUTCOMES     = ["basic_sanitation"]
+# Suffix appended to all Section 19/21 SHAP output filenames. Section 21 also
+# READS the importance CSV with this suffix, so it must match the run you want to
+# plot:
+#   ""      -> the existing files on disk (..._k45.csv) — use to re-plot those
+#   "_n200" -> the new 200-row run (Section 19 writes ..._k45_n200.csv)
+# Currently "_n200" for the new 200-row run (Section 19 writes ..._k45_n200.csv,
+# Section 21 reads/plots them); set to "" to re-plot the earlier unsuffixed files.
+SHAP_RUN_LABEL    = "_n250"
+#
+# Explainer choice — PermutationExplainer, NOT KernelExplainer.
+# KernelExplainer estimates SHAP by solving a weighted least-squares over
+# sampled coalitions; for a black-box model with tens of features that system
+# is numerically ill-conditioned and the solve overflows to NaN (the shap
+# _kernel.py "singular matrix" warnings — no amount of samples/L1 reliably fixed
+# it here). PermutationExplainer computes the same Shapley values by averaging
+# over feature-ordering permutations, with NO linear solve, so it cannot hit a
+# singular matrix. It is the estimator shap.Explainer auto-selects for a plain
+# predict function, and it is cheaper. Cost ≈
+#   N_SHAP_EXPLAIN × SHAP_NPERM × (2·n_features + 1) × N_SHAP_BACKGROUND_K  rows.
+# Robust sample of rows explained (capped at the training-set size at run time;
+# the mean |SHAP| feeding the category shares is averaged over these). IDENTICAL
+# for both outcomes so their category shares are directly comparable. Cost is
+# ~linear in this: at bg=5, measured ≈99k credits/row for k=45, so 200 rows ≈20M
+# (basic_sanitation); open defecation (k=90) is ~4×/row ≈79M — both fit the
+# 100M/day cap individually. Check headroom with tabpfn_client.get_api_usage().
+N_SHAP_EXPLAIN      = 250
+# Permutation rounds per explained row. Each round is one exact forward+backward
+# pass over a random feature ordering (2·n_features+1 model evals); more rounds
+# = smoother per-row estimate at linear cost. The CATEGORY aggregation in
+# Section 21 averages over many rows/features, so a few rounds are plenty.
+SHAP_NPERM          = 3
+# Background reference rows the explainer masks against (a small random real-row
+# subsample). Only sets the baseline the model is compared against and multiplies
+# cost linearly, so kept lean at 5 to fit open defecation (k=90) within the daily
+# cap. Category-level shares stay robust at bg=5 (per-row noise averages out over
+# the 200 explained rows); raise it for finer per-feature magnitudes at more cost.
+N_SHAP_BACKGROUND_K = 5
+SHAP_SEEDS        = [123]  # single seed — within daily API quota for one outcome
+SHAP_DPI          = 300
+
+SHAP_COLOURS = {"basic_sanitation": "#4393c3", "open_defecation": "#d6604d"}
+
+# Human-readable feature labels — ported from 01a_sanitation_modelling_RF.qmd
+# so these TabPFN SHAP figures are directly comparable to the RF ones.
+FEATURE_LABEL_MAP = {
+    "worldpop":                               "WorldPop population density",
+    "worldpop_sum":                           "WorldPop population sum",
+    "ghsl_population":                        "GHSL population density",
+    "ghsl_population_sum":                    "GHSL population sum",
+    "GHS_Population_Density":                 "GHS population density",
+    "GPWv4_Population_Density":               "GPWv4 population density",
+    "ghsl_built_surface":                    "Built surface fraction",
+    "ghsl_urban_frac":                       "Urban fraction",
+    "jrc_building_height":                    "Building height",
+    "viirs_average":                          "Night-time lights",
+    "gdp_per_capita_constant_2015_usd":       "GDP per capita",
+    "secondary_education_duration_years":     "Secondary education duration",
+    "ww_collection_percent":                  "Wastewater collection",
+    "ww_treatment_percent":                   "Wastewater treatment",
+    "ww_reuse_percent":                       "Wastewater reuse",
+    "control_of_corruption":                  "Control of corruption",
+    "governance_effectiveness":               "Government effectiveness",
+    "political_stability":                    "Political stability",
+    "regulatory_quality":                     "Regulatory quality",
+    "rule_of_law":                            "Rule of law",
+    "voice_and_accountability":               "Voice and accountability",
+    "sanitation_basic":                       "JMP basic sanitation (national)",
+    "open_defecation":                        "JMP open defecation (national)",
+    "CGIAR_Aridity_Index":                    "Aridity index",
+    "CGIAR_PET":                              "Potential evapotranspiration",
+    "CHELSA_BIO_Annual_Mean_Temperature":     "Annual mean temperature",
+    "CHELSA_BIO_Annual_Precipitation":        "Annual precipitation",
+    "EarthEnvTopoMed_Elevation":              "Elevation",
+    "EarthEnvTopoMed_Slope":                  "Slope",
+    "FanEtAl_Depth_to_Water_Table_AnnualMean": "Depth to water table",
+    "map_friction":                           "Travel friction",
+    "WCS_Human_Footprint_2009":               "Human footprint",
+    "CSP_Global_Human_Modification":          "Human modification",
+}
+
+
+def label_feature(name):
+    """Readable label if mapped, else underscores -> spaces (matches the RF script)."""
+    if name in FEATURE_LABEL_MAP:
+        return FEATURE_LABEL_MAP[name]
+    return " ".join(str(name).replace("_", " ").split())
+
+
+def _shap_one_seed(model, X, countries, valid, seed):
+    """
+    Draw one random sample of explanation rows, build a small real-row
+    background masker, run PermutationExplainer (no linear solve — robust for a
+    black-box model), and return:
+      - shap_vals        : (n_explain, n_features) signed SHAP array
+      - X_explain        : DataFrame of explained rows
+      - countries_explain: Series of country labels aligned to shap_vals rows
+    """
+    import shap
+
+    rng               = np.random.default_rng(seed)
+    n                 = len(X)
+    ex_idx            = rng.choice(n, size=min(N_SHAP_EXPLAIN, n), replace=False)
+    X_explain         = X.iloc[ex_idx].reset_index(drop=True)
+    countries_explain = countries.iloc[ex_idx].reset_index(drop=True)
+
+    # Background = small random subsample of REAL rows, wrapped in an Independent
+    # masker. It only sets the baseline the model is compared against.
+    n_bg       = min(N_SHAP_BACKGROUND_K, n)
+    background = shap.sample(X, n_bg, random_state=seed)
+    masker     = shap.maskers.Independent(background, max_samples=n_bg)
+
+    def predict_np(arr):
+        return np.asarray(model.predict(np.asarray(arr, dtype=float))).reshape(-1)
+
+    # PermutationExplainer needs at least 2·n_features+1 evals for one full
+    # permutation; SHAP_NPERM full passes give a smoother per-row estimate.
+    max_evals = SHAP_NPERM * (2 * len(valid) + 1)
+    explainer = shap.PermutationExplainer(predict_np, masker)
+    explanation = explainer(X_explain, max_evals=max_evals)
+    shap_vals = np.asarray(explanation.values)
+    return shap_vals, X_explain, countries_explain
+
+
+def run_shap_for_outcome(model_df, features, outcome_name, final_k):
+    """
+    Fit the final TabPFN on all rows, then estimate SHAP feature importance.
+    Runs PermutationExplainer independently for each seed in SHAP_SEEDS and averages
+    the mean |SHAP| values across seeds before saving outputs, giving a more
+    stable ranking than a single random draw.  Per-seed CSVs are also saved so
+    variance across seeds can be inspected.
+    """
+    import shap  # imported here so a missing shap install only skips this section
+
+    valid = [f for f in features if f in model_df.columns]
+
+    # Assemble numeric X / y / weights / country; drop rows with missing target or weight.
+    X         = model_df[valid].apply(pd.to_numeric, errors="coerce")
+    y         = pd.to_numeric(model_df[TARGET_COL], errors="coerce")
+    w         = pd.to_numeric(model_df[WEIGHT_COL], errors="coerce")
+    countries = model_df[COUNTRY_COL].reset_index(drop=True)
+    keep      = y.notna() & w.notna()
+    X         = X[keep].reset_index(drop=True)
+    y         = y[keep].reset_index(drop=True)
+    w         = w[keep].reset_index(drop=True)
+    countries = countries[keep].reset_index(drop=True)
+
+    # Replace any non-finite values, then median-impute feature gaps so the
+    # background sampling and SHAP masking work cleanly. Columns that are
+    # entirely missing (median is NaN) fall back to 0 so no NaN/inf leaks into
+    # the explainer.
+    X = X.replace([np.inf, -np.inf], np.nan)
+    X = X.fillna(X.median(numeric_only=True)).fillna(0.0)
+
+    # Fit once on the full training set; all seeds share the same fitted model.
+    w_norm   = (w / w.mean()).to_numpy()
+    model    = TabPFNRegressor()
+    model, _ = fit_tabpfn(model, X.to_numpy(dtype=float),
+                          y.to_numpy(dtype=float), sample_weight=w_norm)
+
+    # readable: clean labels for the CSVs (no plots produced here any more)
+    readable = [label_feature(f) for f in valid]
+
+    # ── Run PermutationExplainer for each seed, collect per-seed arrays ────────
+    seed_mean_abs = []   # (n_features,) mean |SHAP| per seed
+
+    for seed in SHAP_SEEDS:
+        print(f"    Seed {seed}: explaining {min(N_SHAP_EXPLAIN, len(X))} rows "
+              f"({SHAP_NPERM} permutation round(s)) against "
+              f"{min(N_SHAP_BACKGROUND_K, len(X))} background rows …")
+
+        sv, _, _ = _shap_one_seed(model, X, countries, valid, seed)
+
+        # Guard: keep the aggregation nan-robust in case the model ever returns a
+        # non-finite prediction for a masked row. PermutationExplainer does no
+        # linear solve, so this should stay at 0.0%.
+        sv = np.where(np.isfinite(sv), sv, np.nan)
+        bad_frac = np.isnan(sv).any(axis=1).mean()
+        if bad_frac > 0:
+            warnings.warn(
+                f"  {outcome_name} seed {seed}: {bad_frac:.1%} of explained rows "
+                f"had non-finite SHAP values (excluded from the mean)."
+            )
+        print(f"    Seed {seed}: {bad_frac:.1%} non-finite rows")
+
+        seed_abs = np.nanmean(np.abs(sv), axis=0)
+        seed_mean_abs.append(seed_abs)
+
+        # Per-seed importance CSV for inspection / variance checking
+        (pd.DataFrame({"feature": valid, "label": readable,
+                       "mean_abs_shap": seed_abs})
+         .sort_values("mean_abs_shap", ascending=False)
+         .reset_index(drop=True)
+         .to_csv(
+             os.path.join(OUTPUT_DIR,
+                          f"{outcome_name}_tabpfn_shap_importance_k{final_k}_seed{seed}{SHAP_RUN_LABEL}.csv"),
+             index=False,
+         ))
+
+    # ── Average across seeds ───────────────────────────────────────────────────
+    mean_abs_avg = np.nanmean(seed_mean_abs, axis=0)
+
+    # ── Rank-stability check: how consistent is the top-5 across seeds? ───────
+    print(f"    Rank-stability check (top-5, each seed vs seed-averaged):")
+    avg_rank = pd.Series(mean_abs_avg, index=valid).rank(ascending=False)
+    for seed, seed_abs in zip(SHAP_SEEDS, seed_mean_abs):
+        seed_rank = pd.Series(seed_abs, index=valid).rank(ascending=False)
+        top5_avg  = avg_rank.nsmallest(5).index.tolist()
+        match     = sum(f in seed_rank.nsmallest(5).index for f in top5_avg)
+        print(f"      Seed {seed}: {match}/5 top-5 features match averaged ranking")
+
+    # ── Seed-averaged global importance table ──────────────────────────────────
+    imp = (pd.DataFrame({"feature": valid, "label": readable,
+                         "mean_abs_shap": mean_abs_avg})
+           .sort_values("mean_abs_shap", ascending=False)
+           .reset_index(drop=True))
+    imp.to_csv(
+        os.path.join(OUTPUT_DIR,
+                     f"{outcome_name}_tabpfn_shap_importance_k{final_k}{SHAP_RUN_LABEL}.csv"),
+        index=False,
+    )
+    print(f"    Saved: {outcome_name}_tabpfn_shap_importance_k{final_k}{SHAP_RUN_LABEL}.csv")
+
+    # NOTE: the per-feature importance bar chart and beeswarm summary are no
+    # longer produced. Feature contributions are now reported at the category
+    # level (grouped bar plot) in Section 21, which reads the CSV saved above.
+
+    del model
+    clear_memory()
+    print(f"    Top feature (seed-avg): {imp.iloc[0]['feature']} "
+          f"(mean |SHAP| = {imp.iloc[0]['mean_abs_shap']:.4f})")
+
+
+if RUN_SHAP:
+    print(f"\n{'='*60}")
+    print("Section 19 — SHAP feature importance (final models)")
+    print(f"{'='*60}")
+
+    _all_shap_tasks = {
+        "basic_sanitation": (bs_model_df, bs_features, FINAL_K_BASIC_SANITATION),
+        "open_defecation":  (od_model_df, od_features, FINAL_K_OPEN_DEFECATION),
+    }
+    _shap_tasks = [
+        (_name, *_all_shap_tasks[_name])
+        for _name in SHAP_OUTCOMES
+        if _name in _all_shap_tasks
+    ]
+
+    # Pre-flight: report the approximate API load before any calls are made.
+    # PermutationExplainer evaluates the model on ~ n_explain × SHAP_NPERM ×
+    # (2·n_features + 1) × background rows per outcome per seed.
+    print(f"\n  Pre-flight estimate — model evaluations (rows sent to TabPFN):")
+    _total_rows = 0
+    for _name, _mdf, _feat, _k in _shap_tasks:
+        _m        = len([f for f in _feat if f in _mdf.columns])
+        _evals    = SHAP_NPERM * (2 * _m + 1)
+        _per      = N_SHAP_EXPLAIN * _evals * N_SHAP_BACKGROUND_K * len(SHAP_SEEDS)
+        _total_rows += _per
+        print(f"    {_name}: {N_SHAP_EXPLAIN} explain × {SHAP_NPERM}×(2·{_m}+1)="
+              f"{_evals} evals × {N_SHAP_BACKGROUND_K} background × "
+              f"{len(SHAP_SEEDS)} seed = ~{_per:,} rows")
+    print(f"    Total ≈ {_total_rows:,} rows "
+          f"(explained rows capped at the training-set size at run time)")
+
+    for _name, _mdf, _feat, _k in _shap_tasks:
+        print(f"\n  Outcome: {_name}")
+        try:
+            run_shap_for_outcome(_mdf, _feat, _name, _k)
+        except ImportError:
+            warnings.warn("  shap not installed — skipping SHAP section "
+                          "(install with: pip install shap)")
+            break
+        except Exception as exc:  # noqa: BLE001 — keep one outcome's failure isolated
+            warnings.warn(f"  SHAP skipped for {_name}: {exc}")
+
+
+# -------------------------------------------------------
+# 21. SHAP share summary
+#
+# Expresses each feature's contribution as a share of the total
+# mean |SHAP| across all features, making values interpretable
+# as percentages. Reports:
+#   a) Top-5 feature shares (row-weighted ranking)
+#   b) Aggregate share attributable to country-level vs subnational features
+#   c) Aggregate share attributable to each Table S1/S2 category
+#      (Climate, HP, S, Topography, VT, VC, SEG, JMP, Region size),
+#      plus a grouped bar plot of those category contributions.
+#
+# Loads the CSVs written in Section 19 so this section can be
+# re-run independently without repeating the SHAP computation.
+# -------------------------------------------------------
+
+print(f"\n{'='*60}")
+print("Section 21 — SHAP share summary")
+print(f"{'='*60}")
+
+# Ensure the plot dir exists even when this section is run on its own (without
+# Section 17, which is where PLOT_DIR is first defined).
+PLOT_DIR = os.path.join(OUTPUT_DIR, "plots")
+os.makedirs(PLOT_DIR, exist_ok=True)
+
+_COUNTRY_LEVEL_SET = set(COUNTRY_LEVEL_FEATURES)
+
+_shap_summary_tasks = [
+    ("basic_sanitation", FINAL_K_BASIC_SANITATION),
+    ("open_defecation",  FINAL_K_OPEN_DEFECATION),
+]
+
+for _outcome, _k in _shap_summary_tasks:
+    _sub_path = os.path.join(OUTPUT_DIR,
+                             f"{_outcome}_tabpfn_shap_importance_k{_k}{SHAP_RUN_LABEL}.csv")
+
+    if not os.path.exists(_sub_path):
+        print(f"  {_outcome}: SHAP importance file not found ({_sub_path}) — run Section 19 first.")
+        continue
+
+    sub_imp = pd.read_csv(_sub_path)
+
+    total = sub_imp["mean_abs_shap"].sum()
+    sub_imp = sub_imp.copy()
+    sub_imp["share_pct"] = 100 * sub_imp["mean_abs_shap"] / total
+    sub_imp["level"]     = sub_imp["feature"].apply(
+        lambda f: "country" if f in _COUNTRY_LEVEL_SET else "subnational"
+    )
+    sub_imp["category"]  = sub_imp["feature"].apply(category_of)
+
+    top5 = sub_imp.head(5)[["label", "level", "mean_abs_shap", "share_pct"]]
+    group_shares = (
+        sub_imp.groupby("level")["share_pct"]
+        .sum()
+        .rename("total_share_pct")
+        .reset_index()
+    )
+
+    print(f"\n  {_outcome} | Subnational (row-weighted)")
+    print(f"  {'─'*55}")
+    print("  Top 5 features:")
+    for _, row in top5.iterrows():
+        marker = " *" if row["level"] == "country" else "  "
+        print(f"    {marker}{row['label']:<45} {row['share_pct']:>5.1f}%")
+    print("  Aggregate shares by level:")
+    for _, row in group_shares.iterrows():
+        print(f"    {row['level']:<15} {row['total_share_pct']:>5.1f}%")
+
+    sub_imp.insert(0, "outcome", _outcome)
+    _share_path = os.path.join(OUTPUT_DIR,
+                               f"{_outcome}_tabpfn_shap_shares_k{_k}{SHAP_RUN_LABEL}.csv")
+    sub_imp.to_csv(_share_path, index=False)
+    print(f"\n  Saved: {_share_path}")
+
+    # ── Aggregate contribution by Table S1/S2 category ────────────────────────
+    # Sum mean |SHAP| (and its share) within each category, then order the
+    # categories by the fixed Table S1/S2 sequence for a consistent plot.
+    cat_shares = (
+        sub_imp.groupby("category")
+        .agg(mean_abs_shap=("mean_abs_shap", "sum"),
+             share_pct=("share_pct", "sum"),
+             n_features=("feature", "size"))
+        .reset_index()
+    )
+    # Keep only categories that actually appear in this feature set, in the
+    # canonical order (any 'Uncategorised' features fall to the end).
+    _order = [c for c in CATEGORY_ORDER if c in set(cat_shares["category"])]
+    _extra = [c for c in cat_shares["category"] if c not in CATEGORY_ORDER]
+    cat_shares["category"] = pd.Categorical(
+        cat_shares["category"], categories=_order + _extra, ordered=True
+    )
+    cat_shares = cat_shares.sort_values("category").reset_index(drop=True)
+    cat_shares.insert(0, "outcome", _outcome)
+
+    _cat_path = os.path.join(OUTPUT_DIR,
+                             f"{_outcome}_tabpfn_shap_category_shares_k{_k}{SHAP_RUN_LABEL}.csv")
+    cat_shares.to_csv(_cat_path, index=False)
+
+    print("  Aggregate shares by category (Table S1/S2):")
+    for _, row in cat_shares.sort_values("share_pct", ascending=False).iterrows():
+        print(f"    {str(row['category']):<15} {row['share_pct']:>5.1f}%  "
+              f"({int(row['n_features'])} features)")
+    print(f"  Saved: {_cat_path}")
+
+    # ── Grouped bar plot — category contributions ─────────────────────────────
+    # Horizontal bars, largest share at the top, coloured by the fixed
+    # CATEGORY_COLOURS palette so plots are comparable across outcomes.
+    plot_df = cat_shares.sort_values("share_pct", ascending=True)
+    bar_colours = [
+        CATEGORY_COLOURS.get(str(c), "#666666") for c in plot_df["category"]
+    ]
+    fig, ax = plt.subplots(figsize=(7.0, 0.45 * len(plot_df) + 1.2))
+    ax.barh(plot_df["category"].astype(str), plot_df["share_pct"],
+            color=bar_colours)
+    for y, (share, n) in enumerate(zip(plot_df["share_pct"], plot_df["n_features"])):
+        ax.text(share + 0.4, y, f"{share:.1f}%  (n={int(n)})",
+                va="center", ha="left", fontsize=8)
+    ax.set_xlabel("Share of total mean |SHAP|  (%)")
+    ax.set_xlim(0, min(100, plot_df["share_pct"].max() * 1.20 + 5))
+    ax.set_title(
+        f"Feature-category contribution: {_outcome} (k = {_k})\n"
+        "Grouped by Table S1/S2 category",
+        loc="left",
+    )
+    ax.spines[["top", "right"]].set_visible(False)
+    fig.tight_layout()
+    _cat_plot_path = os.path.join(
+        PLOT_DIR, f"{_outcome}_tabpfn_shap_category_contribution_k{_k}{SHAP_RUN_LABEL}.pdf"
+    )
+    fig.savefig(_cat_plot_path, bbox_inches="tight")
+    fig.savefig(_cat_plot_path.replace(".pdf", ".png"),
+                dpi=SHAP_DPI, bbox_inches="tight")
+    plt.close(fig)
+    print(f"  Saved plot: {_cat_plot_path}")
+
+
+# -------------------------------------------------------
+# 20. Sensitivity analysis — JMP feature contribution
+#
+# Quantifies how much the JMP national estimates
+# ("sanitation_basic" and "open_defecation" in COUNTRY_LEVEL_FEATURES)
+# contribute to model performance by running LOCO-CV under three
+# feature sets for each outcome:
+#
+#   "full"        — the final feature set chosen in Section 11
+#   "jmp_only"    — only the two JMP columns (plus any EO features that
+#                   also happen to be in the final set; here typically
+#                   just the two JMP columns)
+#   "no_jmp"      — the final feature set with both JMP columns removed
+#
+# The difference in LOCO-CV metrics between "full" and "no_jmp" is the
+# JMP contribution. "jmp_only" gives an upper bound on what is achievable
+# from national estimates alone.
+#
+# Outputs (CSV) written to OUTPUT_DIR with prefix "jmp_sensitivity_":
+#   jmp_sensitivity_loco_overall.csv   — one row per outcome × variant
+#   jmp_sensitivity_loco_by_country.csv — per-country fold metrics
+# -------------------------------------------------------
+
+JMP_FEATURES = ["sanitation_basic", "open_defecation"]
+
+RUN_JMP_SENSITIVITY = False  # set True to rerun; results already saved to CSV
+
+# Build the three feature variants for each outcome.
+# "jmp_only" keeps only those JMP columns present in the final feature set
+# (normally both, but safe to intersect).
+_sensitivity_tasks = {
+    "basic_sanitation": {
+        "model_df": bs_model_df,
+        "final_k":  FINAL_K_BASIC_SANITATION,
+        "variants": {
+            "full":     bs_features,
+            "jmp_only": [f for f in bs_features if f in JMP_FEATURES],
+            "no_jmp":   [f for f in bs_features if f not in JMP_FEATURES],
+        },
+    },
+    "open_defecation": {
+        "model_df": od_model_df,
+        "final_k":  FINAL_K_OPEN_DEFECATION,
+        "variants": {
+            "full":     od_features,
+            "jmp_only": [f for f in od_features if f in JMP_FEATURES],
+            "no_jmp":   [f for f in od_features if f not in JMP_FEATURES],
+        },
+    },
+}
+
+if RUN_JMP_SENSITIVITY:
+    print(f"\n{'='*60}")
+    print("Section 20 — JMP feature contribution (sensitivity analysis)")
+    print(f"{'='*60}")
+
+    _sens_overall_rows = []
+    _sens_country_rows = []
+
+    for outcome_name, cfg in _sensitivity_tasks.items():
+        model_df = cfg["model_df"]
+        final_k  = cfg["final_k"]
+
+        for variant_name, feat_list in cfg["variants"].items():
+            if len(feat_list) == 0:
+                warnings.warn(
+                    f"  {outcome_name} / {variant_name}: feature list is empty — skipping."
+                )
+                continue
+
+            print(f"\n  {outcome_name} | variant = {variant_name} "
+                  f"({len(feat_list)} features)")
+
+            fold_df, overall_df, _ = run_loco_cv(
+                model_df, feat_list, outcome_name, final_k
+            )
+
+            overall_df.insert(1, "jmp_variant", variant_name)
+            fold_df.insert(1,   "jmp_variant", variant_name)
+
+            _sens_overall_rows.append(overall_df)
+            _sens_country_rows.append(fold_df)
+
+    if _sens_overall_rows:
+        sens_overall = pd.concat(_sens_overall_rows, ignore_index=True)
+        sens_country = pd.concat(_sens_country_rows, ignore_index=True)
+
+        _sens_overall_path = os.path.join(OUTPUT_DIR, "jmp_sensitivity_loco_overall.csv")
+        _sens_country_path = os.path.join(OUTPUT_DIR, "jmp_sensitivity_loco_by_country.csv")
+        sens_overall.to_csv(_sens_overall_path, index=False)
+        sens_country.to_csv(_sens_country_path, index=False)
+
+        print(f"\n  Saved: {_sens_overall_path}")
+        print(f"  Saved: {_sens_country_path}")
+
+        _display_cols = [
+            "outcome", "jmp_variant", "n_features",
+            "unweighted_mae", "unweighted_rmse", "unweighted_r2",
+            "weighted_mae",   "weighted_rmse",   "weighted_r2",
+        ]
+        print(f"\n{'='*60}")
+        print("JMP sensitivity — LOCO-CV summary:")
+        print(
+            sens_overall[[c for c in _display_cols if c in sens_overall.columns]]
+            .sort_values(["outcome", "jmp_variant"])
+            .to_string(index=False)
+        )
+else:
+    print("\nSection 20 skipped (RUN_JMP_SENSITIVITY = False). "
+          "Existing results in jmp_sensitivity_loco_overall.csv.")

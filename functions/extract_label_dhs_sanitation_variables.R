@@ -44,6 +44,11 @@ extractDHSSanitationSurveyVariables <- function(
 
     # Toilet type — HV205 uses the same JMP numeric codes as MICS6 WS11.
     WS11    = get_numeric_var(hh_Survey, "HV205"),
+    # Preserve the raw HV205 code for QC (mirrors WS11_raw in the MICS
+    # pipeline). WS11 above is overwritten with the 0/1/2 classification by
+    # setDHSWS11ToiletTypeLabels(); WS11_raw keeps the original code so
+    # labelling can be audited (see ws11_label_check.R / ws11_raw_value_labels.R).
+    WS11_raw = get_numeric_var(hh_Survey, "HV205"),
 
     # Shared facility — HV225: 0 = no (not shared), 1 = yes (shared).
     WS15    = get_numeric_var(hh_Survey, "HV225"),
@@ -83,16 +88,25 @@ extractDHSSanitationSurveyVariables <- function(
 # =============================================================================
 
 # WS11 — toilet type
-# DHS HV205 uses the same JMP numeric scheme as MICS6:
-#   Improved (2):     11, 12, 13, 15, 21, 22, 41
-#   Unimproved (1):   14, 23, 42, 43, 96, 99
+# DHS HV205 numeric scheme:
+#   Improved (2):     11, 12, 13, 15, 16, 21, 22, 41, 51, 52, 54
+#   Unimproved (1):   14, 23, 42, 43, 53, 96, 99
 #   Open defecation:  31
-# Older DHS surveys may use non-standard codes (see MICS equivalent table).
+#
+# Country/round-specific codes verified against raw value labels (see
+# scripts/01_data_preparation/ws11_raw_value_labels.R):
+#   16 = flush, bio-digester (Biofil), Ghana        -> improved (flush facility)
+#   51 = no flush to piped sewer system (twin of 11) -> improved
+#   52 = no flush to septic tank        (twin of 12) -> improved
+#   53 = no flush to somewhere else     (twin of 14) -> unimproved
+#   54 = no flush, don't know where     (twin of 15) -> improved
+# The "no flush" 50-series (Mozambique and other newer DHS) mirror their flush
+# twins 11-15. Previously these fell through to NA and were silently dropped.
 
 setDHSWS11ToiletTypeLabels <- function(df) {
 
-  improved_codes   <- c(11, 12, 13, 15, 21, 22, 41)
-  unimproved_codes <- c(14, 23, 42, 43, 96, 99)
+  improved_codes   <- c(11, 12, 13, 15, 16, 21, 22, 41, 51, 52, 54)
+  unimproved_codes <- c(14, 23, 42, 43, 53, 96, 99)
   od_codes         <- c(31)
 
   df$WS11 <- dplyr::case_when(
@@ -101,6 +115,60 @@ setDHSWS11ToiletTypeLabels <- function(df) {
     df$WS11 %in% od_codes          ~ 0,
     is.na(df$WS11)                 ~ NA_real_,
     TRUE                           ~ NA_real_   # any unmapped code → NA for inspection
+  )
+
+  return(df)
+}
+
+# =============================================================================
+# applyDHSSurveySpecificWS11Overrides()
+# Some HV205 codes mean different things in different DHS surveys, so the
+# generic setDHSWS11ToiletTypeLabels() classification is wrong for them (or
+# drops them to NA). This applies documented, survey-specific corrections keyed
+# on (country, raw HV205 code). Requires the preserved WS11_raw column and must
+# run AFTER setDHSWS11ToiletTypeLabels().
+#
+# Verified against raw HV205 value labels (see
+# scripts/01_data_preparation/ws11_raw_value_labels.R):
+#   India        44 = Dry toilet (service / dry latrine)        -> unimproved
+#   Malawi       24 = Pit latrine with log/rock                 -> improved
+#                     (log/earth slabs count as a slab in Malawi; 2018 census:
+#                      83% of pit-latrine slabs are earth/sand and counted improved)
+#   Tanzania     24 = Pit latrine with slab (not washable)      -> improved
+#   Indonesia    17 = Flush toilet: shared / public (facility)  -> improved
+#   Egypt        17 = Flush to pipe connected to canal          -> unimproved
+#   Egypt        18 = Flush to pipe connected to ground water   -> unimproved
+#   South Africa 44 = Chemical toilet                           -> improved
+#   Guatemala    13 = Flush to somewhere else                   -> unimproved
+#                     (generic scheme treats 13 as flush-to-pit = improved)
+#   Nepal        45 = Biogas attached toilet                    -> improved
+#   Nepal        44 = Composting toilet without slab            -> improved
+# Codes 17 / 24 / 44 mean different things in different surveys, so they cannot
+# be added to the global lists in setDHSWS11ToiletTypeLabels() — they must be
+# handled per survey here. (These codes previously fell through to NA and were
+# silently dropped.)
+# =============================================================================
+
+applyDHSSurveySpecificWS11Overrides <- function(df) {
+  if (!"WS11_raw" %in% names(df)) {
+    stop("applyDHSSurveySpecificWS11Overrides(): WS11_raw column is required ",
+         "(added to the DHS extraction in extract_label_dhs_sanitation_variables.R).")
+  }
+
+  raw <- suppressWarnings(as.numeric(df$WS11_raw))
+
+  df$WS11 <- dplyr::case_when(
+    df$country == "India"        & raw == 44 ~ 1,  # dry toilet -> unimproved
+    df$country == "Malawi"       & raw == 24 ~ 2,  # pit latrine w/ log/rock -> improved (log/earth slab counts as a slab in Malawi)
+    df$country == "Tanzania"     & raw == 24 ~ 2,  # pit latrine w/ slab -> improved
+    df$country == "Indonesia"    & raw == 17 ~ 2,  # flush shared/public -> improved
+    df$country == "Egypt"        & raw == 17 ~ 1,  # flush to canal -> unimproved
+    df$country == "Egypt"        & raw == 18 ~ 1,  # flush to ground water -> unimproved
+    df$country == "South Africa" & raw == 44 ~ 2,  # chemical toilet -> improved
+    df$country == "Nepal"        & raw == 45 ~ 2,  # biogas attached toilet -> improved
+    df$country == "Nepal"        & raw == 44 ~ 2,  # composting toilet w/o slab -> improved
+    df$country == "Guatemala"    & raw == 13 ~ 1,  # flush to somewhere else -> unimproved
+    TRUE                                     ~ df$WS11
   )
 
   return(df)
@@ -137,6 +205,7 @@ setDHSAreaLabels_sanitation <- function(df) {
 # Wrapper — apply all sanitation relabeling steps in sequence.
 relabelingDHSSanitationQuestionResponses <- function(df) {
   df <- setDHSWS11ToiletTypeLabels(df)
+  df <- applyDHSSurveySpecificWS11Overrides(df)  # per-survey code corrections
   df <- setDHSWS15SharedFacilityLabels(df)
   df <- setDHSAreaLabels_sanitation(df)
   return(df)

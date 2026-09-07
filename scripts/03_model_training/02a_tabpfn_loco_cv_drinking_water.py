@@ -217,7 +217,17 @@ TASKS = {
 # -------------------------------------------------------
 
 def prepare_model_data(df, feature_cols, exclude_countries=None):
-    """Clean and structure one training dataframe."""
+    """
+    Clean and structure one training dataframe.
+
+    Missing outcome/weight values, zero-or-negative weights, and exact
+    duplicate rows are no longer handled here — they are already removed
+    upstream in 04b_SMDW_preparing_training_dataframes.qmd
+    (join_and_save_one_training_dataset()), so every model trains on the
+    same cleaned data. Missing feature/covariate values are also NOT dropped
+    here: TabPFN handles missing feature values natively (see fit_tabpfn() /
+    predict_lmics_dw()).
+    """
     if exclude_countries:
         for country in exclude_countries:
             mask = df[OUTCOME_COL].astype(str).str.startswith(country, na=False)
@@ -242,13 +252,15 @@ def prepare_model_data(df, feature_cols, exclude_countries=None):
         if col in model_df.columns:
             model_df[col] = pd.to_numeric(model_df[col], errors="coerce")
 
-    model_df = model_df.dropna(
-        subset=[TARGET_COL, COUNTRY_COL, REGION_COL, YEAR_COL, WEIGHT_COL]
-    ).copy()
-    model_df = model_df[model_df[WEIGHT_COL] > 0].copy()
-    model_df = model_df.drop_duplicates(
-        subset=[COUNTRY_COL, YEAR_COL, REGION_COL, TARGET_COL]
-    ).copy()
+    # Drop rows with no covariate-matched country (COUNTRY_COL is
+    # "country_cov", set during the crosswalk join — distinct from
+    # country_outcome, which 04b already guarantees is non-missing).
+    # Needed because country_fold below requires a non-missing country.
+    n_before = len(model_df)
+    model_df = model_df.dropna(subset=[COUNTRY_COL]).copy()
+    n_dropped = n_before - len(model_df)
+    if n_dropped:
+        print(f"  Dropped {n_dropped} row(s) with no covariate-matched country")
 
     if model_df[COUNTRY_COL].nunique() < 2:
         raise ValueError("Need at least two countries for CV.")
@@ -480,11 +492,8 @@ def run_one_fold(training_df, held_out_countries, features):
     X_te  = test_df[valid].to_numpy(dtype=float)
     y_te  = test_df[TARGET_COL].to_numpy(dtype=float)
 
-    train_mask = ~np.isnan(X_tr).any(axis=1)
-    test_mask  = ~np.isnan(X_te).any(axis=1)
-    X_tr, y_tr, w_tr = X_tr[train_mask], y_tr[train_mask], w_tr[train_mask]
-    X_te, y_te       = X_te[test_mask],  y_te[test_mask]
-
+    # Feature values are NOT filtered for missingness here — TabPFN handles
+    # missing feature values natively (see fit_tabpfn() / predict_lmics_dw()).
     if len(X_tr) == 0 or len(X_te) == 0:
         return None
 

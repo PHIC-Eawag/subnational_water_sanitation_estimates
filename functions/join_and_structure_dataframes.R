@@ -456,6 +456,12 @@ build_wb_country_lookup <- function(country_name_key_WB) {
     "Republic of North Macedonia",      "North Macedonia",
     "DR Congo",                         "Congo, Dem. Rep.",
     "Democratic Republic of the Congo", "Congo, Dem. Rep.",
+    # JMP 2025 spellings that otherwise fail to resolve to the WB name
+    # (leaves sdg_region/fragile_context/iso3 missing for these countries).
+    "Micronesia (Federated States of)", "Micronesia, Fed. Sts.",
+    "Republic of Moldova",              "Moldova",
+    "Democratic People's Republic of Korea", "Korea, Dem. Rep.",
+    "Congo",                            "Congo, Rep.",
     "Lao People's Democratic Republic", "Lao PDR",
     "Laos",                             "Lao PDR",
     "Palestina",                        "West Bank and Gaza",
@@ -938,21 +944,31 @@ join_and_save_one_training_dataset <- function(
     outcome_df,
     df_training_covariates,
     region_crosswalk_final,
-    output_dir
+    output_dir,
+    training_csv_suffix = ""
 ) {
   # Joins one outcome to the geospatial covariates and saves:
   #   1. the final model-ready training CSV
   #   2. a diagnostic file showing regions that did not get covariates
-  
+  #
+  # Data-completeness cleaning (missing outcome, missing PSU weight, exact
+  # duplicates) is applied here so every outcome pipeline (sanitation, SMDW,
+  # water) produces training data under the same rules the models expect,
+  # rather than each modelling script re-implementing its own version of
+  # this cleaning. Feature/covariate completeness is deliberately NOT
+  # enforced here — that is left to each model script, since TabPFN and the
+  # H2O random forest both handle missing feature values natively and the
+  # set of features used varies by model run.
+
   dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
-  
+
   training_with_covariates_check <- join_outcome_to_covariates(
     outcome_df = outcome_df,
     df_training_covariates = df_training_covariates,
     region_crosswalk = region_crosswalk_final,
     drop_missing_worldpop = FALSE
   )
-  
+
   missing_covariates <- training_with_covariates_check %>%
     dplyr::filter(is.na(worldpop_sum)) %>%
     dplyr::select(
@@ -966,14 +982,39 @@ join_and_save_one_training_dataset <- function(
       dist
     ) %>%
     dplyr::arrange(country_outcome, HH7_region_outcome)
-  
-  training_with_covariates <- training_with_covariates_check %>%
-    tidyr::drop_na(
-      country_outcome,
-      HH7_region_outcome,
-      analysis_year,
-      worldpop_sum
-    ) %>%
+
+  n_start <- nrow(training_with_covariates_check)
+
+  # Step 1: drop rows missing essential join keys (country, region, year)
+  step_keys <- training_with_covariates_check %>%
+    tidyr::drop_na(country_outcome, HH7_region_outcome, analysis_year)
+  n_after_keys <- nrow(step_keys)
+
+  # Step 2: drop rows with no determinate outcome value (e.g. sharing status
+  # unknown for basic sanitation — see create_sanitation_indicators.R)
+  step_outcome <- step_keys %>%
+    tidyr::drop_na(outcome_value)
+  n_after_outcome <- nrow(step_outcome)
+
+  # Step 3: drop rows with a missing PSU weight (no matching PSU count —
+  # see add_n_psu_weight())
+  step_weight <- step_outcome %>%
+    tidyr::drop_na(n_psu_weight_scaled)
+  n_after_weight <- nrow(step_weight)
+
+  # Step 4: sanity check only — n_psu_weight_scaled is derived from a count
+  # of distinct PSUs (always >= 1), so this should never trigger. Warn
+  # instead of dropping, since a real violation points to a bug upstream.
+  n_nonpositive_weight <- sum(step_weight$n_psu_weight_scaled <= 0, na.rm = TRUE)
+  if (n_nonpositive_weight > 0) {
+    warning(
+      outcome_name, ": ", n_nonpositive_weight,
+      " row(s) have n_psu_weight_scaled <= 0 - investigate before training."
+    )
+  }
+
+  # Step 5: drop exact duplicates (same country/region/year/outcome value)
+  training_with_covariates <- step_weight %>%
     dplyr::arrange(
       outcome_type,
       country_outcome,
@@ -990,20 +1031,42 @@ join_and_save_one_training_dataset <- function(
       outcome_value,
       .keep_all = TRUE
     )
-  
+  n_final <- nrow(training_with_covariates)
+
+  cleaning_summary <- tibble::tibble(
+    outcome                 = outcome_name,
+    n_start                 = n_start,
+    dropped_missing_keys    = n_start - n_after_keys,
+    dropped_missing_outcome = n_after_keys - n_after_outcome,
+    dropped_missing_weight  = n_after_outcome - n_after_weight,
+    n_nonpositive_weight    = n_nonpositive_weight,
+    dropped_duplicates      = n_after_weight - n_final,
+    n_final                 = n_final
+  )
+
+  cat("\n== Data cleaning summary:", outcome_name, "==\n")
+  cat("  Starting rows:                         ", n_start, "\n")
+  cat("  Dropped (missing country/region/year): ", n_start - n_after_keys, "\n")
+  cat("  Dropped (missing outcome value):       ", n_after_keys - n_after_outcome, "\n")
+  cat("  Dropped (missing PSU weight):          ", n_after_outcome - n_after_weight, "\n")
+  cat("  Rows with weight <= 0 (not dropped):   ", n_nonpositive_weight, "\n")
+  cat("  Dropped (exact duplicates):            ", n_after_weight - n_final, "\n")
+  cat("  Final rows:                            ", n_final, "\n")
+
   readr::write_csv(
     training_with_covariates,
-    file.path(output_dir, paste0(outcome_name, "_training_with_covariates.csv"))
+    file.path(output_dir, paste0(outcome_name, "_training_with_covariates", training_csv_suffix, ".csv"))
   )
-  
+
   readr::write_csv(
     missing_covariates,
     file.path(output_dir, paste0(outcome_name, "_missing_covariates_after_join.csv"))
   )
-  
+
   list(
     training_with_covariates = training_with_covariates,
-    missing_covariates = missing_covariates
+    missing_covariates = missing_covariates,
+    cleaning_summary = cleaning_summary
   )
 }
 

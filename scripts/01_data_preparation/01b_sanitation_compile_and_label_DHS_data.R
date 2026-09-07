@@ -11,7 +11,7 @@
 # Countries: Same sampled_iso2_codes as SMDW
 #
 # Output:
-#   df_sanitation_DHS.csv
+#   df_sanitation_DHS_v2.csv
 
 library(tidyverse)
 library(haven)
@@ -204,7 +204,7 @@ process_one_dhs_sanitation_file <- function(file_path, survey_id, country_name) 
   dhs_san <- dhs_san %>%
     dplyr::select(
       HH1, HH2,
-      WS11, WS15,
+      WS11, WS11_raw, WS15,
       HH7_region,
       HH6,
       HH48,
@@ -265,5 +265,5 @@ if (nrow(all_na_check) > 0) {
 # ============================================================
 readr::write_csv(
   df.DHS.sanitation_Labeled,
-  here::here("data/processed/household_surveys/df_sanitation_DHS.csv")
+  here::here("data/processed/household_surveys/df_sanitation_DHS_v2.csv")
 )

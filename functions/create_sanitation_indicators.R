@@ -17,6 +17,18 @@
 # in create_indicators.R so that the same covariate-joining workflow applies.
 
 # =============================================================================
+# Coverage threshold for basic sanitation
+# =============================================================================
+# A region/country is dropped entirely from the basic sanitation calculation
+# (set to NA) if less than this share of its population has a determinate
+# basic_sanitation value (i.e. too few households have known WS15 data,
+# relative to the population as a whole, including open defecation and
+# unimproved households). Mirrors JMP's own rule of only producing an
+# estimate "if data are available for at least 50% of the relevant
+# population" (JMP Methodology: 2017 Update & SDG Baselines).
+MIN_BASIC_SANITATION_COVERAGE <- 0.5
+
+# =============================================================================
 # Helpers shared with SMDW workflow (duplicated here for self-containment)
 # =============================================================================
 
@@ -61,7 +73,10 @@ prepareSanitationData <- function(df) {
 # Step 2a — Basic sanitation data frame
 # =============================================================================
 # Drops rows where WS11 or hhweight are NA.
-# Rows where WS15 is NA contribute to the denominator as "not basic sanitation".
+# Rows where WS15 is missing for an improved facility (WS11 == 2) get
+# basic_sanitation = NA — sharing status is unknown, so the outcome is
+# undetermined. These households are excluded downstream (see
+# createIndicatorForRegionalBasicSanitation()).
 
 createDataFrameWithBasicSanitationIndicator <- function(df) {
   df %>%
@@ -70,9 +85,9 @@ createDataFrameWithBasicSanitationIndicator <- function(df) {
     renameDuplicateHH7RegionNamesFromDifferentCountries_sanitation() %>%
     dplyr::mutate(
       basic_sanitation = dplyr::case_when(
-        WS11 == 2 & WS15_clean == 0 ~ 1,   # improved AND not shared
-        is.na(WS11)                 ~ NA_real_,
-        TRUE                        ~ 0
+        WS11 == 2 & WS15_clean == 0   ~ 1,   # improved AND not shared
+        WS11 == 2 & is.na(WS15_clean) ~ NA_real_,  # improved, sharing status unknown
+        TRUE                          ~ 0
       )
     ) %>%
     dplyr::select(
@@ -106,6 +121,11 @@ createDataFrameWithOpenDefecationIndicator <- function(df) {
 # Step 3a — Regional basic sanitation proportion
 # =============================================================================
 # Follows the same structure as createIndicatorForRegionalWaterSourceType().
+# Households with basic_sanitation == NA (improved facility, unknown sharing
+# status) are excluded from both the numerator and denominator. On top of
+# that, a region is dropped entirely (BasicSanitationAtRegionalLevel = NA)
+# if fewer than MIN_BASIC_SANITATION_COVERAGE of its population has a
+# determinate basic_sanitation value — see the constant's definition above.
 
 createIndicatorForRegionalBasicSanitation <- function(df) {
   df %>%
@@ -114,24 +134,26 @@ createIndicatorForRegionalBasicSanitation <- function(df) {
     ) %>%
     dplyr::group_by(country, HH7_region) %>%
     dplyr::summarise(
-      HouseholdsInRegion.Freq.x    = dplyr::n(),
-      HouseholdMembersInRegion     = sum(HH48_hhweight, na.rm = TRUE),
-      HHmembersBasicSanitation     = sum(
-        HH48_hhweight * dplyr::if_else(basic_sanitation == 1, 1, 0, missing = 0),
+      HouseholdsInRegion.Freq.x       = sum(!is.na(basic_sanitation)),
+      HouseholdMembersInRegionAll     = sum(HH48_hhweight, na.rm = TRUE),
+      HouseholdMembersInRegion        = sum(HH48_hhweight[!is.na(basic_sanitation)], na.rm = TRUE),
+      HHmembersBasicSanitation        = sum(
+        HH48_hhweight * dplyr::if_else(basic_sanitation == 1, 1, 0),
         na.rm = TRUE
       ),
+      pct_pop_known_basic_sanitation  = dplyr::if_else(
+        HouseholdMembersInRegionAll > 0,
+        HouseholdMembersInRegion / HouseholdMembersInRegionAll,
+        NA_real_
+      ),
       BasicSanitationAtRegionalLevel = dplyr::if_else(
-        HouseholdMembersInRegion > 0,
+        HouseholdMembersInRegion > 0 &
+          pct_pop_known_basic_sanitation >= MIN_BASIC_SANITATION_COVERAGE,
         HHmembersBasicSanitation / HouseholdMembersInRegion,
         NA_real_
       ),
       pct.BasicSanitation = mean(basic_sanitation == 1, na.rm = TRUE),
       .groups = "drop"
-    ) %>%
-    dplyr::mutate(
-      BasicSanitationAtRegionalLevel = dplyr::coalesce(
-        BasicSanitationAtRegionalLevel, 0
-      )
     ) %>%
     dplyr::rename(country.x = country) %>%
     dplyr::select(
@@ -139,7 +161,8 @@ createIndicatorForRegionalBasicSanitation <- function(df) {
       HH7_region,
       country.x,
       HouseholdsInRegion.Freq.x,
-      pct.BasicSanitation
+      pct.BasicSanitation,
+      pct_pop_known_basic_sanitation
     )
 }
 
@@ -188,6 +211,13 @@ createIndicatorForRegionalOpenDefecation <- function(df) {
 # =============================================================================
 # Mirrors the regional functions but groups by country only, producing one
 # weighted proportion per country across all regions and households.
+# Households with an improved facility (WS11 == 2) but unknown sharing status
+# (WS15_clean NA) are excluded from both the basic sanitation numerator and
+# denominator — n_hh_basic_sanitation reflects only households with a
+# determinate basic sanitation outcome. On top of that, a country is dropped
+# entirely (prop_basic_sanitation_national = NA) if fewer than
+# MIN_BASIC_SANITATION_COVERAGE of its population has a determinate
+# basic_sanitation value (see the constant's definition above).
 
 createNationalSanitationEstimates <- function(df) {
   prepared <- df %>%
@@ -198,9 +228,9 @@ createNationalSanitationEstimates <- function(df) {
       WS11            = as.numeric(WS11),
       HH48_hhweight   = as.numeric(HH48) * as.numeric(hhweight),
       basic_sanitation = dplyr::case_when(
-        WS11 == 2 & WS15_clean == 0 ~ 1,
-        is.na(WS11)                 ~ NA_real_,
-        TRUE                        ~ 0
+        WS11 == 2 & WS15_clean == 0   ~ 1,
+        WS11 == 2 & is.na(WS15_clean) ~ NA_real_,
+        TRUE                          ~ 0
       ),
       open_defecation  = dplyr::if_else(WS11 == 0, 1, 0)
     ) %>%
@@ -209,25 +239,33 @@ createNationalSanitationEstimates <- function(df) {
   prepared %>%
     dplyr::group_by(country) %>%
     dplyr::summarise(
-      n_hh_basic_sanitation        = sum(!is.na(basic_sanitation)),
-      n_hh_open_defecation         = sum(!is.na(open_defecation)),
-      HouseholdMembersNational     = sum(HH48_hhweight, na.rm = TRUE),
-      HHmembersBasicSanitation     = sum(
-        HH48_hhweight * dplyr::if_else(basic_sanitation == 1, 1, 0, missing = 0),
+      n_hh_basic_sanitation             = sum(!is.na(basic_sanitation)),
+      n_hh_open_defecation              = sum(!is.na(open_defecation)),
+      HouseholdMembersNationalAll       = sum(HH48_hhweight, na.rm = TRUE),
+      HouseholdMembersBasicSanitation   = sum(HH48_hhweight[!is.na(basic_sanitation)], na.rm = TRUE),
+      HouseholdMembersOpenDefecation    = sum(HH48_hhweight[!is.na(open_defecation)], na.rm = TRUE),
+      HHmembersBasicSanitation          = sum(
+        HH48_hhweight * dplyr::if_else(basic_sanitation == 1, 1, 0),
         na.rm = TRUE
       ),
-      HHmembersOD                  = sum(
+      HHmembersOD                       = sum(
         HH48_hhweight * open_defecation,
         na.rm = TRUE
       ),
+      pct_pop_known_basic_sanitation     = dplyr::if_else(
+        HouseholdMembersNationalAll > 0,
+        HouseholdMembersBasicSanitation / HouseholdMembersNationalAll,
+        NA_real_
+      ),
       prop_basic_sanitation_national = dplyr::if_else(
-        HouseholdMembersNational > 0,
-        HHmembersBasicSanitation / HouseholdMembersNational,
+        HouseholdMembersBasicSanitation > 0 &
+          pct_pop_known_basic_sanitation >= MIN_BASIC_SANITATION_COVERAGE,
+        HHmembersBasicSanitation / HouseholdMembersBasicSanitation,
         NA_real_
       ),
       prop_open_defecation_national  = dplyr::if_else(
-        HouseholdMembersNational > 0,
-        HHmembersOD / HouseholdMembersNational,
+        HouseholdMembersOpenDefecation > 0,
+        HHmembersOD / HouseholdMembersOpenDefecation,
         NA_real_
       ),
       .groups = "drop"
@@ -236,6 +274,7 @@ createNationalSanitationEstimates <- function(df) {
       country,
       prop_basic_sanitation_national,
       n_hh_basic_sanitation,
+      pct_pop_known_basic_sanitation,
       prop_open_defecation_national,
       n_hh_open_defecation
     )

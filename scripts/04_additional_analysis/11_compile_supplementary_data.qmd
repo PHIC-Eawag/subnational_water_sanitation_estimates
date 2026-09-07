@@ -1,0 +1,563 @@
+---
+title: "Compile supplementary data (Data S1–S5)"
+subtitle: "Mapping subnational sanitation access in LMICs"
+author: "Project 0002020937"
+format:
+  html:
+    toc: true
+    toc-depth: 2
+    self-contained: true
+execute:
+  warning: false
+  message: false
+---
+
+## Purpose
+
+Assemble the supplementary data files **Data S1–S5** that reproduce the
+main-text figures (and the supplementary figures cited in the text) from the
+already-produced pipeline outputs. Each file is written as an `.xlsx` workbook
+with **two (or more) sheets**:
+
+- one or more **data** sheets, and
+- a **`Dictionary`** sheet that describes every variable *and* the modelled
+  outcomes.
+
+Nothing here recomputes the model — it only reads existing outputs, selects and
+renames the reporting columns, and documents them. Run it from the repository
+root (or from this script's folder — the root is detected automatically).
+
+```{r setup}
+library(readr)
+library(dplyr)
+library(tidyr)
+library(openxlsx)   # install.packages("openxlsx") if missing
+
+# --- Locate the repository root (folder containing outputs/ and scripts/) -----
+find_repo_root <- function() {
+  d <- normalizePath(getwd())
+  for (i in 1:6) {
+    if (dir.exists(file.path(d, "outputs")) && dir.exists(file.path(d, "scripts")))
+      return(d)
+    d <- dirname(d)
+  }
+  stop("Could not locate the repo root (a folder containing outputs/ and scripts/).")
+}
+repo <- find_repo_root()
+
+# --- Input locations ----------------------------------------------------------
+PRED_DIR  <- file.path(repo, "outputs/model_performance/v2/predictions")
+TRAIN_DIR <- file.path(repo, "data/processed/training_subcomponents")
+EST_DIR   <- file.path(repo, "outputs/survey_estimates")
+SHAP_DIR  <- file.path(repo, "outputs/descriptive_statistics/v2")
+
+# --- Output location (new folder) ---------------------------------------------
+OUT_DIR <- file.path(repo, "outputs/supplementary_data")
+dir.create(OUT_DIR, showWarnings = FALSE, recursive = TRUE)
+
+cat("Repo root :", repo, "\n")
+cat("Writing to:", OUT_DIR, "\n")
+```
+
+## Shared dictionary building blocks
+
+```{r dictionary-helpers}
+# Outcome definitions (reused in every Dictionary sheet). Wording follows the
+# JMP service-ladder definitions used in the manuscript and the project
+# deliverables README.
+OUTCOME_DEFS <- tribble(
+  ~field,             ~description,
+  "basic sanitation", paste("Proportion of the population using at least basic",
+                            "sanitation services: improved facilities (e.g. flush/pour-flush",
+                            "to sewer, septic tank or pit; ventilated improved pit latrine;",
+                            "pit latrine with slab; composting toilet) that are NOT shared",
+                            "with other households (JMP service-ladder definition)."),
+  "open defecation",  paste("Proportion of the population practising open defecation:",
+                            "disposal of human faeces in fields, forests, bushes, open",
+                            "bodies of water, beaches or other open spaces (JMP",
+                            "service-ladder definition).")
+)
+
+MODEL_NOTE <- paste(
+  "Outcomes are predicted for the year 2024 at the first sub-national",
+  "administrative level (admin-1) across up to 130 low- and middle-income",
+  "countries using a TabPFN model trained on the most recent DHS and MICS",
+  "household surveys (2015–2024). Each prediction is accompanied by a 90%",
+  "prediction interval (pi90_lower–pi90_upper)."
+)
+
+# Common identifier columns (definitions/sources from the deliverables README).
+COMMON_COLS <- tribble(
+  ~field,            ~description,                                   ~units,   ~type,      ~source,
+  "GID_1",           "GADM admin-1 district code",                   "",       "character","GADM v3.6 (gadm.org)",
+  "NAME_0",          "Country name",                                 "",       "character","GADM v3.6 (gadm.org)",
+  "NAME_1",          "Admin-1 district name",                        "",       "character","GADM v3.6 (gadm.org)",
+  "sdg_region",      "UN SDG regional grouping",                     "",       "character","JMP country classifications (washdata.org)",
+  "wb_income_group", "World Bank income group (L/LM/UM/H)",          "",       "character","World Bank country & lending groups",
+  "fragile_context", "OECD fragility classification of the context", "",       "character","OECD States of Fragility"
+)
+
+# Assemble a tidy Dictionary data frame: dataset note + model note + outcomes +
+# per-column definitions. `columns_df` must have columns
+# field/description/units/type/source and represents the data-sheet variables.
+make_dict <- function(dataset_id, dataset_desc, columns_df, include_outcomes = TRUE) {
+  rows <- list(
+    tibble(category = "dataset", field = dataset_id, description = dataset_desc,
+           units = "", type = "", source = "This study"),
+    tibble(category = "note", field = "modelling", description = MODEL_NOTE,
+           units = "", type = "", source = "This study")
+  )
+  if (include_outcomes) {
+    rows <- c(rows, list(
+      OUTCOME_DEFS |>
+        transmute(category = "outcome", field, description,
+                  units = "proportion (0–1)", type = "numeric",
+                  source = "JMP service ladder (ref 17)")
+    ))
+  }
+  rows <- c(rows, list(mutate(columns_df, category = "column")))
+  bind_rows(rows) |>
+    select(category, field, description, units, type, source)
+}
+
+# Write a workbook: named data sheet(s) + a Dictionary sheet, lightly formatted.
+write_supp <- function(file, data_sheets, dict_df) {
+  wb <- createWorkbook()
+  hdr <- createStyle(textDecoration = "bold", valign = "top")
+  wrap <- createStyle(wrapText = TRUE, valign = "top")
+
+  for (nm in names(data_sheets)) {
+    d <- data_sheets[[nm]]
+    addWorksheet(wb, nm)
+    writeData(wb, nm, d, withFilter = TRUE)
+    freezePane(wb, nm, firstActiveRow = 2)
+    addStyle(wb, nm, hdr, rows = 1, cols = seq_len(ncol(d)), gridExpand = TRUE)
+    setColWidths(wb, nm, cols = seq_len(ncol(d)), widths = "auto")
+  }
+
+  addWorksheet(wb, "Dictionary")
+  writeData(wb, "Dictionary", dict_df, withFilter = TRUE)
+  freezePane(wb, "Dictionary", firstActiveRow = 2)
+  addStyle(wb, "Dictionary", hdr, rows = 1, cols = seq_len(ncol(dict_df)),
+           gridExpand = TRUE)
+  addStyle(wb, "Dictionary", wrap, rows = 2:(nrow(dict_df) + 1), cols = 3,
+           gridExpand = TRUE)
+  setColWidths(wb, "Dictionary",
+               cols = 1:6, widths = c(11, 24, 75, 16, 11, 42))
+
+  saveWorkbook(wb, file, overwrite = TRUE)
+  cat("Saved:", file, "\n")
+}
+```
+
+## Data S1 — Subnational survey estimates used for modelling (Fig. 1)
+
+```{r data-s1}
+read_train <- function(path, outcome) {
+  # Only read the reporting columns — the training files also carry ~250
+  # covariate columns that are not needed here.
+  keep <- c("country_outcome", "HH7_region_outcome", "analysis_year",
+            "outcome_value", "n_households", "n_psu", "n_psu_weight_scaled",
+            "worldpop_sum")
+  read_csv(path, col_select = all_of(keep), show_col_types = FALSE) |>
+    transmute(
+      outcome             = outcome,
+      country             = country_outcome,
+      admin1_region       = HH7_region_outcome,
+      survey_year         = analysis_year,
+      observed_proportion = outcome_value,
+      n_households        = n_households,
+      n_psu               = n_psu,
+      psu_weight_scaled   = n_psu_weight_scaled,
+      population_2024     = worldpop_sum
+    )
+}
+
+s1 <- bind_rows(
+  read_train(file.path(TRAIN_DIR, "basic_sanitation_training_with_covariates_v2.csv"),
+             "basic sanitation"),
+  read_train(file.path(TRAIN_DIR, "open_defecation_training_with_covariates_v2.csv"),
+             "open defecation")
+)
+
+s1_dict <- tribble(
+  ~field,               ~description,                                                  ~units,           ~type,      ~source,
+  "outcome",            "Sanitation outcome the estimate refers to",                   "",               "character","This study",
+  "country",            "Country name (harmonised)",                                   "",               "character","DHS/MICS",
+  "admin1_region",      "Admin-1 region name as recorded in the survey",               "",               "character","DHS/MICS",
+  "survey_year",        "Year assigned to the survey for analysis",                    "year",           "integer",  "DHS/MICS",
+  "observed_proportion","Survey-weighted observed proportion for the outcome",         "proportion (0–1)","numeric", "DHS/MICS",
+  "n_households",       "Number of households contributing to the estimate",           "count",          "integer",  "DHS/MICS",
+  "n_psu",              "Number of primary sampling units (survey clusters)",          "count",          "integer",  "DHS/MICS",
+  "psu_weight_scaled",  "Scaled PSU sampling weight used in modelling",                "",               "numeric",  "This study",
+  "population_2024",    "Total admin-1 population (2024)",                             "count",          "numeric",  "WorldPop R2025A"
+)
+
+write_supp(
+  file.path(OUT_DIR, "Data_S1.xlsx"),
+  data_sheets = list("Survey_estimates" = s1),
+  dict_df = make_dict(
+    "Data S1",
+    "Subnational (admin-1) survey estimates of sanitation outcomes used to train the model, from DHS and MICS surveys (2015–2024).",
+    s1_dict)
+)
+```
+
+## Data S2 — Subnational 2024 predictions (Figs 2–5)
+
+```{r data-s2}
+read_pred <- function(path, outcome) {
+  # The prediction files also carry the full covariate matrix (~250 columns)
+  # and are large (~600 MB). Read only the reporting columns plus the national
+  # JMP predictor used to flag 2024 data availability. data.table::fread reads
+  # selected columns much faster than readr on files this size; fall back to
+  # readr if data.table is not installed in your renv.
+  jmp_col <- if (outcome == "basic sanitation") "sanitation_basic" else "open_defecation"
+  keep <- c("GID_1", "NAME_0", "NAME_1", "sdg_region", "wb_income_group",
+            "fragile_context", "median", "pi90_lower", "pi90_upper",
+            "worldpop_sum", jmp_col)
+  if (requireNamespace("data.table", quietly = TRUE)) {
+    df <- data.table::fread(path, select = keep, showProgress = FALSE)
+    df <- tibble::as_tibble(df)
+  } else {
+    df <- read_csv(path, col_select = all_of(keep), show_col_types = FALSE)
+  }
+  df |>
+    transmute(
+      outcome            = outcome,
+      GID_1, NAME_0, NAME_1, sdg_region, wb_income_group, fragile_context,
+      median, pi90_lower, pi90_upper,
+      pi90_width         = pi90_upper - pi90_lower,
+      population_2024    = worldpop_sum,
+      jmp_2024_available = !is.na(.data[[jmp_col]])
+    )
+}
+
+s2 <- bind_rows(
+  read_pred(file.path(PRED_DIR, "basic_sanitation_tabpfn_lmic_predictions.csv"),
+            "basic sanitation"),
+  read_pred(file.path(PRED_DIR, "open_defecation_tabpfn_lmic_predictions.csv"),
+            "open defecation")
+)
+
+s2_dict <- bind_rows(
+  tibble(field = "outcome",
+         description = "Sanitation outcome the prediction refers to",
+         units = "", type = "character", source = "This study"),
+  COMMON_COLS,
+  tribble(
+    ~field,              ~description,                                          ~units,            ~type,     ~source,
+    "median",            "Predicted proportion for the outcome: median (50th percentile, q50) of the predictive distribution","proportion (0–1)","numeric","This study (TabPFN)",
+    "pi90_lower",        "Lower bound of the 90% prediction interval",          "proportion (0–1)", "numeric", "This study (TabPFN)",
+    "pi90_upper",        "Upper bound of the 90% prediction interval",          "proportion (0–1)", "numeric", "This study (TabPFN)",
+    "pi90_width",        "Width of the 90% prediction interval (upper − lower)", "proportion (0–1)", "numeric", "This study (TabPFN)",
+    "population_2024",   "Total admin-1 population (2024)",                      "count",            "numeric", "WorldPop R2025A",
+    "jmp_2024_available","Whether a 2024 national JMP estimate was available as a predictor for this country","", "boolean (TRUE/FALSE)","JMP (washdata.org)"
+  )
+)
+
+write_supp(
+  file.path(OUT_DIR, "Data_S2.xlsx"),
+  data_sheets = list("Predictions" = s2),
+  dict_df = make_dict(
+    "Data S2",
+    "Subnational (admin-1) predictions of basic sanitation and open defecation for 2024, with 90% prediction intervals, across up to 130 LMICs.",
+    s2_dict)
+)
+```
+
+## Data S3 — Country-level summary of predictions (Fig. S1)
+
+```{r data-s3}
+s3 <- s2 |>
+  group_by(outcome, NAME_0) |>
+  summarise(
+    n_admin1             = n(),
+    median_prediction    = median(median),
+    min_prediction       = min(median),
+    max_prediction       = max(median),
+    within_country_range = max(median) - min(median),
+    median_pi90_width    = median(pi90_width),
+    sdg_region           = first(sdg_region),
+    wb_income_group      = first(wb_income_group),
+    fragile_context      = first(fragile_context),
+    .groups = "drop"
+  ) |>
+  arrange(outcome, median_prediction)
+
+s3_dict <- bind_rows(
+  tribble(
+    ~field,                ~description,                                                  ~units,            ~type,     ~source,
+    "outcome",             "Sanitation outcome the summary refers to",                    "",                "character","This study",
+    "NAME_0",              "Country name",                                                "",                "character","GADM v3.6",
+    "n_admin1",            "Number of admin-1 units in the country",                      "count",           "integer", "This study",
+    "median_prediction",   "Median of admin-1 predicted proportions",                     "proportion (0–1)","numeric", "This study",
+    "min_prediction",      "Minimum admin-1 predicted proportion",                        "proportion (0–1)","numeric", "This study",
+    "max_prediction",      "Maximum admin-1 predicted proportion",                        "proportion (0–1)","numeric", "This study",
+    "within_country_range","Max − min of admin-1 predictions (within-country spread)",    "proportion (0–1)","numeric", "This study",
+    "median_pi90_width",   "Median width of the admin-1 90% prediction intervals",        "proportion (0–1)","numeric", "This study"
+  ),
+  COMMON_COLS |> filter(field %in% c("sdg_region", "wb_income_group", "fragile_context"))
+)
+
+write_supp(
+  file.path(OUT_DIR, "Data_S3.xlsx"),
+  data_sheets = list("Country_summary" = s3),
+  dict_df = make_dict(
+    "Data S3",
+    "Country-level summary of subnational predictions: central tendency, within-country range and median prediction-interval width per outcome.",
+    s3_dict)
+)
+```
+
+## Data S4 — Survey vs prediction comparison (Figs S6, S7)
+
+Two related granularities: region-level agreement (Fig. S6) and the
+within-country range comparison (Fig. S7). Kept as two data sheets plus the
+shared dictionary.
+
+```{r data-s4}
+read_svp <- function(path, outcome) {
+  read_csv(path, show_col_types = FALSE) |>
+    transmute(
+      outcome                 = outcome,
+      country,
+      admin1_region           = join_key,
+      survey_year,
+      observed_proportion     = estimate,
+      predicted_area_weighted = pred_area,
+      predicted_pop_weighted  = pred_pop,
+      iou,
+      n_gadm_units            = n_gadm
+    )
+}
+
+s4_region <- bind_rows(
+  read_svp(file.path(EST_DIR, "survey_vs_prediction_basic_sanitation.csv"),
+           "basic sanitation"),
+  read_svp(file.path(EST_DIR, "survey_vs_prediction_open_defecation.csv"),
+           "open defecation")
+)
+
+s4_range <- read_csv(
+  file.path(EST_DIR, "within_country_range_observed_vs_predicted.csv"),
+  show_col_types = FALSE) |>
+  transmute(
+    outcome = recode(outcome,
+                     basic_sanitation = "basic sanitation",
+                     open_defecation  = "open defecation"),
+    country,
+    n_admin1           = n,
+    observed_range_pp  = obs_range,
+    predicted_range_pp = pred_range,
+    survey_year,
+    iou
+  )
+
+s4_dict <- tribble(
+  ~field,                    ~description,                                                              ~units,            ~type,      ~source,
+  "outcome",                 "Sanitation outcome the comparison refers to",                             "",                "character","This study",
+  "country",                 "Country name",                                                            "",                "character","DHS/MICS + GADM",
+  "admin1_region",           "Survey region key (country||region) [Region_level sheet]",                "",                "character","DHS/MICS",
+  "survey_year",             "Year of the survey being compared with the 2024 prediction",              "year",            "integer",  "DHS/MICS",
+  "observed_proportion",     "Survey observed proportion [Region_level sheet]",                          "proportion (0–1)","numeric",  "DHS/MICS",
+  "predicted_area_weighted", "2024 prediction, area-weighted over the survey region [Region_level]",     "proportion (0–1)","numeric",  "This study",
+  "predicted_pop_weighted",  "2024 prediction, population-weighted over the survey region [Region_level]","proportion (0–1)","numeric",  "This study",
+  "iou",                     "Intersection-over-union of survey and GADM boundaries (concordance)",       "0–1",             "numeric",  "This study",
+  "n_gadm_units",            "Number of GADM units overlapping the survey region [Region_level]",         "count",           "integer",  "This study",
+  "n_admin1",                "Number of admin-1 units in the country [Within_country_range sheet]",       "count",           "integer",  "This study",
+  "observed_range_pp",       "Observed within-country range (max − min) [Within_country_range sheet]",    "percentage points","numeric", "DHS/MICS",
+  "predicted_range_pp",      "Predicted within-country range (max − min) [Within_country_range sheet]",   "percentage points","numeric", "This study"
+)
+
+write_supp(
+  file.path(OUT_DIR, "Data_S4.xlsx"),
+  data_sheets = list("Region_level"          = s4_region,
+                     "Within_country_range"  = s4_range),
+  dict_df = make_dict(
+    "Data S4",
+    "Comparison of survey observations with 2024 predictions over the same areas: region-level agreement (Region_level) and within-country ranges (Within_country_range).",
+    s4_dict)
+)
+```
+
+## Data S5 — Predictor importance (SHAP) (Fig. S8)
+
+```{r data-s5}
+read_shap <- function(path, outcome) {
+  read_csv(path, show_col_types = FALSE) |>
+    mutate(outcome = outcome,
+           pct_importance = mean_abs_shap / sum(mean_abs_shap) * 100) |>
+    transmute(outcome, feature, label, mean_abs_shap, pct_importance) |>
+    arrange(desc(mean_abs_shap))
+}
+
+s5 <- bind_rows(
+  read_shap(file.path(SHAP_DIR, "basic_sanitation_tabpfn_shap_importance_k45_n250.csv"),
+            "basic sanitation"),
+  read_shap(file.path(SHAP_DIR, "open_defecation_tabpfn_shap_importance_k90_n250.csv"),
+            "open defecation")
+)
+
+s5_dict <- tribble(
+  ~field,          ~description,                                                       ~units,        ~type,      ~source,
+  "outcome",       "Sanitation outcome the importance refers to",                      "",            "character","This study",
+  "feature",       "Predictor variable name (as used in the model)",                   "",            "character","This study",
+  "label",         "Human-readable predictor label",                                   "",            "character","This study",
+  "mean_abs_shap", "Mean absolute SHAP value (mean over admin-1 units)",                "",            "numeric",  "This study (TabPFN + SHAP)",
+  "pct_importance","Mean absolute SHAP as a percentage of the outcome's total",         "percent",     "numeric",  "This study"
+)
+
+write_supp(
+  file.path(OUT_DIR, "Data_S5.xlsx"),
+  data_sheets = list("Predictor_importance" = s5),
+  dict_df = make_dict(
+    "Data S5",
+    "Predictor importance for each outcome, measured as the mean absolute SHAP value across admin-1 units.",
+    s5_dict, include_outcomes = FALSE)
+)
+```
+
+## Verification against manuscript values
+
+Recomputes the headline numbers reported in the manuscript from the assembled
+data frames and reports `PASS` / `FAIL`. This is a correctness check on the
+compilation — if the source outputs change, re-run and confirm all checks pass.
+
+```{r verify}
+# --- helpers -----------------------------------------------------------------
+fmt <- function(x) {
+  if (is.numeric(x)) paste(round(x, 3), collapse = ", ") else paste(x, collapse = ", ")
+}
+num_check <- function(label, actual, expected, tol) {
+  status <- if (length(actual) == 0 || is.na(actual)) "NA"
+            else if (abs(actual - expected) <= tol) "PASS" else "FAIL"
+  tibble(check = label, actual = fmt(actual),
+         expected = paste0(expected, " ± ", tol), status = status)
+}
+set_check <- function(label, actual_vec, expected_vec) {
+  tibble(check = label, actual = fmt(actual_vec), expected = fmt(expected_vec),
+         status = if (setequal(actual_vec, expected_vec)) "PASS" else "FAIL")
+}
+bs_med_by <- function(grp_col, grp_val) {
+  v <- s2 |> filter(outcome == "basic sanitation", .data[[grp_col]] == grp_val) |> pull(median)
+  if (length(v) == 0) NA_real_ else median(v)
+}
+bs_n_by <- function(grp_col, grp_val) {
+  s2 |> filter(outcome == "basic sanitation", .data[[grp_col]] == grp_val) |> nrow()
+}
+top_n_countries <- function(oc, col, desc = FALSE, n = 5) {
+  d <- s3 |> filter(outcome == oc)
+  d <- if (desc) arrange(d, desc(.data[[col]])) else arrange(d, .data[[col]])
+  head(d$NAME_0, n)
+}
+
+# --- reference tables (for eyeballing / debugging labels) --------------------
+cat("SDG region labels:\n"); print(sort(unique(s2$sdg_region)))
+cat("\nIncome group labels:\n"); print(sort(unique(s2$wb_income_group)))
+cat("\nBasic sanitation median by SDG region:\n")
+s2 |> filter(outcome == "basic sanitation") |>
+  group_by(sdg_region) |>
+  summarise(n = n(), median = round(median(median), 3), .groups = "drop") |>
+  arrange(median) |> as.data.frame() |> print()
+
+# --- automated checks --------------------------------------------------------
+inc_counts_bs <- s2 |> filter(outcome == "basic sanitation") |>
+  count(wb_income_group) |> pull(n) |> sort()
+
+checks <- bind_rows(
+  num_check("S2: basic sanitation rows = 2310",
+            sum(s2$outcome == "basic sanitation"), 2310, 0),
+  num_check("S2: open defecation rows = 2310",
+            sum(s2$outcome == "open defecation"), 2310, 0),
+  num_check("S2: distinct countries = 130",
+            n_distinct(s2$NAME_0), 130, 0),
+  set_check("S2: income-group admin-1 counts = {406, 812, 1092}",
+            inc_counts_bs, c(406, 812, 1092)),
+  num_check("S2: sub-Saharan Africa n (BS) = 662",
+            bs_n_by("sdg_region", "Sub-Saharan Africa"), 662, 0),
+  num_check("S2: sub-Saharan Africa BS median ~ 0.39",
+            bs_med_by("sdg_region", "Sub-Saharan Africa"), 0.39, 0.02),
+  num_check("S2: Europe & N. America BS median ~ 0.97",
+            bs_med_by("sdg_region", "Europe and Northern America"), 0.97, 0.02),
+  num_check("S2: Oceania BS median ~ 0.49",
+            bs_med_by("sdg_region", "Oceania"), 0.49, 0.03),
+  set_check("S3: lowest-5 BS countries",
+            top_n_countries("basic sanitation", "median_prediction"),
+            c("Central African Republic", "South Sudan", "Chad",
+              "Guinea-Bissau", "Madagascar")),
+  set_check("S3: top-5 within-country range (BS)",
+            top_n_countries("basic sanitation", "within_country_range", desc = TRUE),
+            c("Nigeria", "Yemen", "Tanzania", "Mozambique", "Malawi")),
+  # NOTE: the manuscript's "median within-country range 32 p.p. (BS) / 13 p.p.
+  # (OD)" correspond to the OBSERVED survey ranges (Data S4), not the predicted
+  # ranges. The predicted ranges are markedly smaller because the model
+  # compresses local extremes (Fig. S7) — so we verify against the observed
+  # ranges here and report the (smaller) predicted ranges alongside.
+  num_check("S4: median OBSERVED within-country range BS ~ 32 p.p.",
+            median(s4_range$observed_range_pp[s4_range$outcome == "basic sanitation"], na.rm = TRUE), 32, 3),
+  num_check("S4: median OBSERVED within-country range OD ~ 13 p.p.",
+            median(s4_range$observed_range_pp[s4_range$outcome == "open defecation"], na.rm = TRUE), 13, 3),
+  num_check("S1: basic sanitation region-estimates ~ 1168",
+            sum(s1$outcome == "basic sanitation"), 1168, 5),
+  num_check("S1: open defecation region-estimates ~ 1205",
+            sum(s1$outcome == "open defecation"), 1205, 5),
+  num_check("S4: median IoU ~ 0.96",
+            median(s4_region$iou, na.rm = TRUE), 0.96, 0.03),
+  num_check("S5: top BS predictor importance ~ 38%",
+            s5 |> filter(outcome == "basic sanitation") |>
+              slice_max(mean_abs_shap, n = 1) |> pull(pct_importance),
+            38, 3)
+)
+
+# Within-country range compression (predicted < observed) — Fig. S7
+comp <- s4_range |> group_by(outcome) |>
+  summarise(obs = median(observed_range_pp, na.rm = TRUE),
+            pred = median(predicted_range_pp, na.rm = TRUE), .groups = "drop") |>
+  mutate(status = ifelse(pred < obs, "PASS", "FAIL"))
+checks <- bind_rows(checks, tibble(
+  check = paste0("S4: predicted range < observed range (", comp$outcome, ")"),
+  actual = paste0("pred=", round(comp$pred, 1), " obs=", round(comp$obs, 1)),
+  expected = "pred < obs", status = comp$status))
+
+cat("\n\n=== Verification results ===\n")
+knitr::kable(checks)
+
+# Context: observed vs predicted within-country ranges (the manuscript's 32/13
+# p.p. are the OBSERVED ranges; predicted ranges are smaller — Fig. S7).
+cat("\nWithin-country range (median, percentage points):\n")
+s3 |> group_by(outcome) |>
+  summarise(predicted_all_countries_pp = round(median(within_country_range) * 100, 1),
+            .groups = "drop") |>
+  left_join(
+    s4_range |> group_by(outcome) |>
+      summarise(observed_surveyed_pp  = round(median(observed_range_pp, na.rm = TRUE), 1),
+                predicted_surveyed_pp = round(median(predicted_range_pp, na.rm = TRUE), 1),
+                .groups = "drop"),
+    by = "outcome") |>
+  as.data.frame() |> print()
+
+n_fail <- sum(checks$status == "FAIL")
+if (n_fail == 0) {
+  cat("\nAll", nrow(checks), "checks passed.\n")
+} else {
+  cat("\n", n_fail, "check(s) FAILED — inspect the table above.\n")
+}
+```
+
+## Validation
+
+```{r validate}
+summary_tbl <- tibble::tribble(
+  ~file,        ~rows,          ~cols,
+  "Data_S1",    nrow(s1),        ncol(s1),
+  "Data_S2",    nrow(s2),        ncol(s2),
+  "Data_S3",    nrow(s3),        ncol(s3),
+  "Data_S4 (region)", nrow(s4_region), ncol(s4_region),
+  "Data_S4 (range)",  nrow(s4_range),  ncol(s4_range),
+  "Data_S5",    nrow(s5),        ncol(s5)
+)
+knitr::kable(summary_tbl)
+
+sessionInfo()
+```
