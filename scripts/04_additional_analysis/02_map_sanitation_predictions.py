@@ -86,6 +86,15 @@ BS_UNC_CMAP = LinearSegmentedColormap.from_list(
 )
 OD_UNC_CMAP = "YlOrRd"
 
+# Prediction palettes used in the combined 2×2 figure:
+#   basic sanitation = green, open defecation = orange
+BS_CMAP_GREEN = LinearSegmentedColormap.from_list(
+    "YlGn_custom", ["#ffffe5", "#78c679", "#006837"], N=256   # yellow → dark green
+)
+OD_CMAP_ORANGE = LinearSegmentedColormap.from_list(
+    "PinkOrangeBrown_custom", ["#fde0dd", "#fa8c4f", "#7f2704"], N=256  # pink → orange → brown
+)
+
 # -------------------------------------------------------
 # 4.  Load data
 # -------------------------------------------------------
@@ -177,7 +186,11 @@ def save_panel(filename, gdf_panel, col, cmap, vmin, vmax,
     if cbar_ticks is None:
         cbar_ticks = np.linspace(vmin, vmax, 6)
     cbar.set_ticks(cbar_ticks)
-    cbar.set_ticklabels([cbar_fmt.format(t) for t in cbar_ticks])
+    # cbar_fmt may be a format string ("{:.0%}") or a callable (for p.p. labels)
+    cbar.set_ticklabels([
+        cbar_fmt(t) if callable(cbar_fmt) else cbar_fmt.format(t)
+        for t in cbar_ticks
+    ])
 
     # Legend — left of figure, below colourbar
     if len(no_pred):
@@ -211,7 +224,7 @@ print("\nDrawing fig1a — basic sanitation median …")
 save_panel(
     filename="fig1a_basic_sanitation_median",
     gdf_panel=gdf_bs, col="median", cmap=BS_CMAP, vmin=0, vmax=1,
-    borders=borders_bs, panel_label="a", full_title="Basic sanitation",
+    borders=borders_bs, panel_label="a", full_title="Basic sanitation predictions",
     cbar_label="Estimated proportion of population with basic sanitation",
     cbar_ticks=[0.0, 0.25, 0.50, 0.75, 1.0],
 )
@@ -220,7 +233,7 @@ print("Drawing fig1b — open defecation median …")
 save_panel(
     filename="fig1b_open_defecation_median",
     gdf_panel=gdf_od, col="median", cmap=OD_CMAP, vmin=0, vmax=1,
-    borders=borders_od, panel_label="b", full_title="Open defecation",
+    borders=borders_od, panel_label="b", full_title="Open defecation predictions",
     cbar_label="Estimated proportion of population practising open defecation",
     cbar_ticks=[0.0, 0.25, 0.50, 0.75, 1.0],
 )
@@ -233,14 +246,21 @@ pi_max = np.ceil(pi_max * 20) / 20
 print(f"\n  Shared PI width scale: 0 – {pi_max:.2f}")
 cbar_ticks_pp = list(np.linspace(0, pi_max, 6))
 
+# Colourbar tick formats. Prediction panels keep "%"; the uncertainty panels
+# show percentage points — plain numbers (value × 100, no "%"), with the unit
+# carried by the "(p.p.)" axis label, matching the box-plot figures.
+PCT_FMT = "{:.0%}"
+def pp_fmt(t):
+    return f"{t * 100:.0f}"
+
 print("Drawing fig2a — basic sanitation uncertainty …")
 save_panel(
     filename="fig2a_basic_sanitation_uncertainty",
     gdf_panel=gdf_bs, col="pi_width", cmap=BS_UNC_CMAP, vmin=0, vmax=pi_max,
     borders=borders_bs, panel_label="a",
-    full_title="Basic sanitation — 90% prediction interval",
-    cbar_label="90% prediction interval width",
-    cbar_ticks=cbar_ticks_pp,
+    full_title="Basic sanitation prediction uncertainty",
+    cbar_label="90% prediction interval width (p.p.)",
+    cbar_ticks=cbar_ticks_pp, cbar_fmt=pp_fmt,
 )
 
 print("Drawing fig2b — open defecation uncertainty …")
@@ -248,49 +268,123 @@ save_panel(
     filename="fig2b_open_defecation_uncertainty",
     gdf_panel=gdf_od, col="pi_width", cmap=OD_UNC_CMAP, vmin=0, vmax=pi_max,
     borders=borders_od, panel_label="b",
-    full_title="Open defecation — 90% prediction interval",
-    cbar_label="90% prediction interval width",
-    cbar_ticks=cbar_ticks_pp,
+    full_title="Open defecation prediction uncertainty",
+    cbar_label="90% prediction interval width (p.p.)",
+    cbar_ticks=cbar_ticks_pp, cbar_fmt=pp_fmt,
 )
 
 print("\nDone.")
 
 # -------------------------------------------------------
-# 7.  Alternative colour-palette experiment
+# 7.  Combined 2×2 map figure
 #
-#     Basic sanitation : yellow → green  (light = low, dark = high)
-#     Open defecation  : pale pink → orange → dark brown
-#                        (light = low OD, dark = high OD)
+#     A single figure holding all four panels:
+#         a  Basic sanitation — coverage     b  Basic sanitation — uncertainty
+#         c  Open defecation  — rate         d  Open defecation  — uncertainty
+#     Left column = predictions (median), right column = 90% prediction-
+#     interval width; basic sanitation on top, open defecation below.
+#     Reuses the colourmaps and the shared PI-width scale defined above.
 # -------------------------------------------------------
 
-BS_CMAP_ALT = LinearSegmentedColormap.from_list(
-    "YlGn_custom",
-    ["#ffffe5", "#78c679", "#006837"],   # yellow → mid-green → dark green
-    N=256,
-)
+def draw_map(map_ax, cbar_ax, gdf_panel, col, cmap, vmin, vmax, borders,
+             panel_label, full_title, cbar_label,
+             cbar_ticks=None, cbar_fmt="{:.0%}", show_legend=False):
+    """Draw one map panel + its colourbar into pre-created axes."""
+    map_ax.set_xlim(wx_min, wx_max)
+    map_ax.set_ylim(wy_min, wy_max)
+    map_ax.set_aspect(1)
+    map_ax.axis("off")
 
-OD_CMAP_ALT = LinearSegmentedColormap.from_list(
-    "PinkOrangeBrown_custom",
-    ["#fde0dd", "#fa8c4f", "#7f2704"],   # pale pink → orange → dark brown
-    N=256,
-)
+    norm = Normalize(vmin=vmin, vmax=vmax)
 
-print("\nDrawing alt_fig1a — basic sanitation median (yellow–green palette) …")
-save_panel(
-    filename="alt_fig1a_basic_sanitation_median",
-    gdf_panel=gdf_bs, col="median", cmap=BS_CMAP_ALT, vmin=0, vmax=1,
-    borders=borders_bs, panel_label="a", full_title="Basic sanitation",
-    cbar_label="Estimated proportion of population with basic sanitation",
-    cbar_ticks=[0.0, 0.25, 0.50, 0.75, 1.0],
-)
+    world.plot(ax=map_ax, color=HI_COLOUR, edgecolor="none", linewidth=0, zorder=0)
 
-print("Drawing alt_fig1b — open defecation median (pink–orange–brown palette) …")
-save_panel(
-    filename="alt_fig1b_open_defecation_median",
-    gdf_panel=gdf_od, col="median", cmap=OD_CMAP_ALT, vmin=0, vmax=1,
-    borders=borders_od, panel_label="b", full_title="Open defecation",
-    cbar_label="Estimated proportion of population practising open defecation",
-    cbar_ticks=[0.0, 0.25, 0.50, 0.75, 1.0],
-)
+    no_pred = gdf_panel[gdf_panel[col].isna()]
+    if len(no_pred):
+        no_pred.plot(ax=map_ax, color=NODATA_COLOUR, edgecolor="none",
+                     linewidth=0, zorder=1)
 
-print("\nDone (alternative palettes).")
+    gdf_panel[gdf_panel[col].notna()].plot(
+        ax=map_ax, column=col, cmap=cmap, norm=norm,
+        edgecolor="none", linewidth=0, zorder=2,
+    )
+
+    borders.boundary.plot(ax=map_ax, linewidth=0.08, edgecolor="#555555", zorder=3)
+
+    map_ax.set_title(f"$\\bf{{{panel_label}}}$  {full_title}",
+                     fontsize=7, loc="left", pad=1.5)
+
+    sm = ScalarMappable(cmap=cmap, norm=norm)
+    sm.set_array([])
+    cbar = plt.colorbar(sm, cax=cbar_ax, orientation="horizontal")
+    cbar.set_label(cbar_label, fontsize=5.5, labelpad=1)
+    cbar.ax.tick_params(labelsize=5, length=1, width=0.3)
+    cbar.outline.set_linewidth(0.3)
+    if cbar_ticks is None:
+        cbar_ticks = np.linspace(vmin, vmax, 6)
+    cbar.set_ticks(cbar_ticks)
+    # cbar_fmt may be a format string ("{:.0%}") or a callable (for p.p. labels)
+    cbar.set_ticklabels([
+        cbar_fmt(t) if callable(cbar_fmt) else cbar_fmt.format(t)
+        for t in cbar_ticks
+    ])
+
+    if show_legend and len(no_pred):
+        map_ax.legend(
+            handles=[mpatches.Patch(facecolor=NODATA_COLOUR, edgecolor="none",
+                                    label="No prediction data")],
+            loc="upper left", fontsize=4.5, frameon=False,
+            handlelength=1.0, handleheight=0.8, borderpad=0, labelspacing=0.3,
+        )
+
+
+print("\nDrawing combined 2×2 map figure …")
+
+COMBINED_H = 4.7
+fig = plt.figure(figsize=(FIG_WIDTH, COMBINED_H))
+
+# Cell geometry (figure fractions): 2 rows (BS top, OD bottom) × 2 columns
+# (prediction, uncertainty). Each map has a thin colourbar centred beneath it.
+map_w, map_h = 0.48, 0.34
+col_x   = [0.01, 0.51]      # left edges of the two map columns
+row_y   = [0.60, 0.10]      # bottom edges of the map axes (top row, bottom row)
+cbar_w  = 0.24
+cbar_dy = 0.045            # colourbar drop below the map
+cbar_h  = 0.016
+
+# Uncertainty colourbars (b, d) show percentage points via pp_fmt; prediction
+# colourbars (a, c) keep the "%" format (PCT_FMT). Both defined above.
+# (row, col, gdf, column, cmap, vmax, title, cbar_label, cbar_ticks, legend, cbar_fmt)
+panels = [
+    (0, 0, gdf_bs, "median",   BS_CMAP_GREEN, 1.0,  "Basic sanitation predictions",
+     "Estimated proportion with basic sanitation",
+     [0.0, 0.25, 0.50, 0.75, 1.0], True, PCT_FMT),
+    (0, 1, gdf_bs, "pi_width", BS_UNC_CMAP, pi_max,
+     "Basic sanitation prediction uncertainty",
+     "90% prediction interval width (p.p.)", cbar_ticks_pp, False, pp_fmt),
+    (1, 0, gdf_od, "median",   OD_CMAP_ORANGE, 1.0, "Open defecation predictions",
+     "Estimated proportion practising open defecation",
+     [0.0, 0.25, 0.50, 0.75, 1.0], False, PCT_FMT),
+    (1, 1, gdf_od, "pi_width", OD_UNC_CMAP, pi_max,
+     "Open defecation prediction uncertainty",
+     "90% prediction interval width (p.p.)", cbar_ticks_pp, False, pp_fmt),
+]
+
+labels = [["a", "b"], ["c", "d"]]
+
+for r, c, gdf_panel, col, cmap, vmax, title, cbar_label, cbar_ticks, legend, cbar_fmt in panels:
+    x0, y0  = col_x[c], row_y[r]
+    map_ax  = fig.add_axes([x0, y0, map_w, map_h])
+    cbar_ax = fig.add_axes([x0 + (map_w - cbar_w) / 2, y0 - cbar_dy, cbar_w, cbar_h])
+    borders = borders_bs if gdf_panel is gdf_bs else borders_od
+    draw_map(map_ax, cbar_ax, gdf_panel, col, cmap, 0, vmax, borders,
+             labels[r][c], title, cbar_label,
+             cbar_ticks=cbar_ticks, cbar_fmt=cbar_fmt, show_legend=legend)
+
+for ext in ("pdf", "png"):
+    out = os.path.join(FIGURE_DIR, f"fig_combined_2x2_maps.{ext}")
+    fig.savefig(out, dpi=DPI, format=ext)
+    print(f"  Saved: {out}")
+plt.close(fig)
+
+print("\nDone (combined 2×2 map).")
