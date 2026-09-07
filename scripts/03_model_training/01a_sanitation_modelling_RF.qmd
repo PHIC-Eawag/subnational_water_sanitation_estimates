@@ -405,14 +405,26 @@ sample_held_out_countries <- function(
   held_out
 }
 
-# ── Generate folds ────────────────────────────────────────────────────────────
-# Create N_REPEATS independent held-out country lists, each using a different
-# random seed so the folds are not correlated with one another.
-set.seed(SEED)
-fold_country_lists <- purrr::map(
-  seq_len(N_REPEATS),
-  ~ sample_held_out_countries(country_strata, stratum_targets, seed_i = .x)
+# ── Load folds from the shared definition ─────────────────────────────────────
+# Folds are generated once by
+#   scripts/01_data_preparation/05b_generate_stratified_cv_folds.py
+# and read here so the RF and TabPFN (02b) feature-set comparisons are evaluated
+# on IDENTICAL held-out country sets. R's set.seed()/sample() and NumPy's
+# default_rng() diverge even with equal seeds, so folds are shared via a file
+# rather than re-sampled. (The sample_held_out_countries() helper above is no
+# longer used for generation — 05b is the single source of truth.)
+cv_folds_path <- here::here("data/processed/cv_folds/stratified_cv_folds.csv")
+if (!file.exists(cv_folds_path)) {
+  stop("CV fold definitions not found: ", cv_folds_path,
+       "\nRun scripts/01_data_preparation/05b_generate_stratified_cv_folds.py first.")
+}
+fold_defs <- readr::read_csv(cv_folds_path, show_col_types = FALSE) %>%
+  dplyr::arrange(fold)
+fold_country_lists <- split(fold_defs$country, fold_defs$fold)
+fold_country_lists <- unname(
+  fold_country_lists[order(as.integer(names(fold_country_lists)))]
 )
+N_REPEATS <- length(fold_country_lists)  # keep downstream references consistent
 
 # ── Diagnostics ───────────────────────────────────────────────────────────────
 # For each fold, report how many countries and regions were held out,
@@ -547,17 +559,21 @@ h2o::h2o.no_progress()
 ## CV helper functions
 
 ```{r}
-# Compute unweighted metrics on a data frame with columns
-# `observed` and `predicted`.
-# PSU weights are used only for model fitting, not for evaluation metrics.
+# Compute PSU-weighted metrics on a data frame with columns
+# `observed`, `predicted`, and `weight` (the held-out rows' PSU weights).
+# Weighting matches the survey weights used in model fitting, so evaluation
+# reflects population-level error and is consistent with the LOCO metrics.
 compute_metrics <- function(df) {
+  w      <- df$weight
+  sw     <- sum(w)
+  wmean  <- sum(w * df$observed) / sw       # weighted mean of observations
   r      <- df$observed - df$predicted
-  ss_res <- sum(r^2)
-  ss_tot <- sum((df$observed - mean(df$observed))^2)
+  ss_res <- sum(w * r^2)
+  ss_tot <- sum(w * (df$observed - wmean)^2)
 
   tibble::tibble(
-    mae  = mean(abs(r)),
-    rmse = sqrt(mean(r^2)),
+    mae  = sum(w * abs(r)) / sw,
+    rmse = sqrt(sum(w * r^2) / sw),
     r2   = 1 - ss_res / ss_tot,
     n    = nrow(df)
   )
@@ -585,7 +601,7 @@ run_one_fold <- function(
 
   test_df <- training_df %>%
     dplyr::filter(.data[[country_col]] %in% held_out_countries) %>%
-    dplyr::select(dplyr::all_of(c(features, outcome_col)))
+    dplyr::select(dplyr::all_of(c(features, outcome_col, weight_col)))
 
   if (nrow(test_df) == 0) return(NULL)
 
@@ -613,7 +629,8 @@ run_one_fold <- function(
 
   compute_metrics(tibble::tibble(
     observed  = test_df[[outcome_col]],
-    predicted = preds
+    predicted = preds,
+    weight    = test_df[[weight_col]]
   ))
 }
 ```
@@ -722,9 +739,9 @@ cv_comparison_results %>%
   ggplot2::geom_point(size = 2) +
   ggplot2::geom_errorbar(width = 0.2, alpha = 0.5) +
   ggplot2::labs(
-    title  = "Stratified CV performance by feature set",
+    title  = "Stratified CV performance by feature set (PSU-weighted)",
     x      = "Feature set (k clusters)",
-    y      = "Mean R² (±1 SD across repeats)",
+    y      = "PSU-weighted mean R² (±1 SD across repeats)",
     colour = "Outcome"
   ) +
   ggplot2::theme_bw(base_size = 10)
