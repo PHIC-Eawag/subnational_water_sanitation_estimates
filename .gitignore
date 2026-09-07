@@ -72,8 +72,10 @@ Thumbs.db
 .env.*
 *.pem
 *.key
-config/local_paths.yml
-config/local_*.yml
+
+configuration/paths.R
+
+
 
 # =========================
 # Logs / temporary files
@@ -171,3 +173,4 @@ outputs/survey_estimates/*
 # Data — back-up/
 # =========================
 data/back-up/
+

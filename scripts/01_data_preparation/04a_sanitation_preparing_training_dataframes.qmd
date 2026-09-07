@@ -295,19 +295,28 @@ keep_latest_survey_year_hh <- function(df, max_survey_duration = 2) {
 
 df_hh_sanitation_latest <- keep_latest_survey_year_hh(df_hh_sanitation)
 
+# Write the corrected household-level sanitation analysis file (v2). This
+# incorporates the WS11 labelling corrections (via the _v2 MICS/DHS inputs) and
+# has the same structure as the earlier df_hh_sanitation_analysis.csv — DHS rows
+# retain NA in WS11_raw/WS11_improved/open_defecation/WS11_category, as before.
+readr::write_csv(
+  df_hh_sanitation_latest,
+  PATH_HH_SANITATION_ANALYSIS_V2
+)
+message(paste("Written:", PATH_HH_SANITATION_ANALYSIS_V2))
+
 # Writing df_hh_sanitation_latest to the switchdrive deliverable
 # (df_hh_sanitation_analysis.csv) is commented out deliberately — this is a
 # collaborator-facing deliverable (see additional_data_0002020937/HH_surveys/
 # README.qmd) and should only be regenerated intentionally, not as a side
 # effect of rerunning this script. Uncomment when you actually want to
-# publish an updated version.
-# SWITCHDRIVE_HH_DIR <- "/Users/esthergreenwood/switchdrive/Eawag/WorldBankProject/additional_data_0002020937/HH_surveys"
-# dir.create(SWITCHDRIVE_HH_DIR, recursive = TRUE, showWarnings = FALSE)
+# publish an updated version. Path defined in configuration/paths.R.
+# dir.create(PATH_SWITCHDRIVE_HH_DIR, recursive = TRUE, showWarnings = FALSE)
 # readr::write_csv(
 #   df_hh_sanitation_latest,
-#   file.path(SWITCHDRIVE_HH_DIR, "df_hh_sanitation_analysis.csv")
+#   PATH_HH_SANITATION_ANALYSIS
 # )
-# message("Written: df_hh_sanitation_analysis.csv")
+# message(paste("Written:", PATH_HH_SANITATION_ANALYSIS))
 ```
 
 ## Build regional outcomes
@@ -1096,12 +1105,37 @@ country_covariates <- dplyr::bind_rows(
   ) %>%
   dplyr::rename(country = country_outcome)
 
+# ── Within-country range of raw subnational estimates ─────────────────────────
+# Spread (max - min, in percentage points) of admin-1 outcome values within each
+# country, after averaging each admin-1 unit across survey years. NA where a
+# country has only one surveyed admin-1 unit (no range to speak of).
+within_country_range <- function(df) {
+  df %>%
+    dplyr::filter(!is.na(country_outcome), !is.na(HH7_region_outcome),
+                  !is.na(outcome_value)) %>%
+    dplyr::group_by(country_outcome, HH7_region_outcome) %>%
+    dplyr::summarise(value = mean(outcome_value, na.rm = TRUE), .groups = "drop") %>%
+    dplyr::group_by(country_outcome) %>%
+    dplyr::summarise(
+      range = dplyr::if_else(dplyr::n() >= 2,
+                             100 * (max(value) - min(value)), NA_real_),
+      .groups = "drop"
+    )
+}
+
+range_basic_sanitation <- within_country_range(basic_sanitation_training) %>%
+  dplyr::rename(country = country_outcome, range_basic_sanitation_pp = range)
+range_open_defecation <- within_country_range(open_defecation_training) %>%
+  dplyr::rename(country = country_outcome, range_open_defecation_pp = range)
+
 # ── Assemble final table ──────────────────────────────────────────────────────
 descriptive_stats <- survey_dates %>%
   dplyr::left_join(country_covariates,   by = "country") %>%
   dplyr::left_join(national_sanitation,  by = "country") %>%
   dplyr::left_join(n_regions_basic_sanitation, by = c("country" = "country_outcome")) %>%
   dplyr::left_join(n_regions_open_defecation,  by = c("country" = "country_outcome")) %>%
+  dplyr::left_join(range_basic_sanitation, by = "country") %>%
+  dplyr::left_join(range_open_defecation,  by = "country") %>%
   dplyr::mutate(
     n_regions_basic_sanitation_training = tidyr::replace_na(n_regions_basic_sanitation_training, 0L),
     n_regions_open_defecation_training  = tidyr::replace_na(n_regions_open_defecation_training, 0L)
@@ -1118,9 +1152,11 @@ descriptive_stats <- survey_dates %>%
     n_hh_basic_sanitation,
     pct_pop_known_basic_sanitation,
     n_regions_basic_sanitation_training,
+    range_basic_sanitation_pp,
     prop_open_defecation_national,
     n_hh_open_defecation,
     n_regions_open_defecation_training,
+    range_open_defecation_pp,
     ww_collection_percent,
     ww_treatment_percent,
     ww_reuse_percent,
@@ -1151,6 +1187,21 @@ knitr::kable(descriptive_stats, caption = "Sanitation survey data and country-le
 ```
 
 ------------------------------------------------------------------------
+
+```{r}
+
+descriptive_stats %>%
+  tidyr::pivot_longer(c(range_basic_sanitation_pp, range_open_defecation_pp),
+                      names_to = "outcome", values_to = "range_pp") %>%
+  group_by(outcome) %>%
+  summarise(
+    n_countries  = sum(!is.na(range_pp)),
+    median_range = median(range_pp, na.rm = TRUE),
+    min_range    = min(range_pp,    na.rm = TRUE),
+    max_range    = max(range_pp,    na.rm = TRUE),
+    .groups = "drop"
+  )
+```
 
 # 10. Surveys diverging from JMP by more than 5 percentage points
 
@@ -1208,4 +1259,95 @@ print(as.data.frame(basic_sanitation_jmp_gt5), row.names = FALSE)
 cat("\n=== Open defecation: |my estimate - JMP| > 5 percentage points (",
     nrow(open_defecation_jmp_gt5), "surveys ) ===\n")
 print(as.data.frame(open_defecation_jmp_gt5), row.names = FALSE)
+```
+
+------------------------------------------------------------------------
+
+# 11. Within- vs between-country variance decomposition
+
+Quantifies how much of the total variance in each outcome is attributable to differences *between* countries versus variation *within* countries across subnational regions. A high ICC (intraclass correlation coefficient) means most variance is between countries — national-level predictors are likely to dominate. A lower ICC means subnational predictors carry relatively more weight. This directly contextualises the SHAP feature importance results in the modelling script.
+
+Survey weights (`n_psu_weight_scaled`) are incorporated via a weighted mixed-effects model so that larger surveys contribute proportionally.
+
+```{r}
+library(lme4)
+
+# ── Load the final training CSVs written in Section 7 ────────────────────────
+bs_train <- readr::read_csv(
+  here::here("data/processed/training_subcomponents/basic_sanitation_training_with_covariates_v2.csv"),
+  show_col_types = FALSE
+) |>
+  dplyr::filter(!is.na(outcome_value), !is.na(country_cov), !is.na(n_psu_weight_scaled))
+
+od_train <- readr::read_csv(
+  here::here("data/processed/training_subcomponents/open_defecation_training_with_covariates_v2.csv"),
+  show_col_types = FALSE
+) |>
+  dplyr::filter(!is.na(outcome_value), !is.na(country_cov), !is.na(n_psu_weight_scaled))
+
+# ── ICC helper ────────────────────────────────────────────────────────────────
+# Fits a null (intercept-only) mixed-effects model with country as the random
+# grouping factor, then extracts the proportion of variance attributable to
+# between-country differences.
+compute_icc <- function(df, outcome_col = "outcome_value",
+                        country_col = "country_cov",
+                        weight_col  = "n_psu_weight_scaled") {
+
+  # Normalise weights to mean 1 (lmer requires positive weights, not probabilities)
+  df <- df |>
+    dplyr::mutate(.w = .data[[weight_col]] / mean(.data[[weight_col]], na.rm = TRUE))
+
+  formula <- as.formula(
+    paste0(outcome_col, " ~ 1 + (1 | ", country_col, ")")
+  )
+
+  fit <- lme4::lmer(formula, data = df, weights = df$.w,
+                    control = lme4::lmerControl(optimizer = "bobyqa"))
+
+  vc            <- as.data.frame(lme4::VarCorr(fit))
+  var_between   <- vc$vcov[vc$grp == country_col]
+  var_within    <- vc$vcov[vc$grp == "Residual"]
+  var_total     <- var_between + var_within
+  icc           <- var_between / var_total
+
+  tibble::tibble(
+    var_between  = var_between,
+    var_within   = var_within,
+    var_total    = var_total,
+    icc          = icc,
+    pct_between  = 100 * icc,
+    pct_within   = 100 * (1 - icc),
+  )
+}
+
+# ── Run for both outcomes ─────────────────────────────────────────────────────
+icc_bs <- compute_icc(bs_train) |> dplyr::mutate(outcome = "basic_sanitation", .before = 1)
+icc_od <- compute_icc(od_train) |> dplyr::mutate(outcome = "open_defecation",  .before = 1)
+
+icc_results <- dplyr::bind_rows(icc_bs, icc_od)
+
+# ── Print ─────────────────────────────────────────────────────────────────────
+cat("\nWithin- vs between-country variance decomposition\n")
+cat("──────────────────────────────────────────────────\n")
+print(
+  icc_results |>
+    dplyr::select(outcome, pct_between, pct_within, icc) |>
+    dplyr::mutate(dplyr::across(where(is.numeric), \(x) round(x, 3))),
+  n = Inf
+)
+
+# ── Save ──────────────────────────────────────────────────────────────────────
+DESCRIPTIVE_STATS_DIR <- here::here("outputs/descriptive_statistics")
+dir.create(DESCRIPTIVE_STATS_DIR, recursive = TRUE, showWarnings = FALSE)
+
+readr::write_csv(
+  icc_results,
+  file.path(DESCRIPTIVE_STATS_DIR, "sanitation_icc_variance_decomposition.csv")
+)
+message("Written: sanitation_icc_variance_decomposition.csv")
+
+knitr::kable(
+  icc_results |> dplyr::mutate(dplyr::across(where(is.numeric), \(x) round(x, 3))),
+  caption = "Within- vs between-country variance decomposition (weighted ICC)"
+)
 ```

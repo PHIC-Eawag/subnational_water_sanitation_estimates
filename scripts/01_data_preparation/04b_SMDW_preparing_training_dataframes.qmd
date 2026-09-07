@@ -320,8 +320,8 @@ Full household-level observations (retained surveys only, most recent round) for
 Writing to switchdrive is commented out deliberately — this is a collaborator-facing deliverable and should only be regenerated intentionally, not as a side effect of rerunning this script. Uncomment when you actually want to publish an updated version.
 
 ```{r}
-# SWITCHDRIVE_HH_DIR <- "/Users/esthergreenwood/switchdrive/Eawag/WorldBankProject/additional_data_0002020937/HH_surveys"
-# dir.create(SWITCHDRIVE_HH_DIR, recursive = TRUE, showWarnings = FALSE)
+# Path defined in configuration/paths.R (PATH_SWITCHDRIVE_HH_DIR / PATH_HH_SMDW_ANALYSIS).
+# dir.create(PATH_SWITCHDRIVE_HH_DIR, recursive = TRUE, showWarnings = FALSE)
 
 df_hh_smdw_analysis <- dplyr::bind_rows(
   df_hh_water_quality %>% dplyr::mutate(pool = "water_quality"),
@@ -330,9 +330,9 @@ df_hh_smdw_analysis <- dplyr::bind_rows(
 
 # readr::write_csv(
 #   df_hh_smdw_analysis,
-#   file.path(SWITCHDRIVE_HH_DIR, "df_hh_smdw_analysis.csv")
+#   PATH_HH_SMDW_ANALYSIS
 # )
-# message("Written: df_hh_smdw_analysis.csv")
+# message(paste("Written:", PATH_HH_SMDW_ANALYSIS))
 ```
 
 ------------------------------------------------------------------------
