@@ -456,6 +456,12 @@ build_wb_country_lookup <- function(country_name_key_WB) {
     "Republic of North Macedonia",      "North Macedonia",
     "DR Congo",                         "Congo, Dem. Rep.",
     "Democratic Republic of the Congo", "Congo, Dem. Rep.",
+    # JMP 2025 spellings that otherwise fail to resolve to the WB name
+    # (leaves sdg_region/fragile_context/iso3 missing for these countries).
+    "Micronesia (Federated States of)", "Micronesia, Fed. Sts.",
+    "Republic of Moldova",              "Moldova",
+    "Democratic People's Republic of Korea", "Korea, Dem. Rep.",
+    "Congo",                            "Congo, Rep.",
     "Lao People's Democratic Republic", "Lao PDR",
     "Laos",                             "Lao PDR",
     "Palestina",                        "West Bank and Gaza",
