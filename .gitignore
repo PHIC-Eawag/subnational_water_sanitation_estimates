@@ -164,6 +164,9 @@ outputs/main_figures/*
 outputs/figures/*
 !outputs/figures/.gitkeep
 
+outputs/survey_estimates/*
+!outputs/survey_estimates/.gitkeep
+
 # =========================
 # Data — back-up/
 # =========================
