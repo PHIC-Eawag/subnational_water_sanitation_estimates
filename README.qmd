@@ -2,7 +2,7 @@
 
 ## Overview
 
-This repository contains code for modelling subnational estimates of basic sanitation and open defecation across low- and middle-income countries (LMICs), using household survey data and geospatial covariates. Models are trained at the survey region level and predictions are generated for all LMIC admin1 units.
+This repository contains code for modelling subnational estimates of basic sanitation and open defecation across low- and middle-income countries (LMICs), using household survey data and geospatial covariates. Models are trained at the survey region level and predictions are generated for all LMIC admin1 units. The most recent version of the repository can be found on branch: "Post_WB_changes".
 
 The work extends methods developed in Greenwood et al. (2024), which produced the first subnational estimates of safely managed drinking water services across LMICs and extends this to apply deep learning models. We apply the modelling framework to basic sanitation coverage and open defecation.
 
