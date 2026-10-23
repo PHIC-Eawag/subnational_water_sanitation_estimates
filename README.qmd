@@ -1,10 +1,10 @@
-# Mapping access to sanitation and safely managed drinking water across low- and middle-income countries
+# Mapping basic sanitation and open defecation across low- and middle-income countries
 
 ## Overview
 
-This repository contains code for modelling subnational estimates of basic sanitation, open defecation, and safely managed drinking water (SMDW) across low- and middle-income countries (LMICs), using household survey data and geospatial covariates. Models are trained at the survey region level and predictions are generated for all LMIC admin1 units.
+This repository contains code for modelling subnational estimates of basic sanitation and open defecation across low- and middle-income countries (LMICs), using household survey data and geospatial covariates. Models are trained at the survey region level and predictions are generated for all LMIC admin1 units.
 
-The SMDW component extends methods developed in Greenwood et al. (2024), which produced the first subnational estimates of safely managed drinking water services across LMICs and extends this to apply deep learning models. We apply the modelling framework to basic sanitation coverage and open defecation and subcomponents of SMDW.
+The work extends methods developed in Greenwood et al. (2024), which produced the first subnational estimates of safely managed drinking water services across LMICs and extends this to apply deep learning models. We apply the modelling framework to basic sanitation coverage and open defecation.
 
 ## Project folder overview
 
